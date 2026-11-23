@@ -1,0 +1,811 @@
+<div class="cpo-root" [class.cpo-loaded]="loaded()">
+
+  <div class="cpo-header stagger-1">
+    <div class="cpo-header__icon">
+      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+      </svg>
+    </div>
+    <div class="cpo-header__text">
+      <h2>Comparativa Planeación vs Órdenes de Compra</h2>
+      <p>Valida que los productos planificados correspondan con las órdenes de compra, incluyendo conversión de unidades</p>
+    </div>
+  </div>
+
+  <div class="cpo-kpi-strip stagger-2">
+
+    <!-- ── Card 1: Productos Planeación ── -->
+    <div class="cpo-kpi cpo-kpi--blue">
+      <div class="cpo-kpi__icon cpo-kpi__icon--blue">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div class="cpo-kpi__body">
+        <span class="cpo-kpi__label">Planeación</span>
+        <p class="cpo-kpi__value cpo-kpi__value--blue">{{ productosPlaneacion().length }}</p>
+        <div class="cpo-kpi__bar-wrap">
+          <div class="cpo-kpi__bar cpo-kpi__bar--blue" [style.width.%]="100"></div>
+        </div>
+        <span class="cpo-kpi__sub">productos planificados</span>
+      </div>
+      @if (productosOC().length > 0) {
+        <div class="cpo-kpi__badge cpo-kpi__badge--info">
+          {{ coberturaItemsPct() | number:'1.0-0' }}% cubierto
+        </div>
+      }
+    </div>
+
+    <!-- ── Card 2: Órdenes de Compra ── -->
+    <div class="cpo-kpi cpo-kpi--purple">
+      <div class="cpo-kpi__icon cpo-kpi__icon--purple">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+      </div>
+      <div class="cpo-kpi__body">
+        <span class="cpo-kpi__label">Órdenes de Compra</span>
+        <p class="cpo-kpi__value cpo-kpi__value--purple">{{ productosOC().length }}</p>
+        <div class="cpo-kpi__bar-wrap">
+          <div class="cpo-kpi__bar cpo-kpi__bar--purple" [style.width.%]="coberturaItemsPct()"></div>
+        </div>
+        <span class="cpo-kpi__sub">{{ productosOC().length }} de {{ productosPlaneacion().length }} ítems</span>
+      </div>
+      @if (productosOC().length > 0 && productosPlaneacion().length > 0) {
+        <div class="cpo-kpi__badge" [ngClass]="coberturaItemsPct() >= 100 ? 'cpo-kpi__badge--success' : coberturaItemsPct() >= 70 ? 'cpo-kpi__badge--warning' : 'cpo-kpi__badge--danger'">
+          {{ coberturaItemsPct() >= 100 ? '✓ Completo' : (productosPlaneacion().length - productosOC().length) + ' faltantes' }}
+        </div>
+      }
+    </div>
+
+    <!-- ── Card 3: Total Planeación ── -->
+    <div class="cpo-kpi cpo-kpi--green">
+      <div class="cpo-kpi__icon cpo-kpi__icon--green">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="cpo-kpi__body">
+        <span class="cpo-kpi__label">Total Planeación</span>
+        <p class="cpo-kpi__value cpo-kpi__value--green">$ {{ totalPlan() | number:'1.0-0' }}</p>
+        <div class="cpo-kpi__bar-wrap">
+          <div class="cpo-kpi__bar cpo-kpi__bar--green" [style.width.%]="totalOC() > 0 && totalPlan() > 0 ? (totalOC() <= totalPlan() ? 100 : (totalPlan()/totalOC())*100) : 100"></div>
+        </div>
+        <span class="cpo-kpi__sub">presupuesto planificado</span>
+      </div>
+    </div>
+
+    <!-- ── Card 4: Total OC ── -->
+    <div class="cpo-kpi cpo-kpi--gold">
+      <div class="cpo-kpi__icon cpo-kpi__icon--gold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+      </div>
+      <div class="cpo-kpi__body">
+        <span class="cpo-kpi__label">Total OC</span>
+        <p class="cpo-kpi__value cpo-kpi__value--gold">$ {{ totalOC() | number:'1.0-0' }}</p>
+        <div class="cpo-kpi__bar-wrap">
+          <div class="cpo-kpi__bar cpo-kpi__bar--gold" [style.width.%]="totalPlan() > 0 && totalOC() > 0 ? (totalOC() <= totalPlan() ? (totalOC()/totalPlan())*100 : 100) : 100"></div>
+        </div>
+        <span class="cpo-kpi__sub">comprometido en OC</span>
+      </div>
+      @if (totalPlan() > 0 && totalOC() > 0) {
+        <div class="cpo-kpi__badge" [ngClass]="coberturaPreciosPct() <= 100 ? 'cpo-kpi__badge--success' : 'cpo-kpi__badge--danger'">
+          {{ coberturaPreciosPct() | number:'1.0-1' }}% del plan
+        </div>
+      }
+    </div>
+
+    <!-- ── Card 5: Δ Diferencia de Precios ── -->
+    @if (totalPlan() > 0 || totalOC() > 0) {
+      <div class="cpo-kpi cpo-kpi--delta" [ngClass]="diferenciaPrecio() <= 0 ? 'cpo-kpi--saving' : 'cpo-kpi--overrun'">
+        <div class="cpo-kpi__icon" [ngClass]="diferenciaPrecio() <= 0 ? 'cpo-kpi__icon--saving' : 'cpo-kpi__icon--overrun'">
+          @if (diferenciaPrecio() <= 0) {
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/></svg>
+          } @else {
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          }
+        </div>
+        <div class="cpo-kpi__body">
+          <span class="cpo-kpi__label">Δ Diferencia OC vs Plan</span>
+          <p class="cpo-kpi__value" [ngClass]="diferenciaPrecio() <= 0 ? 'cpo-kpi__value--saving' : 'cpo-kpi__value--overrun'">
+            {{ diferenciaPrecio() <= 0 ? '-' : '+' }} $ {{ (diferenciaPrecio() < 0 ? -diferenciaPrecio() : diferenciaPrecio()) | number:'1.0-0' }}
+          </p>
+          <div class="cpo-kpi__bar-wrap">
+            <div class="cpo-kpi__bar" [ngClass]="diferenciaPrecio() <= 0 ? 'cpo-kpi__bar--saving' : 'cpo-kpi__bar--overrun'"
+              [style.width.%]="totalPlan() > 0 ? (((diferenciaPrecio() < 0 ? -diferenciaPrecio() : diferenciaPrecio()) / totalPlan()) * 100 | number:'1.0-0')  : 0">
+            </div>
+          </div>
+          <span class="cpo-kpi__sub" [ngClass]="diferenciaPrecio() <= 0 ? 'cpo-kpi__sub--saving' : 'cpo-kpi__sub--overrun'">
+            {{ diferenciaPrecio() <= 0 ? 'ahorro vs lo planificado' : 'sobrecosto vs lo planificado' }}
+          </span>
+        </div>
+        <div class="cpo-kpi__pct-badge" [ngClass]="diferenciaPrecio() <= 0 ? 'cpo-kpi__pct-badge--saving' : 'cpo-kpi__pct-badge--overrun'">
+          <span>{{ diferenciaPrecio() <= 0 ? '' : '+' }}{{ porcentajeDiferencia() | number:'1.0-1' }}%</span>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  @if (extractingOC()) {
+    <div class="cpo-extracting stagger-3">
+      <div class="cpo-extracting__spinner"></div>
+      <div class="cpo-extracting__info">
+        <p>Extrayendo productos de las Órdenes de Compra...</p>
+        <div class="cpo-extracting__bar">
+          <div class="cpo-extracting__fill" [style.width.%]="extractProgress()"></div>
+        </div>
+        <span>{{ extractProgress() }}%</span>
+      </div>
+    </div>
+  }
+
+  @if (!extractingOC() && productosPlaneacion().length > 0 && productosOC().length > 0 && !comparisonDone()) {
+    <div class="cpo-preview stagger-3">
+      <div class="cpo-preview__side">
+        <div class="cpo-panel-header cpo-panel-header--plan">
+          <div class="cpo-panel-header__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="cpo-panel-header__info">
+            <span class="cpo-panel-header__title">Productos Planeación</span>
+            <span class="cpo-panel-header__sub">Datos del documento OCR</span>
+          </div>
+          <span class="cpo-panel-header__badge cpo-panel-header__badge--plan">{{ productosPlaneacion().length }} ítems</span>
+        </div>
+        <div class="cpo-preview__table-wrap">
+          <table class="cpo-table cpo-table--plan">
+            <thead class="thead-dark">
+              <tr>
+                <th>
+                  <span class="th-inner">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+                    Código
+                  </span>
+                </th>
+                <th>
+                  <span class="th-inner">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Producto
+                  </span>
+                </th>
+                <th class="th-r">
+                  <span class="th-inner th-inner--right">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20V4m0 0L3 8m4-4l4 4M17 4v16m0 0l4-4m-4 4l-4-4"/></svg>
+                    Cant.
+                  </span>
+                </th>
+                <th>
+                  <span class="th-inner">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                    Unidad
+                  </span>
+                </th>
+                <th class="th-r">
+                  <span class="th-inner th-inner--right">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                    Vr. Unit.
+                  </span>
+                </th>
+                <th class="th-r">
+                  <span class="th-inner th-inner--right">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Total
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of productosPlaneacion(); track $index) {
+                <tr class="cpo-body-row">
+                  <td class="td-code">{{ p.codigo || '—' }}</td>
+                  <td class="td-product"><span class="td-product__dot td-product__dot--plan"></span>{{ p.producto }}</td>
+                  <td class="td-num">{{ p.cantidad | number:'1.0-2' }}</td>
+                  <td class="td-unit">{{ p.unidadMedida }}</td>
+                  <td class="td-money">{{ p.valorUnitario > 0 ? ('$ ' + formatMoney(p.valorUnitario)) : '—' }}</td>
+                  <td class="td-money td-money--bold">{{ p.valorTotal > 0 ? ('$ ' + formatMoney(p.valorTotal)) : '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="cpo-preview__divider">
+        <div class="cpo-preview__vs">VS</div>
+      </div>
+
+      <div class="cpo-preview__side">
+        <div class="cpo-panel-header cpo-panel-header--oc">
+          <div class="cpo-panel-header__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+          </div>
+          <div class="cpo-panel-header__info">
+            <span class="cpo-panel-header__title">Productos OC</span>
+            <span class="cpo-panel-header__sub">Órdenes de compra cargadas</span>
+          </div>
+          <span class="cpo-panel-header__badge cpo-panel-header__badge--oc">{{ productosOC().length }} ítems</span>
+        </div>
+        <div class="cpo-preview__table-wrap">
+          <table class="cpo-table cpo-table--oc">
+            <thead class="thead-dark thead-dark--oc">
+              <tr>
+                <th>
+                  <span class="th-inner">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+                    Código
+                  </span>
+                </th>
+                <th>
+                  <span class="th-inner">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Producto
+                  </span>
+                </th>
+                <th class="th-r">
+                  <span class="th-inner th-inner--right">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20V4m0 0L3 8m4-4l4 4M17 4v16m0 0l4-4m-4 4l-4-4"/></svg>
+                    Cant.
+                  </span>
+                </th>
+                <th>
+                  <span class="th-inner">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                    Unidad
+                  </span>
+                </th>
+                <th class="th-r">
+                  <span class="th-inner th-inner--right">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                    Vr. Unit.
+                  </span>
+                </th>
+                <th class="th-r">
+                  <span class="th-inner th-inner--right">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Total
+                  </span>
+                </th>
+                <th>
+                  <span class="th-inner">
+                    <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    OC
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of productosOC(); track $index) {
+                <tr class="cpo-body-row">
+                  <td class="td-code">{{ p.codigo || '—' }}</td>
+                  <td class="td-product"><span class="td-product__dot td-product__dot--oc"></span>{{ p.producto }}</td>
+                  <td class="td-num">{{ p.cantidad | number:'1.0-2' }}</td>
+                  <td class="td-unit">{{ p.unidadMedida }}</td>
+                  <td class="td-money">{{ p.valorUnitario > 0 ? ('$ ' + formatMoney(p.valorUnitario)) : '—' }}</td>
+                  <td class="td-money td-money--bold">{{ p.valorTotal > 0 ? ('$ ' + formatMoney(p.valorTotal)) : '—' }}</td>
+                  <td class="td-action">
+                    <button class="cpo-btn-eye" (click)="verOrdenDeCompra(p.ordenId)" [title]="'Ver OC ' + getNumeroOC(p.ordenId)">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="cpo-actions stagger-5">
+      <button class="cpo-btn cpo-btn--primary" (click)="ejecutarComparacion()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Ejecutar Comparación
+      </button>
+    </div>
+  }
+
+  @if (!extractingOC() && (productosPlaneacion().length === 0 || productosOC().length === 0) && !comparisonDone()) {
+    <div class="cpo-empty stagger-3">
+      <div class="cpo-empty__icon">
+        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+      </div>
+      @if (productosPlaneacion().length === 0) {
+        <h3>Sin productos de planeación</h3>
+        <p>No se encontraron productos en los datos de planeación del paso 1. Verifique que la requisición tenga documentos con datos OCR.</p>
+      } @else {
+        <h3>Sin productos de OC</h3>
+        <p>No se pudieron extraer productos de las órdenes de compra. Verifique que las OC se hayan cargado y escaneado correctamente en el paso 2.</p>
+      }
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="cpo-loading stagger-3">
+      <div class="cpo-loading__spinner"></div>
+      <p>Analizando productos y conversiones de unidades...</p>
+    </div>
+  }
+
+  @if (comparisonDone() && resultado()) {
+    <div class="cpo-result stagger-3">
+      <div class="cpo-result__summary">
+
+        <!-- Gauge circular -->
+        <div class="cpo-summary-gauge">
+          <div class="cpo-summary-gauge__ring">
+            <svg viewBox="0 0 100 100" class="cpo-gauge-svg">
+              <defs>
+                <filter id="gaugeGlow">
+                  <feGaussianBlur stdDeviation="2" result="glow"/>
+                  <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" stroke-width="8" opacity="0.4"/>
+              <circle cx="50" cy="50" r="42" fill="none"
+                      [attr.stroke]="getMatchPercentageColor()"
+                      stroke-width="9"
+                      stroke-linecap="round"
+                      [attr.stroke-dasharray]="263.89"
+                      [attr.stroke-dashoffset]="263.89 - (263.89 * matchPercentage() / 100)"
+                      transform="rotate(-90 50 50)"
+                      filter="url(#gaugeGlow)"
+                      class="cpo-gauge-circle"/>
+            </svg>
+            <div class="cpo-gauge-text">
+              <span class="cpo-gauge-pct" [style.color]="getMatchPercentageColor()">{{ matchPercentage() }}%</span>
+              <span class="cpo-gauge-label">cobertura</span>
+            </div>
+          </div>
+          <span class="cpo-summary-gauge__title">Resultado del Análisis</span>
+          <span class="cpo-summary-gauge__sub">
+            {{ resultado()!.productosCoinciden + resultado()!.productosDiferentes }} de {{ resultado()!.totalPlaneacion }} ítems hallados en OC
+          </span>
+        </div>
+
+        <!-- Métricas inline (4 chips) -->
+        <div class="cpo-result__chips">
+          <div class="cpo-chip cpo-chip--ok">
+            <svg class="cpo-chip__ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <span class="cpo-chip__num">{{ resultado()!.productosCoinciden }}</span>
+            <span class="cpo-chip__lbl">Exactos</span>
+          </div>
+          <div class="cpo-chip cpo-chip--diff">
+            <svg class="cpo-chip__ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+            <span class="cpo-chip__num">{{ resultado()!.productosDiferentes }}</span>
+            <span class="cpo-chip__lbl">Con diferencias</span>
+          </div>
+          <div class="cpo-chip cpo-chip--plan">
+            <svg class="cpo-chip__ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="cpo-chip__num">{{ resultado()!.soloEnPlaneacion }}</span>
+            <span class="cpo-chip__lbl">Solo plan</span>
+          </div>
+          <div class="cpo-chip cpo-chip--oc">
+            <svg class="cpo-chip__ico" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+            <span class="cpo-chip__num">{{ resultado()!.soloEnOC }}</span>
+            <span class="cpo-chip__lbl">Solo OC</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ═══ Barra de Relacionar + Links manuales ═══ -->
+      <div class="cpo-link-bar">
+        <button class="cpo-link-bar__btn" [class.cpo-link-bar__btn--active]="manualMatchMode()" (click)="toggleManualMatchMode()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          {{ manualMatchMode() ? 'Cancelar' : 'Relacionar Productos' }}
+        </button>
+
+        @if (manualMatchMode()) {
+          <div class="cpo-link-bar__hint">
+            @if (selectedPlanIndex() !== null && selectedOCIndex() === null) {
+              <span class="cpo-link-bar__hint-icon cpo-link-bar__hint-icon--plan">✓ Plan</span>
+              <span>Ahora seleccione un producto en la tabla de <strong>Orden de Compra</strong></span>
+            } @else if (selectedPlanIndex() === null && selectedOCIndex() !== null) {
+              <span class="cpo-link-bar__hint-icon cpo-link-bar__hint-icon--oc">✓ OC</span>
+              <span>Ahora seleccione un producto en la tabla de <strong>Planeación</strong></span>
+            } @else {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>
+              <span>Haga click en un producto de <strong>Planeación</strong> y luego en uno de <strong>OC</strong> para vincularlos</span>
+            }
+          </div>
+        }
+
+        @if (manualLinks().length > 0) {
+          <div class="cpo-link-bar__links">
+            @for (link of manualLinks(); track $index; let i = $index) {
+              <div class="cpo-link-bar__link-chip">
+                <span class="cpo-link-bar__link-badge cpo-link-bar__link-badge--plan">Plan</span>
+                <span class="cpo-link-bar__link-name">{{ link.planProducto }}</span>
+                <svg class="w-4 h-4 cpo-link-bar__link-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                <span class="cpo-link-bar__link-badge cpo-link-bar__link-badge--oc">OC</span>
+                <span class="cpo-link-bar__link-name">{{ link.ocProducto }}</span>
+                <button class="cpo-link-bar__link-remove" (click)="removeManualLink(i)">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            }
+            <button class="cpo-link-bar__apply" (click)="aplicarMatchManual()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Re-ejecutar con {{ manualLinks().length }} relación{{ manualLinks().length > 1 ? 'es' : '' }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="cpo-comparison" [class.cpo-comparison--linking]="manualMatchMode()">
+        <div class="cpo-comparison__side cpo-comparison__side--plan">
+          <div class="cpo-panel-header cpo-panel-header--plan">
+            <div class="cpo-panel-header__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="cpo-panel-header__info">
+              <span class="cpo-panel-header__title">Planeación</span>
+              <span class="cpo-panel-header__sub">Productos del documento OCR</span>
+            </div>
+            <span class="cpo-panel-header__badge cpo-panel-header__badge--plan">{{ resultado()!.matchProductos.length }} ítems</span>
+          </div>
+          <div class="cpo-comparison__table-wrap">
+            <table class="cpo-table">
+              <thead class="thead-dark">
+                <tr>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+                      Código
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                      Producto
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20V4m0 0L3 8m4-4l4 4M17 4v16m0 0l4-4m-4 4l-4-4"/></svg>
+                      Cant.
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                      Und.
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                      Vr. Unit.
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Total
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                      % Cumpl.
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (match of resultado()!.matchProductos; track $index) {
+                  <tr class="cpo-row"
+                      [class.cpo-row--ok]="match.estado === 'COINCIDE'"
+                      [class.cpo-row--diff]="match.estado === 'DIFERENTE'"
+                      [class.cpo-row--miss]="match.estado === 'SOLO_PLAN'"
+                      [class.cpo-row--solo-oc]="match.estado === 'SOLO_OC'"
+                      [class.cpo-row--linking]="manualMatchMode()"
+                      [class.cpo-row--selected]="isPlanRowSelected($index)"
+                      [class.cpo-row--linked]="isPlanRowLinked($index)"
+                      (click)="onPlanRowClick($index)">
+                    @if (match.productoPlaneacion) {
+                      <td class="td-code">{{ match.productoPlaneacion.codigo || '—' }}</td>
+                      <td class="td-product"><span class="td-product__dot td-product__dot--plan"></span>{{ match.productoPlaneacion.producto }}</td>
+                      <td class="td-num">{{ match.productoPlaneacion.cantidad | number:'1.0-2' }}</td>
+                      <td class="td-unit">{{ match.productoPlaneacion.unidadMedida }}</td>
+                      <td class="td-money">{{ match.productoPlaneacion.valorUnitario > 0 ? ('$ ' + formatMoney(match.productoPlaneacion.valorUnitario)) : '—' }}</td>
+                      <td class="td-money td-money--bold">{{ match.productoPlaneacion.valorTotal > 0 ? ('$ ' + formatMoney(match.productoPlaneacion.valorTotal)) : '—' }}</td>
+                      <td class="td-progress">
+                        <div class="progress-cell">
+                          <div class="progress-bar">
+                            <div class="progress-bar__fill"
+                                 [style.width.%]="match.porcentajeCumplimiento"
+                                 [class.progress-bar__fill--complete]="match.porcentajeCumplimiento >= 100"
+                                 [class.progress-bar__fill--low]="match.porcentajeCumplimiento < 50"
+                                 [class.progress-bar__fill--mid]="match.porcentajeCumplimiento >= 50 && match.porcentajeCumplimiento < 100">
+                            </div>
+                          </div>
+                          <span class="progress-pct"
+                                [class.progress-pct--complete]="match.porcentajeCumplimiento >= 100"
+                                [class.progress-pct--low]="match.porcentajeCumplimiento < 50">
+                            {{ match.porcentajeCumplimiento | number:'1.0-1' }}%
+                          </span>
+                        </div>
+                      </td>
+                    } @else {
+                      <td colspan="7" class="td-empty">—</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VS Divider -->
+        @if (manualMatchMode()) {
+          <div class="cpo-comparison__vs-divider">
+            <div class="cpo-comparison__vs-line"></div>
+            <div class="cpo-comparison__vs-badge">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4"/></svg>
+            </div>
+            <div class="cpo-comparison__vs-line"></div>
+          </div>
+        }
+
+        <div class="cpo-comparison__side cpo-comparison__side--oc">
+          <div class="cpo-panel-header cpo-panel-header--oc">
+            <div class="cpo-panel-header__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+            </div>
+            <div class="cpo-panel-header__info">
+              <span class="cpo-panel-header__title">Orden de Compra</span>
+              <span class="cpo-panel-header__sub">Órdenes cargadas y procesadas</span>
+            </div>
+          </div>
+          <div class="cpo-comparison__table-wrap">
+            <table class="cpo-table">
+              <thead class="thead-dark thead-dark--oc">
+                <tr>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Estado
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                      Producto
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20V4m0 0L3 8m4-4l4 4M17 4v16m0 0l4-4m-4 4l-4-4"/></svg>
+                      Cant.
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                      Und.
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                      Proveedor
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                      Vr. Unit.
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Total
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      OC
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (match of resultado()!.matchProductos; track $index; let i = $index) {
+                  <tr class="cpo-row"
+                      [class.cpo-row--ok]="match.estado === 'COINCIDE'"
+                      [class.cpo-row--diff]="match.estado === 'DIFERENTE'"
+                      [class.cpo-row--miss]="match.estado === 'SOLO_PLAN'"
+                      [class.cpo-row--solo-oc]="match.estado === 'SOLO_OC'"
+                      [class.cpo-row--linking]="manualMatchMode()"
+                      [class.cpo-row--selected]="isOCRowSelected($index)"
+                      [class.cpo-row--linked]="isOCRowLinked($index)"
+                      (click)="onOCRowClick($index)">
+                    <td>
+                      <span class="cpo-status" [ngClass]="getStatusClass(match.estado)">
+                        {{ getStatusLabel(match.estado) }}
+                      </span>
+                    </td>
+                    @if (match.productoOC) {
+                      <td class="td-product"><span class="td-product__dot td-product__dot--oc"></span>{{ match.productoOC.producto }}</td>
+                      <td class="td-num">{{ match.productoOC.cantidad | number:'1.0-2' }}</td>
+                      <td class="td-unit td-unit--editable">
+                        @if (editingUnitIndex() === i) {
+                          <div class="unit-edit">
+                            <select class="unit-edit__select"
+                                    [ngModel]="editingUnitValue()"
+                                    (ngModelChange)="applyUnitChange(i, $event)">
+                              <option value="" disabled>Seleccionar...</option>
+                              @for (u of filteredUnitsForEdit(); track u.key) {
+                                <option [value]="u.key">{{ u.label }} ({{ u.key }})</option>
+                              }
+                            </select>
+                            <button class="unit-edit__cancel" (click)="cancelEditUnit()">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                          </div>
+                        } @else {
+                          <span class="unit-display" (click)="startEditUnit(i)">
+                            {{ match.productoOC.unidadMedida }}
+                            <svg class="unit-display__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                          </span>
+                        }
+                      </td>
+                      <td class="td-proveedor">{{ match.productoOC.proveedor || '—' }}</td>
+                      <td class="td-money">{{ match.productoOC.valorUnitario > 0 ? ('$ ' + formatMoney(match.productoOC.valorUnitario)) : '—' }}</td>
+                      <td class="td-money td-money--bold">{{ match.productoOC.valorTotal > 0 ? ('$ ' + formatMoney(match.productoOC.valorTotal)) : '—' }}</td>
+                      <td class="td-action">
+                        <button class="cpo-btn-eye" (click)="verOrdenDeCompra(match.productoOC.ordenId)" [title]="'Ver OC ' + getNumeroOC(match.productoOC.ordenId)">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                      </td>
+                    } @else {
+                      <td colspan="7" class="td-empty">—</td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      @if (productosIncompletos().length > 0) {
+        <div class="cpo-incomplete stagger-5">
+          <div class="cpo-incomplete__header">
+            <div class="cpo-incomplete__icon">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <div class="cpo-incomplete__title-wrap">
+              <h3>Productos con Cumplimiento Incompleto</h3>
+              <p>Productos de planeación que aún no han sido cubiertos al 100% por las órdenes de compra</p>
+            </div>
+            <span class="cpo-incomplete__count">{{ productosIncompletos().length }} producto{{ productosIncompletos().length > 1 ? 's' : '' }}</span>
+          </div>
+          <div class="cpo-incomplete__table-wrap">
+            <table class="cpo-table">
+              <thead class="thead-dark">
+                <tr>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                      Producto
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      Cant. Planificada
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                      Cant. en OC
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                      Unidad
+                    </span>
+                  </th>
+                  <th class="th-r">
+                    <span class="th-inner th-inner--right">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                      Faltante
+                    </span>
+                  </th>
+                  <th>
+                    <span class="th-inner">
+                      <svg class="th-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                      % Cumplimiento
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (match of productosIncompletos(); track $index) {
+                  <tr class="cpo-body-row cpo-body-row--incomplete">
+                    <td class="td-product">
+                      <span class="td-product__dot td-product__dot--plan"></span>
+                      {{ match.productoPlaneacion!.producto }}
+                    </td>
+                    <td class="td-num">{{ match.productoPlaneacion!.cantidad | number:'1.0-2' }}</td>
+                    <td class="td-num">{{ match.cantidadOCTotal | number:'1.0-2' }}</td>
+                    <td class="td-unit">{{ match.productoPlaneacion!.unidadMedida }}</td>
+                    <td class="td-num td-num--danger">{{ (match.productoPlaneacion!.cantidad - match.cantidadOCTotal) | number:'1.0-2' }}</td>
+                    <td class="td-progress td-progress--wide">
+                      <div class="progress-cell">
+                        <div class="progress-bar progress-bar--lg">
+                          <div class="progress-bar__fill"
+                               [style.width.%]="match.porcentajeCumplimiento"
+                               [class.progress-bar__fill--low]="match.porcentajeCumplimiento < 50"
+                               [class.progress-bar__fill--mid]="match.porcentajeCumplimiento >= 50">
+                          </div>
+                        </div>
+                        <span class="progress-pct"
+                              [class.progress-pct--low]="match.porcentajeCumplimiento < 50">
+                          {{ match.porcentajeCumplimiento | number:'1.0-1' }}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <div class="cpo-confirm stagger-4">
+        <button class="cpo-btn cpo-btn--save" (click)="guardarBorrador()" [disabled]="savingDraft()">
+          @if (savingDraft()) {
+            <span class="cpo-btn__spinner"></span>
+            Guardando...
+          } @else if (draftSaved()) {
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            ¡Progreso guardado!
+          } @else {
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+            Guardar Progreso
+          }
+        </button>
+        <button class="cpo-btn cpo-btn--confirm" (click)="confirmar()">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Confirmar y Enviar al Jefe de Compras
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Modal para ver OC -->
+  @if (showOrdenModal() && ordenModalData()) {
+    <div class="cpo-modal-backdrop" (click)="cerrarOrdenModal()">
+      <div class="cpo-modal" (click)="$event.stopPropagation()">
+        <div class="cpo-modal__header">
+          <div class="cpo-modal__title-wrap">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <h3>Orden de Compra</h3>
+          </div>
+          <button class="cpo-modal__close" (click)="cerrarOrdenModal()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="cpo-modal__body">
+          <div class="cpo-modal__field">
+            <span class="cpo-modal__label">N° OC</span>
+            <span class="cpo-modal__value">{{ ordenModalData()!.numeroOC }}</span>
+          </div>
+          <div class="cpo-modal__field">
+            <span class="cpo-modal__label">Proveedor</span>
+            <span class="cpo-modal__value">{{ ordenModalData()!.proveedor }}</span>
+          </div>
+          @if (ordenModalData()!.url) {
+            <button class="cpo-btn cpo-btn--primary cpo-modal__btn" (click)="abrirArchivoOC(ordenModalData()!.url!)">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              Ver Documento
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

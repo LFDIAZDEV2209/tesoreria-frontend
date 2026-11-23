@@ -1,0 +1,434 @@
+:host {
+  display: block;
+  min-height: 60vh;
+}
+
+/* ══ Roles y Permisos — pasos, pestañas de rol, toolbar y filas ══ */
+
+/* ── Títulos de paso ── */
+.paso-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 10px 2px;
+}
+.paso-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #213053;
+  color: #ffb71b;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ── Pestañas de rol ── */
+.rol-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1.5px solid #e8edf3;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+.rol-tab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.rol-tab--director_contable { --rol-color: #0369a1; }
+.rol-tab--contador          { --rol-color: #0f766e; }
+.rol-tab--gerente           { --rol-color: #7c3aed; }
+.rol-tab--superadmin        { --rol-color: #b45309; }
+/* Roles de egresos (cada uno con su acento, igual que los demás) */
+.rol-tab--tesorero          { --rol-color: #045c94; }
+.rol-tab--gerente_financiero { --rol-color: #9333ea; }
+.rol-tab--editor_contable   { --rol-color: #be123c; }
+.rol-tab--auxiliar_contable { --rol-color: #0891b2; }
+
+.rol-tab--activo {
+  border-color: var(--rol-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rol-color) 18%, transparent),
+              0 14px 28px rgba(15, 23, 42, 0.08);
+}
+
+.rol-tab__check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--rol-color);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rol-tab__avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: var(--rol-color);
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rol-tab__nombre {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: #213053;
+}
+.rol-tab__desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+.rol-tab__pie {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rol-tab__barra {
+  flex: 1 1 90px;
+  height: 6px;
+  border-radius: 999px;
+  background: #edf1f6;
+  overflow: hidden;
+}
+.rol-tab__barra-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--rol-color);
+  transition: width 0.25s ease;
+}
+.rol-tab__conteo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+}
+.rol-tab__pendiente {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #b45309;
+  background: rgba(255, 183, 27, 0.16);
+  border: 1px solid rgba(255, 183, 27, 0.45);
+  white-space: nowrap;
+}
+
+/* ── Barra de herramientas (fija al hacer scroll) ── */
+.toolbar {
+  position: sticky;
+  top: 10px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  border: 1px solid #e8edf3;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.09);
+}
+
+.toolbar__buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 240px;
+  min-width: 200px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #94a3b8;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.toolbar__buscador:focus-within {
+  border-color: rgba(4, 92, 148, 0.45);
+  box-shadow: 0 0 0 3px rgba(4, 92, 148, 0.1);
+  background: #ffffff;
+}
+.toolbar__buscador input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: #213053;
+}
+.toolbar__buscador button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+.toolbar__buscador button:hover {
+  color: #be123c;
+  background: rgba(225, 29, 72, 0.08);
+}
+
+.toolbar__acciones-rapidas,
+.toolbar__guardar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+.btn-mini:hover {
+  border-color: rgba(4, 92, 148, 0.35);
+  background: rgba(4, 92, 148, 0.06);
+  transform: translateY(-1px);
+}
+.btn-mini--peligro:hover {
+  border-color: rgba(225, 29, 72, 0.3);
+  background: rgba(225, 29, 72, 0.05);
+  color: #be123c;
+}
+
+.chip-pendiente {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #b45309;
+  background: rgba(255, 183, 27, 0.16);
+  border: 1px solid rgba(255, 183, 27, 0.5);
+  white-space: nowrap;
+}
+
+/* ── Leyenda ── */
+.leyenda {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 14px 4px;
+}
+
+.perfil-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #b45309;
+  background: rgba(255, 183, 27, 0.14);
+  border: 1px solid rgba(255, 183, 27, 0.35);
+  white-space: nowrap;
+}
+
+.chip-modificado {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  white-space: nowrap;
+}
+
+/* ── Sin resultados ── */
+.card-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 20px;
+  border-radius: 18px;
+  border: 1px dashed #e2e8f0;
+  background: #ffffff;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* ── Grupos de permisos ── */
+.grupo-card {
+  background: #ffffff;
+  border: 1px solid #e8edf3;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+}
+
+.grupo-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(4, 92, 148, 0.045);
+  border-bottom: 1px solid rgba(4, 92, 148, 0.1);
+}
+.grupo-card__titulo {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #045c94;
+}
+.grupo-card__conteo {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  background: #ffffff;
+  border: 1px solid #e8edf3;
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+.grupo-card__accion {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #045c94;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.18s ease;
+}
+.grupo-card__accion:hover {
+  color: #ffb71b;
+  text-decoration: underline;
+}
+
+/* ── Fila de permiso (toda la fila es el switch) ── */
+.permiso-fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 13px 16px;
+  border-top: 1px solid #f1f5f9;
+  background: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.permiso-fila:first-of-type {
+  border-top: none;
+}
+.permiso-fila:hover {
+  background: rgba(4, 92, 148, 0.03);
+}
+.permiso-fila--off {
+  background: #fcfdfe;
+}
+
+.permiso-fila__nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-weight: 700;
+  color: #213053;
+}
+.permiso-fila--off .permiso-fila__nombre {
+  color: #94a3b8;
+}
+.permiso-fila__desc {
+  display: block;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+.permiso-fila__estado {
+  font-size: 11px;
+  font-weight: 800;
+  color: #cbd5e1;
+  white-space: nowrap;
+  min-width: 92px;
+  text-align: right;
+}
+.permiso-fila__estado--on {
+  color: #059669;
+}
+
+/* ── Switch ── */
+.gp-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 44px;
+  height: 25px;
+  padding: 2px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f1f5f9;
+  flex-shrink: 0;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.gp-toggle__thumb {
+  width: 19px;
+  height: 19px;
+  border-radius: 999px;
+  background: #94a3b8;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.gp-toggle--on {
+  background: rgba(5, 150, 105, 0.12);
+  border-color: rgba(5, 150, 105, 0.45);
+}
+.gp-toggle--on .gp-toggle__thumb {
+  transform: translateX(19px);
+  background: #059669;
+}

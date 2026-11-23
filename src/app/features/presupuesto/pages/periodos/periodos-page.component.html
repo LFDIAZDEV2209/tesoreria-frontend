@@ -1,0 +1,63 @@
+<section class="gp-periodos-page">
+  <div class="path">
+    <label>Empresa<select aria-label="Empresa de los períodos" [ngModel]="ctx.empresaId()" (ngModelChange)="ctx.seleccionarEnUrl(+$event)">
+      <option [ngValue]="null" disabled>Selecciona una empresa…</option>
+      @for(empresa of ctx.empresas();track empresa.id){<option [ngValue]="empresa.id">{{empresa.name}}</option>}
+    </select></label>
+    @if(periodos.puedeCrear()) {
+      <button class="btn btn-primary" (click)="abrirCrear()" [disabled]="!ctx.empresaId() || saving()">+ Crear mes</button>
+      <button class="btn btn-ghost" (click)="modalCrear.set('anio')" [disabled]="saving()">+ Crear año</button>
+    }
+    <button class="btn btn-ghost refresh" (click)="actualizar()" [disabled]="periodos.loading()"><app-gp-icon name="refresh" [size]="16"/>Actualizar</button>
+  </div>
+  @if(!ctx.empresaId()){<p class="empty">Selecciona una empresa para crear y habilitar sus meses.</p>}
+  @if(error() || periodos.error()){<p class="err" role="alert">{{error() || periodos.error()}}</p>}
+  @if(exito()){<p class="loadinfo" role="status">{{exito()}}</p>}
+  @if(ctx.mesActivo();as activo){<p class="loadinfo">Mes habilitado: <strong>{{etiqueta(activo)}}</strong>. En presupuesto y proyección se ven todos los meses. Solo este mes permite edición; Gerencia y Superadmin pueden corregir los demás.</p>}
+  @if(periodos.loading()){<p class="empty" role="status">Consultando períodos…</p>}
+  @else {
+    @for(anio of anios();track anio) {
+      <section class="panel" style="margin-bottom:18px">
+        <header class="panel-head"><div><h2>{{anio}}</h2><p>Crear un mes habilita su edición. Al aprobarlo, solo Gerencia y Superadmin pueden modificarlo.</p></div></header>
+        <div class="months">
+          @for(mes of mesesDelAnio(anio);track mes.periodo) {
+            <div class="month-actions">
+            <button type="button" class="month" [class.st-none]="!mes.creado" [class.st-empty]="mes.creado && !mes.aprobado" [class.st-loaded]="mes.aprobado"
+              [disabled]="mes.aprobado || mes.activo || saving()" (click)="abrirMes(mes)">
+              <span class="mn">{{mes.nombre}}</span>
+              <span class="tag">{{mes.aprobado ? 'Aprobado' : mes.activo ? 'Habilitado para edición' : mes.creado ? 'Creado' : 'No creado'}}</span>
+              <span class="amt">{{mes.aprobado ? 'Edición: Gerencia y Superadmin' : mes.activo ? 'Mes activo' : !ctx.empresaId() ? 'Selecciona una empresa' : !periodos.puedeCrear() ? 'Sin permiso para habilitar' : mes.creado ? 'Habilitar mes' : '+ Crear mes'}}</span>
+            </button>
+            @if(mes.creado && periodos.puedeCrear() && ctx.empresaId()) {
+              <button type="button" class="btn btn-ghost" [attr.aria-label]="'Quitar '+etiqueta(mes.periodo)" [disabled]="saving()" (click)="revisarQuitarMes(mes.periodo)">Quitar mes</button>
+            }
+            </div>
+          }
+        </div>
+      </section>
+    } @empty {<p class="empty">Crea un año o un mes para comenzar.</p>}
+  }
+  @if(modalCrear();as tipo) {
+    <app-gp-modal [titulo]="tipo==='anio' ? 'Crear año' : 'Crear mes'" ancho="sm" [cargando]="saving()" (cerrar)="modalCrear.set(null)">
+      <form id="crear-periodo" (ngSubmit)="crear(tipo)">
+        <p class="modal-intro">{{tipo==='mes' ? 'El nuevo mes será el habilitado para registrar y modificar información. Todos los datos anteriores seguirán visibles.' : 'Después de crear el año, crea el mes que habilitarás para edición.'}}</p>
+        @if(tipo==='anio'){<label>Año<input type="number" name="anio" [(ngModel)]="nuevoAnio" min="1900" max="9999" required /></label>}
+        @else{<label>Mes nuevo<input type="month" name="mes" [(ngModel)]="nuevoMes" min="1900-01" max="9999-12" required /></label>}
+        @if(error()){<p class="err" role="alert">{{error()}}</p>}
+      </form>
+      <button pie class="btn btn-primary" type="button" (click)="crear(tipo)" [disabled]="saving()">{{saving() ? 'Creando…' : tipo==='anio' ? 'Crear año' : 'Habilitar mes'}}</button>
+    </app-gp-modal>
+  }
+</section>
+
+@if(mesParaQuitar();as mes) {
+  <app-gp-modal titulo="Quitar mes" [subtitulo]="etiqueta(mes)" ancho="md" [cargando]="saving()" (cerrar)="mesParaQuitar.set(null)">
+    @if(datosParaQuitar();as datos) {
+      @if(datos.length) {
+        <div role="alert"><p>No se puede quitar este mes porque contiene la siguiente información:</p><ul>@for(dato of datos;track dato.tipo){<li>{{dato.tipo}}: {{dato.registros}} registro(s)</li>}</ul></div>
+      } @else {<p>Este mes no contiene datos. Puedes quitarlo de la empresa seleccionada.</p>}
+    } @else if(saving()){<p role="status">Consultando los datos del mes…</p>}
+    @if(error()){<p role="alert" class="err">{{error()}}</p>}
+    @if(datosParaQuitar()?.length===0){<button pie type="button" class="btn btn-primary" [disabled]="saving()" (click)="quitarMes()">{{saving() ? 'Quitando…' : 'Confirmar quitar mes'}}</button>}
+  </app-gp-modal>
+}

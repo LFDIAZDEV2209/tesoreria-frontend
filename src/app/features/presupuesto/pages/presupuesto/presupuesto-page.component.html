@@ -1,0 +1,961 @@
+<div class="gp-native-page gp-page module-page" style="--module-accent:#2563EB">
+  <div class="space-y-5">
+    <p *ngIf="!modoHistorico && mesesCerrados().length" role="status" class="text-sm text-t2">
+      Meses aprobados: {{ mesesCerrados().join(', ') }}. Su edición está reservada a Gerencia y Superadmin.
+    </p>
+    <p *ngIf="errorObservacion() && !observacionPago()" role="alert" class="text-sm text-red-700">{{ errorObservacion() }}</p>
+    <!-- Tablas por sección — una plantilla reutilizada por el panel del rail
+         y por la vista "Todos" (todas las tablas una debajo de la otra). -->
+    <ng-template #tablaSeccion let-sec="sec">
+      <div *ngIf="esSeccionDiferida(sec.id) && !modoHistorico" class="gp-section-controls">
+        <input type="search" class="field" [attr.aria-label]="'Buscar por nombre o NIT en ' + sec.label" placeholder="Buscar por nombre o NIT…" [ngModel]="estadoSeccion(sec.id).busqueda" (ngModelChange)="cambiarFiltroSeccion(sec.id, 'busqueda', $event)">
+        <select class="field" [attr.aria-label]="'Categoría de ' + sec.label" [ngModel]="estadoSeccion(sec.id).categoria" (focus)="cargarCategorias()" (ngModelChange)="cambiarFiltroSeccion(sec.id, 'categoria', $event)"><option value="">Todas las categorías</option><option *ngFor="let categoria of categorias" [value]="categoria">{{ categoria }}</option></select>
+        <span *ngIf="estadoSeccion(sec.id).cargado">{{ estadoSeccion(sec.id).total }} registros</span>
+        <span *ngIf="errorCategorias()" role="alert">{{ errorCategorias() }} <button type="button" class="btn-ghost" (click)="cargarCategorias()">Reintentar catálogo</button></span>
+      </div>
+      <ng-container *ngTemplateOutlet="estadoCargaSeccion; context: {id: sec.id}"></ng-container>
+      <ng-container *ngIf="seccionLista(sec.id)">
+
+            <!-- Sección A -->
+            <div *ngIf="sec.id === 'contrato'" @gpDespliegue>
+              <table class="w-full gp-tabla-meses">
+                <thead>
+                  <tr>
+                    <th class="gp-tm-concepto">Concepto</th>
+                    <th *ngFor="let m of mesesVisibles(); trackBy: trackMes" class="gp-tm-mes" [class.gp-month-collapsed]="mesColapsado('contrato', m)"><button class="gp-month-toggle" (click)="toggleMesColapsado('contrato', m)" [attr.aria-label]="(mesColapsado('contrato', m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)" [title]="(mesColapsado('contrato', m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)"><app-gp-icon [name]="mesColapsado('contrato', m) ? 'plus' : 'minus'" [size]="mesColapsado('contrato', m) ? 14 : 11"/><span class="gp-month-toggle__label">{{ fechaCorta(m) }}</span></button></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let f of mensual()?.filasContrato ?? []; let i = index; trackBy: trackConcepto" [style.--i]="i" class="gp-fila gp-fila-in"
+                      [class.gp-fila--destacada]="esFilaDestacada(f.concepto)">
+                    <td class="gp-tm-concepto" [class.font-bold]="esFilaDestacada(f.concepto)">
+                      {{ f.concepto }}
+                    </td>
+                    <td *ngFor="let m of mesesVisibles()" class="gp-tm-celda" [class.gp-month-collapsed]="mesColapsado('contrato', m)">
+                      <div class="gp-col-clip">
+                        <app-gp-celda-monto [ajustarAncho]="true" [moneda]="f.campo !== 'racionesEntregadas'" *ngIf="f.editable && puedeOperar() && !mesCerrado(m)" [valor]="f.valores[m]"
+                                            (commit)="guardarCampo(m, f.campo, $event)"></app-gp-celda-monto>
+                        <span *ngIf="!(f.editable && puedeOperar() && !mesCerrado(m))" class="gp-tm-valor"
+                              [class]="esFilaDestacada(f.concepto) ? 'font-bold text-acc' : cl(f.valores[m])">
+                          {{ f.valores[m] !== 0 ? cv(f, f.valores[m]) : '—' }}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Flujo de caja -->
+            <div *ngIf="sec.id === 'flujo'" @gpDespliegue>
+              <table class="w-full gp-tabla-meses">
+                <thead>
+                  <tr>
+                    <th class="gp-tm-concepto">Concepto</th>
+                    <th *ngFor="let m of mesesVisibles(); trackBy: trackMes" class="gp-tm-mes" [class.gp-month-collapsed]="mesColapsado('flujo', m)"><button class="gp-month-toggle" (click)="toggleMesColapsado('flujo', m)" [attr.aria-label]="(mesColapsado('flujo', m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)" [title]="(mesColapsado('flujo', m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)"><app-gp-icon [name]="mesColapsado('flujo', m) ? 'plus' : 'minus'" [size]="mesColapsado('flujo', m) ? 14 : 11"/><span class="gp-month-toggle__label">{{ fechaCorta(m) }}</span></button></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let f of mensual()?.filasFlujoCaja ?? []; let i = index; trackBy: trackConcepto" [style.--i]="i" class="gp-fila gp-fila-in"
+                      [class.gp-fila--destacada]="f.concepto === 'TOTAL DISPONIBLE'">
+                    <td class="gp-tm-concepto" [class.font-bold]="f.concepto === 'TOTAL DISPONIBLE'">{{ f.concepto }}</td>
+                    <td *ngFor="let m of mesesVisibles()" class="gp-tm-celda" [class.gp-month-collapsed]="mesColapsado('flujo', m)">
+                      <div class="gp-col-clip">
+                        <app-gp-celda-monto [ajustarAncho]="true" [moneda]="f.campo !== 'racionesEntregadas'" *ngIf="f.editable && puedeOperar() && !mesCerrado(m)" [valor]="f.valores[m]"
+                                            (commit)="guardarCampo(m, f.campo, $event)"></app-gp-celda-monto>
+                        <span *ngIf="!(f.editable && puedeOperar() && !mesCerrado(m))" class="gp-tm-valor"
+                              [class]="f.concepto === 'TOTAL DISPONIBLE' ? 'font-bold text-acc' : cl(f.valores[m])">
+                          {{ f.valores[m] !== 0 ? cv(f, f.valores[m]) : '—' }}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+            </div>
+
+            <!-- Nómina -->
+            <div *ngIf="sec.id === 'nomina'" @gpDespliegue>
+              <p *ngIf="puedeSugerirNomina()" class="gp-sugerido-ayuda">Selecciona los importes de los meses para sumarlos en Sugerido. Haz clic en la × para quitarlos de la suma.</p>
+              <table class="w-full gp-tabla-meses">
+                <thead>
+                  <tr>
+                    <th class="gp-tm-concepto">Concepto</th>
+                    <th *ngFor="let m of mesesVisibles(); trackBy: trackMes" class="gp-tm-mes" [class.gp-month-collapsed]="mesColapsado('nomina', m)"><button class="gp-month-toggle" (click)="toggleMesColapsado('nomina', m)" [attr.aria-label]="(mesColapsado('nomina', m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)" [title]="(mesColapsado('nomina', m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)"><app-gp-icon [name]="mesColapsado('nomina', m) ? 'plus' : 'minus'" [size]="mesColapsado('nomina', m) ? 14 : 11"/><span class="gp-month-toggle__label">{{ fechaCorta(m) }}</span></button></th>
+                    <th class="gp-tm-mes gp-tm-total">Total a pagar</th>
+                    <th class="gp-tm-mes gp-tm-total">Sugerido
+                      <div *ngIf="puedeSugerirNomina()" class="gp-sugerido-acciones">
+                        <button type="button" [disabled]="sugeridosOcupados()" (click)="sugerirTablaNomina()">Sumar todas las filas</button>
+                        <button type="button" [disabled]="sugeridosOcupados()" (click)="sugerirTablaNomina(true)">Limpiar columna</button>
+                      </div>
+                      <button type="button" class="gp-aprobar-sugerido gp-aprobar-sugerido--tabla"
+                              [disabled]="!ctx.tienePermiso('presupuesto.aprobar_nomina') || aprobacionTablaOcupada()"
+                              [title]="ctx.tienePermiso('presupuesto.aprobar_nomina') ? 'Aprobar todos los conceptos pendientes de nómina en un solo lote' : 'Sin permiso para aprobar nómina'"
+                              (click)="previsualizarAprobacionTabla('nomina')">Aprobar todo</button>
+                    </th>
+                    <th class="gp-tm-mes gp-tm-total">Saldo pendiente</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let f of mensual()?.filasNomina ?? []; let i = index; let ultima = last; trackBy: trackConcepto" [style.--i]="i" class="gp-fila gp-fila-in"
+                      [class.gp-fila--destacada]="ultima">
+                    <td class="gp-tm-concepto" [class.font-bold]="ultima">{{ ultima ? 'Beneficio a Empleados (Total)' : f.concepto }}</td>
+                    <td *ngFor="let m of mesesVisibles()" class="gp-tm-celda gp-mes-sugerido-celda" [class.gp-month-collapsed]="mesColapsado('nomina', m)">
+                      <div class="gp-col-clip">
+                        <span *ngIf="f.campo && mesesNomina(f).indexOf(m) > 0" class="gp-sugerido-mas" aria-hidden="true">+</span>
+                        @if (f.campo && f.editable && puedeOperar() && !mesCerrado(m) && !f.aprobados?.[m] && !(f.pagadoPorMes?.[m] || 0)) {
+                          <app-gp-celda-monto [ajustarAncho]="true" [moneda]="true" [valor]="f.valores[m]" (commit)="guardarCampo(m, f.campo, $event)"/>
+                        } @else if (f.campo && puedeSugerirNomina() && (f.valores[m] || mesesNomina(f).includes(m))) {
+                          <button type="button"
+                                  class="gp-tm-valor gp-mes-sugerido"
+                                  [class.gp-mes-sugerido--seleccionado]="mesesNomina(f).includes(m)"
+                                  [attr.aria-pressed]="mesesNomina(f).includes(m)"
+                                  [attr.aria-label]="(mesesNomina(f).includes(m) ? 'Quitar ' : 'Sumar ') + fechaCorta(m) + ' al sugerido de ' + f.concepto"
+                                  [disabled]="!!guardandoNomina()[f.campo!] || !f.aprobados?.[m]" (click)="alternarMesNomina(f,m)">
+                            {{ cp(f.valores[m]) }}<span *ngIf="mesesNomina(f).includes(m)" class="gp-mes-quitar" aria-hidden="true">×</span>
+                          </button>
+                        } @else {
+                          <span class="gp-tm-valor" [class.font-bold]="ultima">{{ f.valores[m] ? cp(f.valores[m]) : '—' }}</span>
+                        }
+                        <span *ngIf="(f.pagadoPorMes?.[m] || 0) > 0" class="gp-payroll-status">Pagado <button type="button" class="gp-receipt-eye" title="Ver comprobante de pago" [attr.aria-label]="'Ver comprobante de pago de ' + f.concepto + ' ' + fechaCorta(m)" (click)="verComprobantes('nomina',m,undefined,f.concepto)"><app-gp-icon name="eye" [size]="16"/></button></span>
+                        <span *ngIf="f.aprobados?.[m] && !(f.pagadoPorMes?.[m] || 0)" class="gp-payroll-status">Aprobado</span>
+                        <button *ngIf="f.campo && !f.aprobados?.[m] && !(f.pagadoPorMes?.[m] || 0) && f.valores[m] > 0"
+                                class="gp-payroll-approve" [attr.aria-label]="'Aprobar ' + f.concepto + ' ' + fechaCorta(m)" [disabled]="!ctx.tienePermiso('presupuesto.aprobar_nomina') || !!aprobandoConcepto() || mesCerrado(m)"
+                                [title]="ctx.tienePermiso('presupuesto.aprobar_nomina') ? 'Aprobar concepto' : 'Sin permiso para aprobar nómina'"
+                                (click)="conceptoPorAprobar.set({periodo:m,tipo:'nomina',campo:f.campo!,concepto:f.concepto,monto:f.valores[m]})"><app-gp-icon name="shield" [size]="12"/>Aprobar</button>
+                      </div>
+                    </td>
+                    <td class="gp-tm-celda gp-tm-total font-bold tabular-nums text-acc">{{ cp(f.total) }}</td>
+                    <td class="gp-tm-celda gp-tm-total">
+                      <span class="gp-tm-valor">{{ cp(f.pagoSugerido ?? 0) }}</span>
+                      <span *ngIf="f.campo && guardandoNomina()[f.campo]" class="gp-sugerido-estado" role="status">Guardando…</span>
+                      <span *ngIf="f.campo && erroresNomina()[f.campo]" class="gp-sugerido-error" role="alert">{{ erroresNomina()[f.campo] }}</span>
+                    </td>
+                    <td class="gp-tm-celda gp-tm-total font-bold tabular-nums" [class.text-amber-600]="(f.saldoPendiente ?? f.total) > 0"
+                        [class.text-red-600]="(f.saldoPendiente ?? f.total) < 0">{{ cp(f.saldoPendiente ?? f.total) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Estampillas: proceso retirado de esta vista (a pedido: "no debería estar").
+                 Se deja comentado para poder reactivarlo. También está comentada la sección
+                 en seccionesTabla y en seccionesReferencia (presupuesto-page.component.ts).
+            <div *ngIf="sec.id === 'estampillas'" @gpDespliegue>
+              <table class="w-full gp-tabla-meses">
+                <thead>
+                  <tr>
+                    <th class="gp-tm-concepto">Concepto
+                      <button type="button" class="gp-aprobar-sugerido gp-aprobar-sugerido--tabla"
+                              [disabled]="!ctx.tienePermiso('presupuesto.aprobar_estampillas') || aprobacionTablaOcupada()"
+                              [title]="ctx.tienePermiso('presupuesto.aprobar_estampillas') ? 'Aprobar todos los conceptos pendientes de estampillas en un solo lote' : 'Sin permiso para aprobar estampillas'"
+                              (click)="previsualizarAprobacionTabla('estampillas')">Aprobar todo</button>
+                    </th>
+                    <th *ngFor="let m of mesesVisibles(); trackBy: trackMes" class="gp-tm-mes" [class.gp-month-collapsed]="mesColapsado('estampillas', m)"><button class="gp-month-toggle" (click)="toggleMesColapsado('estampillas', m)" [attr.aria-label]="(mesColapsado('estampillas', m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)" [title]="(mesColapsado('estampillas', m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)"><app-gp-icon [name]="mesColapsado('estampillas', m) ? 'plus' : 'minus'" [size]="mesColapsado('estampillas', m) ? 14 : 11"/><span class="gp-month-toggle__label">{{ fechaCorta(m) }}</span></button></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let f of mensual()?.filasEstampillas ?? []; let i = index; trackBy: trackConcepto" [style.--i]="i" class="gp-fila gp-fila-in"
+                      [class.gp-fila--destacada]="f.concepto === 'TOTAL ESTAMPILLAS'">
+                    <td class="gp-tm-concepto" [class.font-bold]="f.concepto === 'TOTAL ESTAMPILLAS'">{{ f.concepto }}</td>
+                    <td *ngFor="let m of mesesVisibles()" class="gp-tm-celda gp-mes-sugerido-celda" [class.gp-month-collapsed]="mesColapsado('estampillas', m)">
+                      <div class="gp-col-clip">
+                        @if (f.campo && f.editable && puedeOperar() && !mesCerrado(m) && !f.aprobados?.[m] && !(f.pagadoPorMes?.[m] || 0)) {
+                          <app-gp-celda-monto [ajustarAncho]="true" [moneda]="true" [valor]="f.valores[m]" (commit)="guardarCampo(m, f.campo, $event)"/>
+                        } @else {
+                          <span class="gp-tm-valor" [class]="f.concepto === 'TOTAL ESTAMPILLAS' ? 'font-bold text-acc' : cl(f.valores[m])">{{ f.valores[m] !== 0 ? cv(f, f.valores[m]) : '—' }}</span>
+                        }
+                        <span *ngIf="(f.pagadoPorMes?.[m] || 0) > 0" class="gp-payroll-status">Pagado <button type="button" class="gp-receipt-eye" title="Ver comprobante de pago" [attr.aria-label]="'Ver comprobante de pago de ' + f.concepto + ' ' + fechaCorta(m)" (click)="verComprobantes('estampillas',m,undefined,f.concepto)"><app-gp-icon name="eye" [size]="16"/></button></span>
+                        <span *ngIf="f.aprobados?.[m] && !(f.pagadoPorMes?.[m] || 0)" class="gp-payroll-status">Aprobado</span>
+                        <button *ngIf="f.campo && !f.aprobados?.[m] && !(f.pagadoPorMes?.[m] || 0) && f.valores[m] > 0"
+                                class="gp-payroll-approve" [attr.aria-label]="'Aprobar ' + f.concepto + ' ' + fechaCorta(m)" [disabled]="!ctx.tienePermiso('presupuesto.aprobar_estampillas') || !!aprobandoConcepto() || mesCerrado(m)"
+                                [title]="ctx.tienePermiso('presupuesto.aprobar_estampillas') ? 'Aprobar concepto' : 'Sin permiso para aprobar estampillas'"
+                                (click)="conceptoPorAprobar.set({periodo:m,tipo:'estampillas',campo:f.campo!,concepto:f.concepto,monto:f.valores[m]})"><app-gp-icon name="shield" [size]="12"/>Aprobar</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            -->
+
+            <div *ngIf="sec.id === 'pagos' || sec.id === 'provisiones' || sec.id === 'cobros'" class="overflow-x-auto">
+              <ng-container *ngIf="(sec.id === 'pagos' ? pagosProyectadosVisibles() : sec.id === 'cobros' ? mensual()?.cobrosProyectados : mensual()?.provisiones) as datos">
+                <table class="w-full gp-tabla-meses"><thead><tr><th class="gp-tm-concepto">Beneficiario
+                  <button type="button" *ngIf="sec.id === 'provisiones'"
+                          class="gp-aprobar-sugerido gp-aprobar-sugerido--tabla"
+                          [disabled]="!puedeAprobar || aprobacionTablaOcupada()"
+                          [title]="puedeAprobar ? 'Aprobar todas las provisiones pendientes en un solo lote' : 'Sin permiso para aprobar — requiere Gerencia/Superadmin'"
+                          (click)="previsualizarAprobacionTabla('provisiones')">Aprobar todo</button>
+                </th><th class="gp-tm-categoria">Categoría</th><th *ngFor="let m of mesesVisibles(); trackBy: trackMes" class="gp-tm-mes" [class.gp-month-collapsed]="mesColapsado(sec.id, m)"><button class="gp-month-toggle" (click)="toggleMesColapsado(sec.id, m)" [attr.aria-label]="(mesColapsado(sec.id, m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)" [title]="(mesColapsado(sec.id, m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)"><app-gp-icon [name]="mesColapsado(sec.id, m) ? 'plus' : 'minus'" [size]="mesColapsado(sec.id, m) ? 14 : 11"/><span class="gp-month-toggle__label">{{ fechaCorta(m) }}</span></button></th><th class="gp-tm-mes">Total</th><th class="gp-tm-mes">{{ sec.id === 'cobros' ? 'Cobrado' : 'Ejecutado' }}</th><th class="gp-tm-mes">{{ sec.id === 'cobros' ? 'Por cobrar' : 'Por ejecutar' }}</th></tr></thead>
+                <tbody><tr *ngFor="let p of datos.detalle" class="gp-fila"><td class="gp-tm-concepto">
+                  <span class="inline-flex items-center gap-1.5">
+                    {{ p.nombre }}
+                    <button *ngIf="sec.id === 'provisiones'" type="button"
+                            class="gp-aprobar-sugerido"
+                            [disabled]="!puedeAprobar || previsualizando()"
+                            [title]="puedeAprobar ? 'Aprobar las provisiones pendientes de este beneficiario' : 'Sin permiso para aprobar — requiere Gerencia/Superadmin'"
+                            (click)="previsualizarAprobacionFila('provisiones', p)">
+                      <app-gp-icon name="shield" [size]="13"></app-gp-icon>
+                    </button>
+                  </span>
+                </td><td><app-gp-badge-categoria [categoria]="p.categoria" [detalle]="p.categoriaDetalle"/></td><td *ngFor="let m of mesesVisibles()" class="gp-tm-celda" [class.gp-month-collapsed]="mesColapsado(sec.id, m)"><div class="gp-col-clip">{{ p.valores[m] ? cp(p.valores[m]) : '—' }}<span *ngIf="(p.pagadoPorMes?.[m] || 0)>0" class="block text-xs text-emerald-700">Pagado <button type="button" class="gp-receipt-eye" title="Ver comprobante de pago" [attr.aria-label]="'Ver comprobante de pago de ' + p.nombre + ' ' + fechaCorta(m)" (click)="verComprobantes(sec.id,m,p.nit || undefined,p.nit ? undefined : p.nombre)"><app-gp-icon name="eye" [size]="16"/></button></span></div></td><td class="gp-tm-celda text-acc font-bold">{{ cp(p.total) }}</td><td class="gp-tm-celda text-emerald-500">{{ cp(p.montoPagado) }}</td><td class="gp-tm-celda text-amber-500">{{ cp(p.montoPendiente) }}</td></tr>
+                <tr class="gp-fila-total"><td class="gp-tm-concepto">{{ sec.titulo }} (Total)</td><td></td><td *ngFor="let m of mesesVisibles()" class="gp-tm-celda" [class.gp-month-collapsed]="mesColapsado(sec.id, m)"><div class="gp-col-clip">{{ cp(totalPagosMes(m, sec.id)) }}</div></td><td class="gp-tm-celda">{{ cp(sumaPagosMeses(sec.id, 'total')) }}</td><td class="gp-tm-celda text-emerald-500">{{ cp(totalPagoSeccion(sec.id, 'montoPagado')) }}</td><td class="gp-tm-celda text-amber-500">{{ cp(totalPagoSeccion(sec.id, 'montoPendiente')) }}</td></tr></tbody></table>
+              </ng-container>
+            </div>
+
+            <!-- Observaciones -->
+            <div *ngIf="sec.id === 'notas'" @gpDespliegue>
+              <div class="p-4 space-y-3">
+                <div *ngFor="let m of mesesVisibles()" class="flex items-start gap-3">
+                  <div class="w-20 shrink-0 pt-2.5 text-xs font-semibold text-t3">{{ fechaCorta(m) }}</div>
+                  <div class="flex-1 relative">
+                    <textarea class="input-field !text-sm" rows="2" [value]="mensual()?.notas?.[m] ?? ''"
+                              (blur)="guardarNotas(m, $event)"
+                              [placeholder]="puedeOperar() ? 'Escribe una observación para este mes…' : 'Sin observaciones'"
+                              [disabled]="!puedeOperar() || mesCerrado(m)"></textarea>
+                    <div class="absolute right-3 top-2.5">
+                      <span *ngIf="ok('notas' + m)" class="gp-check-save text-emerald-500">
+                        <app-gp-icon name="check" [size]="13"></app-gp-icon>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Terceros: tabla del módulo de terceros activo en el rail.
+                 El buscador vive en la cabecera navy del panel. -->
+            <div *ngIf="sec.grupo === 'terceros'" @gpDespliegue>
+              <p *ngIf="puedeSugerir(sec.id) && sec.id !== 'cuentasCobrar'" class="gp-sugerido-ayuda">Selecciona los importes de los meses para sumarlos en Sugerido. Haz clic de nuevo en un importe para quitarlo.</p>
+              <div *ngIf="modoHistorico && seccionTerceros(sec.id).detalle.length" class="p-2"><select class="field gp-budget-third-filter" aria-label="Filtrar tercero" [ngModel]="filtroTerceros()" (ngModelChange)="filtroTerceros.set($event)"><option value="">Todas las empresas</option><option *ngFor="let nombre of nombresTerceros(sec.id)" [value]="nombre">{{ nombre }}</option></select></div><table class="w-full gp-tabla-meses">
+                <thead>
+                  <tr>
+                    <th class="gp-tm-concepto">{{ sec.labelEntidad }}</th>
+                    <th class="gp-tm-concepto gp-tm-categoria">Categoría</th>
+                    <th *ngFor="let m of mesesVisibles(); trackBy: trackMes" class="gp-tm-mes" [class.gp-month-collapsed]="mesColapsado(sec.id, m)">
+                      <button class="gp-month-toggle" (click)="toggleMesColapsado(sec.id, m)" [attr.aria-label]="(mesColapsado(sec.id, m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)" [title]="(mesColapsado(sec.id, m) ? 'Mostrar' : 'Ocultar') + ' ' + fechaCorta(m) + ' ' + m.slice(0,4)"><app-gp-icon [name]="mesColapsado(sec.id, m) ? 'plus' : 'minus'" [size]="mesColapsado(sec.id, m) ? 14 : 11"/><span class="gp-month-toggle__label">{{ fechaCorta(m) }}</span></button>
+                    </th>
+                    <th class="gp-tm-mes gp-tm-total">Total
+                      <button type="button" *ngIf="aprobacionSaldoCol(sec.id)"
+                              class="gp-aprobar-sugerido gp-aprobar-sugerido--tabla"
+                              [disabled]="!puedeAprobar || aprobacionTablaOcupada()"
+                              [title]="tooltipAprobarTabla(sec.id, 'saldo')"
+                              (click)="previsualizarAprobacionTabla(sec.id, 'saldo')">Aprobar todo</button>
+                    </th>
+                    <th *ngIf="sec.id !== 'anticipos'" class="gp-tm-mes gp-tm-total">Sugerido
+                      <div *ngIf="puedeSugerir(sec.id)" class="gp-sugerido-acciones">
+                        <button type="button" [disabled]="sugeridosOcupados()" (click)="sugerirTabla(sec.id)">Sumar todas las filas</button>
+                        <button type="button" [disabled]="sugeridosOcupados()" (click)="sugerirTabla(sec.id,true)">Limpiar columna</button>
+                      </div>
+                      <button type="button" *ngIf="aprobacionSugeridoCol(sec.id)"
+                              class="gp-aprobar-sugerido gp-aprobar-sugerido--tabla"
+                              [disabled]="!puedeAprobar || aprobacionTablaOcupada() || sugeridosOcupados()"
+                              [title]="tooltipAprobarTabla(sec.id, 'sugerido')"
+                              (click)="previsualizarAprobacionTabla(sec.id, 'sugerido')">Aprobar todo</button>
+                    </th>
+                    <th *ngIf="sec.id !== 'anticipos'" class="gp-tm-mes gp-tm-total">Saldo pendiente</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngIf="!tercerosFiltrados(sec.id).length"><td [attr.colspan]="mesesVisibles().length + (sec.id === 'anticipos' ? 3 : 5)" class="gp-third-empty">Ninguna empresa coincide con "{{ filtroTerceros() }}".</td></tr><tr *ngFor="let d of tercerosFiltrados(sec.id); let i = index; trackBy: trackNit" [style.--i]="i" class="gp-fila gp-fila-in">
+                    <td class="gp-tm-concepto">
+                      <p class="font-medium text-t1 leading-tight">{{ d.nombre }}</p>
+
+                      <p *ngIf="textoVencimiento(d.proximaFechaVencimiento) as vencimiento"
+                         class="text-[10px] mt-0.5" [class.text-rose-600]="vencimiento.vencida"
+                         [title]="'Vencimiento: ' + d.proximaFechaVencimiento">{{ vencimiento.texto }}</p>
+                    </td>
+                    <td class="gp-tm-concepto gp-tm-categoria">
+                      <app-gp-badge-categoria [categoria]="d.categoria" [detalle]="d.categoriaDetalle"></app-gp-badge-categoria>
+                    </td>
+                    <td *ngFor="let m of mesesVisibles()" class="gp-tm-celda gp-mes-sugerido-celda" [class.gp-month-collapsed]="mesColapsado(sec.id, m)">
+                      <div class="gp-col-clip">
+                        <span *ngIf="puedeSugerir(sec.id) && mesesSeleccionados(sec.id, d.nit).indexOf(m) > 0"
+                              class="gp-sugerido-mas" aria-hidden="true">+</span>
+                        <button *ngIf="sec.id !== 'cuentasCobrar' && puedeSugerir(sec.id) && pendienteMes(d, m) > 0; else importeMes" type="button"
+                                class="gp-tm-valor gp-mes-sugerido"
+                                [class.gp-mes-sugerido--seleccionado]="mesesSeleccionados(sec.id, d.nit).includes(m)"
+                                [attr.aria-pressed]="mesesSeleccionados(sec.id, d.nit).includes(m)"
+                                [attr.aria-label]="(mesesSeleccionados(sec.id, d.nit).includes(m) ? 'Quitar ' : 'Sumar ') + fechaCorta(m) + ' al sugerido de ' + d.nombre"
+                                [disabled]="guardandoSugeridos()[d.nit]"
+                                (click)="alternarMesSugerido(sec.id, d, m)">{{ cp(pendienteMes(d, m)) }}<span *ngIf="mesesSeleccionados(sec.id, d.nit).includes(m)" class="gp-mes-quitar" aria-hidden="true">×</span></button>
+                        <ng-template #importeMes>@if (sec.id === 'cuentasCobrar' && puedeOperar() && !mesCerrado(m)) {
+                          <app-gp-celda-monto [ajustarAncho]="true" [moneda]="true" [mostrarCero]="true" [valor]="d.valores[m]"
+                                              [disabled]="!!guardandoCxc()[d.nit]"
+                                              (commit)="guardarValorCxCobrar(d, m, $event)"/>
+                        } @else if (sec.id === 'anticipos' && estadoLegalizacionMes(d, m) !== '') {
+                          <!-- P7: estado visible conservando la cifra del mes (patrón de la fila "Pagado") -->
+                          <div class="gp-legal-celda">
+                            <span class="gp-tm-valor"
+                                  [title]="estadoLegalizacionMes(d, m) === 'total'
+                                    ? 'Legalizado ' + cp(legalizadoMes(d, m)) + ' — no queda saldo pendiente'
+                                    : 'Legalizado ' + cp(legalizadoMes(d, m)) + ' — pendiente ' + cp(d.valores[m])">{{ estadoLegalizacionMes(d, m) === 'total' ? cp(legalizadoMes(d, m)) : cp(d.valores[m]) }}</span>
+                            <button type="button" class="gp-legalizado"
+                                    [class.gp-legalizado--parcial]="estadoLegalizacionMes(d, m) === 'parcial'"
+                                    [title]="estadoLegalizacionMes(d, m) === 'total'
+                                      ? 'Comprobantes de legalización de ' + d.nombre + ' en ' + fechaCorta(m)
+                                      : 'Legalizado parcial: ver comprobantes de ' + d.nombre + ' en ' + fechaCorta(m)"
+                                    [attr.aria-label]="(estadoLegalizacionMes(d, m) === 'total' ? 'Legalizado. ' : 'Legalizado parcial. ') + 'Ver comprobantes de ' + d.nombre + ' en ' + fechaCorta(m)"
+                                    (click)="verLegalizaciones(d, m)">
+                              <app-gp-icon name="check" [size]="10"></app-gp-icon>
+                              <span>{{ estadoLegalizacionMes(d, m) === 'total' ? 'Legalizado' : 'Legalizado parcial' }}</span>
+                              <app-gp-icon name="eye" [size]="11" class="gp-legalizado__eye"></app-gp-icon>
+                            </button>
+                          </div>
+                        } @else {
+                          <span class="gp-tm-valor">{{ d.valores[m] ? cp(d.valores[m]) : '—' }}</span>
+                        }</ng-template>
+                        <span *ngIf="estadoPagoMes(d, m) as estado" class="block text-[10px] font-semibold text-emerald-600">{{ estado }} <button type="button" class="gp-receipt-eye" title="Ver comprobante de pago" [attr.aria-label]="'Ver comprobante de pago de ' + d.nombre + ' ' + fechaCorta(m)" (click)="verComprobantes(sec.id,m,d.nit)"><app-gp-icon name="eye" [size]="16"/></button></span>
+                      </div>
+                    </td>
+                    <td class="gp-tm-celda gp-tm-total font-bold tabular-nums"
+                        [title]="d.observacion ?? ''" [style.color]="'var(--acc-solid)'">
+                      <span class="inline-flex items-center gap-1.5 justify-end">
+                        {{ cp(d.total) }}
+                        <button *ngIf="aprobacionSaldoCol(sec.id)" type="button"
+                                class="gp-aprobar-sugerido"
+                                [disabled]="deshabilitarAprobarFila(sec.id, d, 'saldo')"
+                                [title]="tooltipAprobarFila(sec.id, d, 'saldo')"
+                                (click)="previsualizarAprobacionFila(sec.id, d, 'saldo')">
+                          <app-gp-icon name="shield" [size]="13"></app-gp-icon>
+                        </button>
+                      </span>
+                    </td>
+                    <td *ngIf="sec.id !== 'anticipos'" class="gp-tm-celda gp-tm-total">
+                      <div class="flex items-center justify-end gap-1.5" *ngIf="aprobacionSugeridoCol(sec.id)">
+                        <app-gp-celda-monto *ngIf="puedeEditarSugerido(sec.id)" [ajustarAncho]="true" [moneda]="true" [mostrarCero]="true" [valor]="d.pagoSugerido" [disabled]="!!guardandoSugeridos()[d.nit]"
+                                            (cambio)="previsualizarSaldoProveedor(d, $event, sec.id)"
+                                            (commit)="guardarPagoSugeridoProveedor(d, $event, sec.id)"></app-gp-celda-monto>
+                        <button type="button" *ngIf="aprobacionSugeridoCol(sec.id)"
+                                class="gp-aprobar-sugerido"
+                                [disabled]="deshabilitarAprobarFila(sec.id, d, 'sugerido')"
+                                [title]="tooltipAprobarFila(sec.id, d, 'sugerido')"
+                                (click)="previsualizarAprobacionFila(sec.id, d, 'sugerido')">
+                          <app-gp-icon name="shield" [size]="13"></app-gp-icon>
+                        </button>
+                      </div>
+                      <span *ngIf="guardandoSugeridos()[d.nit]" role="status" class="gp-sugerido-estado">Guardando…</span>
+                      <span *ngIf="erroresSugeridos()[d.nit]" role="alert" class="gp-sugerido-error">{{ erroresSugeridos()[d.nit] }}</span>
+                      <span *ngIf="sec.grupo === 'terceros' && esGerencia && yaAprobadoLabel(d)"
+                            class="block text-[10px] font-semibold text-emerald-600 mt-0.5">{{ yaAprobadoLabel(d) }}</span>
+                      <span *ngIf="!puedeEditarSugerido(sec.id)" class="gp-tm-valor tabular-nums">
+                        {{ d.pagoSugerido ? cp(d.pagoSugerido) : '—' }}
+                      </span>
+                      <span *ngIf="sec.grupo !== 'terceros' && yaAprobadoLabel(d)"
+                            class="block text-[10px] font-semibold text-emerald-600 mt-0.5">{{ yaAprobadoLabel(d) }}</span>
+                    </td>
+                    <td *ngIf="sec.id !== 'anticipos'" class="gp-tm-celda gp-tm-total tabular-nums text-amber-600 font-semibold">{{ cp(d.saldoPendiente) }}</td>
+                  </tr>
+                  <tr class="gp-fila-total">
+                    <td class="gp-tm-concepto font-bold text-t1">{{ sec.labelTotal }}</td>
+                    <td class="gp-tm-concepto gp-tm-categoria"></td>
+                    <td *ngFor="let m of mesesVisibles()" class="gp-tm-celda font-bold tabular-nums text-acc" [class.gp-month-collapsed]="mesColapsado(sec.id, m)"><div class="gp-col-clip">{{ cp(sumaTerceros(sec.id, '', m)) }}</div></td>
+                    <td class="gp-tm-celda">{{ cp(sumaTerceros(sec.id, 'total')) }}</td><td *ngIf="sec.id !== 'anticipos'" class="gp-tm-celda text-emerald-500">{{ cp(sumaTerceros(sec.id, 'pagoSugerido')) }}</td><td *ngIf="sec.id !== 'anticipos'" class="gp-tm-celda text-amber-500">{{ cp(sumaTerceros(sec.id, 'saldoPendiente')) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+      </ng-container>
+      <div *ngIf="!modoHistorico && estadoSeccion(sec.id).cargado && estadoSeccion(sec.id).paginas > 1" class="gp-section-pagination">
+        <button type="button" class="btn-ghost" [disabled]="estadoSeccion(sec.id).cargando || estadoSeccion(sec.id).pagina === 0" (click)="paginaSeccion(sec.id, -1)">Anterior</button>
+        <span>Página {{ estadoSeccion(sec.id).pagina + 1 }} / {{ estadoSeccion(sec.id).paginas }} · {{ estadoSeccion(sec.id).total }} registros</span>
+        <button type="button" class="btn-ghost" [disabled]="estadoSeccion(sec.id).cargando || estadoSeccion(sec.id).pagina + 1 >= estadoSeccion(sec.id).paginas" (click)="paginaSeccion(sec.id, 1)">Siguiente</button>
+      </div>
+    </ng-template>
+
+    <ng-template #estadoCargaSeccion let-id="id">
+      <div *ngIf="esSeccionDiferida(id) && !seccionLista(id) && !estadoSeccion(id).cargando && !estadoSeccion(id).error" class="gp-section-placeholder">
+        <p>La información se carga al llegar a esta sección.</p><button type="button" class="btn-ghost" (click)="cargarSeccion(id)">Cargar información</button>
+      </div>
+      <div *ngIf="estadoSeccion(id).cargando" class="gp-section-placeholder" role="status" aria-live="polite" aria-busy="true">
+        <span class="gp-loading-status"><span class="gp-loading-spinner" aria-hidden="true"></span>Cargando información…</span>
+        <app-gp-skeleton tipo="table" aria-hidden="true"/>
+      </div>
+      <app-gp-error-state *ngIf="estadoSeccion(id).error" [mensaje]="estadoSeccion(id).error!" (reintentar)="cargarSeccion(id, true)"/>
+    </ng-template>
+
+  <app-gp-page-header data-compare-slot="1" class="gp-item" icono="chart" color="#2563EB" [titulo]="modoHistorico ? (esEjemplo ? 'Presupuesto de ejemplo' : 'Presupuesto histórico') : 'Presupuesto'" [descripcion]="modoHistorico ? (esEjemplo ? 'Ejemplo para comparar · Solo lectura' : 'Datos conservados al consolidar el mes · Solo lectura') : 'Vista consolidada del presupuesto'"><button acciones *ngIf="!modoHistorico && !bannerCategorias && ctx.tienePermiso('pagos.limpiar_workspace')" class="btn-ghost text-err" (click)="modalLimpiar.set(true)"><app-gp-icon name="eraser" [size]="14"/> Limpiar</button><span acciones class="gp-budget-company">{{ ctx.nombreEmpresa() }}</span></app-gp-page-header>
+  <p data-compare-slot="2" *ngIf="rangoHistoricoConservado()" class="gp-item text-sm text-t2 px-4 py-3 rounded-xl border border-bdr/15 bg-slate-50">{{ rangoHistoricoConservado() }} Se muestran los datos originales de esa copia.</p>
+
+  <div *ngIf="error()" class="gp-item">
+    <app-gp-error-state [mensaje]="error()!" (reintentar)="cargar()"></app-gp-error-state>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="space-y-4" role="status" aria-live="polite" aria-busy="true">
+    <span class="gp-loading-status"><span class="gp-loading-spinner" aria-hidden="true"></span>Cargando presupuesto…</span>
+    <app-gp-skeleton tipo="kpis" class="gp-item" aria-hidden="true"></app-gp-skeleton>
+    <app-gp-skeleton tipo="table" class="gp-item" aria-hidden="true"></app-gp-skeleton>
+  </div>
+
+  <ng-container *ngIf="!loading() && !error()">
+
+    <!-- Estado de aprobación -->
+    <div data-compare-slot="3" *ngIf="!contratoIncompleto()" class="gp-item gp-estado"
+         [ngClass]="estadoAprobacion().tipo === 'aprobado' ? 'gp-estado--ok' : (estadoAprobacion().tipo === 'rechazado' ? 'gp-estado--err' : 'gp-estado--warn')">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="gp-estado__icon"
+               [ngClass]="estadoAprobacion().tipo === 'aprobado' ? 'gp-estado__icon--ok' : (estadoAprobacion().tipo === 'rechazado' ? 'gp-estado__icon--err' : 'gp-estado__icon--warn')">
+            <app-gp-icon [name]="estadoAprobacion().tipo === 'aprobado' ? 'check' : (estadoAprobacion().tipo === 'rechazado' ? 'alert' : 'clock')" [size]="20"></app-gp-icon>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-t1">{{ estadoAprobacion().label }}</p>
+            <p class="text-xs text-t3 mt-0.5">La aprobación/rechazo es exclusiva de Gerencia autorizada</p>
+          </div>
+        </div>
+        <div *ngIf="puedeAprobar" class="flex gap-2">
+          <button *appGpPermiso="'presupuesto.aprobar'" class="btn-primary !py-2.5 !px-4 !text-sm shadow-glow-sm" (click)="aprobar()" [disabled]="guardando()">
+            <span class="flex items-center gap-2"><app-gp-icon name="check" [size]="15"></app-gp-icon> Aprobar</span>
+          </button>
+          <button *appGpPermiso="'presupuesto.aprobar'" class="btn-ghost !py-2.5 !px-4 !text-sm" style="color:#E11D48;"
+                  (click)="modalRechazo.set(true)" [disabled]="guardando()">
+            <span class="flex items-center gap-2"><app-gp-icon name="x" [size]="15"></app-gp-icon> Rechazar</span>
+          </button>
+        </div>
+      </div>
+      <div *ngIf="estadoAprobacion().tipo === 'rechazado' && contrato()?.motivoRechazo" @gpPop
+           class="mt-3 rounded-xl px-4 py-2.5 text-sm border gp-motivo-rechazo">
+        <strong>Motivo:</strong> {{ contrato()?.motivoRechazo }}
+      </div>
+    </div>
+
+    <!-- Índice de secciones — siempre visible en todo el presupuesto -->
+    <nav data-compare-slot="4" *ngIf="!bannerCategorias && meses().length" class="gp-budget-index gp-budget-index--global" aria-label="Secciones del presupuesto">
+      <div class="gp-budget-index__chips">@for (sec of seccionesReferencia; track sec.id) { <button (click)="irSeccionGlobal(sec.id)">{{ sec.label }}</button> }</div>
+    </nav>
+
+    <!-- ══════ MENSUAL ══════ -->
+    <div @gpExpander class="overflow-hidden space-y-4">
+
+      <!-- KPIs de resumen (réplica del panel de referencia) -->
+      <div data-compare-slot="5" *ngIf="!contratoIncompleto() && meses().length" class="gp-item grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <app-gp-kpi label="Ingresos por cobrar" [value]="kpiIngresosPorCobrar()" icon="wallet" variante="default"></app-gp-kpi>
+        <app-gp-kpi label="Obligaciones pendientes" [value]="kpiObligacionesPendientes()" icon="alert" variante="danger"></app-gp-kpi>
+        <app-gp-kpi label="Cuentas por cobrar" [value]="kpiCuentasPorCobrar()" icon="coins" variante="success"></app-gp-kpi>
+        <app-gp-kpi label="Necesidad de apalancamiento" [value]="kpiNecesidadApalancamiento()" icon="sigma"
+                    [variante]="kpiNecesidadApalancamiento() < 0 ? 'danger' : 'success'"></app-gp-kpi>
+      </div>
+
+      <div *ngIf="!contratoIncompleto() && meses().length" class="gp-budget-downloads">
+        <button *ngIf="!modoHistorico" (click)="descargarPdf()" [disabled]="descargandoPdf() || estadoAprobacion().tipo === 'rechazado'"><app-gp-icon name="download" [size]="20"/>{{ estadoAprobacion().tipo === 'rechazado' ? 'PDF bloqueado — el presupuesto está rechazado' : descargandoPdf() ? 'Generando PDF…' : 'Descargar PDF del Presupuesto' }}</button>
+        <button *ngIf="!modoHistorico" (click)="descargarExcel()" [disabled]="descargandoExcel() || estadoAprobacion().tipo === 'rechazado'"><app-gp-icon name="download" [size]="20"/>{{ estadoAprobacion().tipo === 'rechazado' ? 'Excel bloqueado — el presupuesto está rechazado' : descargandoExcel() ? 'Generando Excel…' : 'Descargar Excel del Presupuesto' }}</button>
+      </div>
+      <!-- Datos del contrato -->
+      <div data-compare-slot="6" class="gp-item card gp-reference-contract !p-0 overflow-hidden">
+        <!-- Barra de acento superior -->
+
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-3 mb-5 flex-wrap">
+            <div class="flex items-center gap-3.5">
+              <div class="gp-hero-icon w-11 h-11 rounded-xl flex items-center justify-center">
+                <app-gp-icon name="bank" [size]="20"></app-gp-icon>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-t1 flex items-center gap-2 flex-wrap">
+                  Datos del contrato
+                  <span *ngIf="contrato()?.numeroContrato" class="gp-contrato-chip">
+                    {{ contrato()?.numeroContrato }}
+                  </span>
+                </h2>
+                <p class="text-xs text-t3 mt-0.5">Se digitan una sola vez — Presupuesto mes a mes calculado a partir de esto</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button *ngIf="!modoHistorico" (click)="recalcular()" [disabled]="recalculando()" class="btn-ghost !py-2 !px-3.5 !text-xs gap-1.5 disabled:opacity-50">
+                <span class="flex items-center gap-1.5">
+                  <app-gp-icon name="trending" [size]="13" [style.transform]="recalculando() ? 'rotate(180deg)' : 'none'"></app-gp-icon>
+                  {{ recalculando() ? 'Recalculando…' : 'Recalcular' }}
+                </span>
+              </button>
+              <button *ngIf="!modoHistorico" (click)="abrirModalContrato()" [disabled]="!ctx.tienePermiso('presupuesto.editar_contrato')" class="btn-primary !py-2 !px-3.5 !text-xs gap-1.5 disabled:opacity-40">
+                <span class="flex items-center gap-1.5"><app-gp-icon name="edit" [size]="13"></app-gp-icon>
+                  {{ contratoIncompleto() ? 'Registrar contrato' : 'Editar contrato' }}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="contratoIncompleto()" class="text-sm text-t3">
+            Registra la fecha inicial, fecha final y valor inicial del contrato para generar la tabla mensual.
+          </div>
+
+          <div *ngIf="!contratoIncompleto()" class="space-y-5">
+            <!-- ── Sub-sección: Datos generales ── -->
+            <div>
+              <div class="gp-contrato-subtit">
+                <span class="gp-contrato-subtit__icono" style="background:rgba(4,92,148,.10); color:#045C94;">
+                  <app-gp-icon name="file" [size]="11"></app-gp-icon>
+                </span>
+                <span class="gp-contrato-subtit__txt">Datos generales</span>
+                <span class="gp-contrato-subtit__linea"></span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                <div class="gp-contrato-box" style="animation-delay: 0ms">
+                  <span class="gp-contrato-box__icono gp-contrato-box__icono--azul"><app-gp-icon name="calendar" [size]="11"></app-gp-icon></span>
+                  <p class="gp-contrato-box__label">Fecha inicial</p>
+                  <p class="gp-contrato-box__value">{{ contrato()?.fechaInicial }}</p>
+                </div>
+                <div class="gp-contrato-box" style="animation-delay: 45ms">
+                  <span class="gp-contrato-box__icono gp-contrato-box__icono--azul"><app-gp-icon name="calendar-range" [size]="11"></app-gp-icon></span>
+                  <p class="gp-contrato-box__label">Fecha final</p>
+                  <p class="gp-contrato-box__value">{{ contrato()?.fechaFinal }}</p>
+                </div>
+                <div class="gp-contrato-box" style="animation-delay: 90ms">
+                  <span class="gp-contrato-box__icono gp-contrato-box__icono--cyan"><app-gp-icon name="clock" [size]="11"></app-gp-icon></span>
+                  <p class="gp-contrato-box__label">Días de entrega</p>
+                  <p class="gp-contrato-box__value">{{ contrato()?.diasEntregaAlimentacion != null ? (contrato()?.diasEntregaAlimentacion + ' días') : '—' }}</p>
+                </div>
+                <div class="gp-contrato-box" style="animation-delay: 135ms">
+                  <span class="gp-contrato-box__icono gp-contrato-box__icono--navy"><app-gp-icon name="bank" [size]="11"></app-gp-icon></span>
+                  <p class="gp-contrato-box__label">Total contrato</p>
+                  <p class="gp-contrato-box__value">{{ cp(totalContratoValor()) }}</p>
+                </div>
+                <div class="gp-contrato-box gp-contrato-box--alerta" [class.gp-contrato-box--alerta-roja]="agotamientoAlto()" style="animation-delay: 180ms">
+                  <span class="gp-contrato-box__icono" [class.gp-contrato-box__icono--rojo]="agotamientoAlto()"><app-gp-icon name="trending" [size]="11"></app-gp-icon></span>
+                  <p class="gp-contrato-box__label">Agotamiento</p>
+                  <p class="gp-contrato-box__value" [style.color]="agotamientoAlto() ? '#E11D48' : '#1c2c49'">{{ cp(agotamientoValor()) }}</p>
+                </div><div class="gp-contrato-box"><p class="gp-contrato-box__label">Sugerido aprobado</p><p class="gp-contrato-box__value text-emerald-500">{{ cp(totalSugeridoAprobado()) }}</p></div>
+              </div>
+            </div>
+
+            <div class="gp-budget-progress"><div><span>% del contrato ejecutado</span><strong>{{ pctTexto(ejecucionAnimada()) }}</strong></div><progress max="1" [value]="agotamientoPct()"></progress></div>
+            <div class="gp-budget-progress"><div><span>% de raciones entregadas</span><strong>{{ contrato()?.diasEntregaAlimentacion ? pctTexto(racionesAnimada()) : '—' }}</strong></div><progress max="1" [value]="racionesPct()"></progress><small>{{ racionesEntregadas().toLocaleString('es-CO') }} de {{ (contrato()?.diasEntregaAlimentacion ?? 0).toLocaleString('es-CO') }} días de entrega</small></div>
+          </div>
+        </div>
+      </div>
+
+      <ng-container *ngIf="meses().length">
+
+        @for (sec of seccionesReferencia; track sec.id) {
+          <section [attr.data-compare-slot]="10 + $index" class="card gp-budget-section" [id]="'gp-seccion-' + sec.id" [appGpCargaVisible]="!seccionesCerradas().has(sec.id)" (gpAproximarse)="cargarSeccion(sec.id)">
+            <header><button (click)="toggleSeccion(sec.id)" [attr.aria-expanded]="!seccionesCerradas().has(sec.id)"><h2>{{ sec.titulo }}</h2><p>{{ subtituloSeccion(sec.id) }}</p></button><button *ngIf="sec.id !== 'notas' && meses().length" type="button" class="gp-month-masivo" (click)="alternarTodosMeses(sec.id)" [title]="mesesTodosColapsados(sec.id) ? 'Mostrar todas las columnas de meses' : 'Ocultar las columnas de meses para reducir el ancho de la tabla'"><app-gp-icon [name]="mesesTodosColapsados(sec.id) ? 'plus' : 'minus'" [size]="12"/><span>{{ mesesTodosColapsados(sec.id) ? 'Expandir meses' : 'Colapsar meses' }}</span></button><button *ngIf="sec.id === 'proveedores' && esGerencia && ctx.tienePermiso('presupuesto.recalcular_sugeridos')" class="btn-ghost" (click)="recalcularSugeridos()" [disabled]="actualizandoSugeridos()">{{ actualizandoSugeridos() ? 'Actualizando…' : 'Actualizar' }}</button><button class="gp-budget-collapse" [attr.aria-label]="(seccionesCerradas().has(sec.id) ? 'Expandir ' : 'Contraer ') + sec.label" (click)="toggleSeccion(sec.id)"><app-gp-icon [name]="seccionesCerradas().has(sec.id) ? 'chevron-down' : 'chevron-up'" [size]="16"/></button></header>
+            <div [attr.data-compare-slot]="10.1 + $index" *ngIf="!seccionesCerradas().has(sec.id)" class="overflow-auto"><ng-container *ngTemplateOutlet="tablaSeccion; context: {sec:sec}"></ng-container></div>
+          </section>
+        }
+      </ng-container>
+    </div>
+    <div *ngIf="bannerCategorias" class="gp-budget-empty"><div class="gp-empty-symbol"><app-gp-icon name="chart" [size]="36"/></div><h2>Importa los 4 módulos primero</h2><p>El presupuesto consolidado se genera automáticamente cuando hay datos en Proveedores, Anticipos, Cuentas por Pagar y Cuentas por Cobrar.</p></div>
+
+    <!-- ══════ CONSOLIDADO ══════ -->
+    <div *ngIf="!bannerCategorias" @gpExpander>
+      <section data-compare-slot="30" class="gp-budget-summary"><div class="flex items-start gap-3"><app-gp-icon name="alert" [size]="16"/><div><h2>Resumen rápido del presupuesto</h2><p>El saldo neto positivo indica que los ingresos por cobrar superan las obligaciones actuales. Revisa el flujo de caja proyectado y prioriza los pagos con vencimiento inmediato.</p></div></div><div class="gp-budget-summary-grid">@for (dato of resumenRapido(); track dato.label) { <div><span>{{ dato.label }}</span><strong [class.text-emerald-500]="dato.label === 'Ya pagado'">{{ cp(dato.valor) }}</strong></div> }</div></section>
+      <ng-container *ngTemplateOutlet="panelConsolidado"></ng-container>
+    </div>
+
+    <ng-template #panelConsolidado>
+    <div class="gp-item card !p-0 overflow-hidden" [style.--sec]="'#7C3AED'" appGpCargaVisible (gpAproximarse)="cargarSeccion('consolidado')">
+      <div class="gp-panel-hero">
+        <div class="min-w-0">
+          <h2 class="gp-panel-hero__titulo">Consolidado por categoría</h2>
+          <p class="gp-panel-hero__desc">Total = (anticipos + cuentas por cobrar) − (proveedores + cuentas por pagar)</p>
+        </div>
+        <div class="gp-panel-hero__acciones">
+
+          <span class="gp-panel-hero__chip">{{ consolidado().length }} categorías</span>
+        </div>
+      </div>
+      <ng-container *ngTemplateOutlet="estadoCargaSeccion; context: {id:'consolidado'}"></ng-container>
+      <div *ngIf="seccionLista('consolidado')" class="overflow-auto gp-table">
+        <table class="w-full text-sm">
+          <thead class="gp-thead">
+            <tr class="text-left text-[11px] uppercase tracking-wide">
+              <th class="px-5 py-3 font-semibold">Categoría</th>
+              <th class="px-2 py-3 font-semibold text-right">Proveedores</th>
+              <th class="px-2 py-3 font-semibold text-right">Anticipos</th>
+              <th class="px-2 py-3 font-semibold text-right">CxP</th>
+              <th class="px-2 py-3 font-semibold text-right">CxC</th>
+              <th class="px-2 py-3 font-semibold text-right">Impuestos</th>
+              <th class="px-2 py-3 font-semibold text-right">Total</th>
+              <th class="px-4 py-3 font-semibold text-right">Pago Sugerido
+                <div *ngIf="!modoHistorico && ctx.tienePermiso('presupuesto.pago_sugerido_categoria')" class="gp-sugerido-acciones">
+                  <button type="button" [disabled]="sugeridosOcupados()" (click)="sugerirTablaCategorias()">Sumar todas las filas</button>
+                  <button type="button" [disabled]="sugeridosOcupados()" (click)="sugerirTablaCategorias(true)">Limpiar columna</button>
+                </div>
+              </th>
+              <th class="px-4 py-3 font-semibold">Notas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of consolidado(); let i = index; trackBy: trackCategoria" [style.--i]="i"
+                class="gp-fila gp-fila-in"
+                [class.gp-fila--activa]="f.total !== 0">
+              <td class="px-5 py-2"><app-gp-badge-categoria [categoria]="f.categoria"></app-gp-badge-categoria></td>
+              <td class="px-2 py-2 text-right tabular-nums" [class]="cl(f.proveedores)">{{ cpPar(f.proveedores) }}</td>
+              <td class="px-2 py-2 text-right tabular-nums" [class]="cl(f.anticipos)">{{ cpPar(f.anticipos) }}</td>
+              <td class="px-2 py-2 text-right tabular-nums" [class]="cl(f.cxPagar)">{{ cpPar(f.cxPagar) }}</td>
+              <td class="px-2 py-2 text-right tabular-nums" [class]="cl(f.cxCobrar)">{{ cpPar(f.cxCobrar) }}</td>
+              <td class="px-2 py-2 text-right tabular-nums" [class]="cl(f.impuestos)">{{ cpPar(f.impuestos) }}</td>
+              <td class="px-2 py-2 text-right font-bold tabular-nums" [class]="cl(f.total)">{{ cpPar(f.total) }}</td>
+              <td class="px-4 py-2 text-right">
+                <app-gp-celda-monto [ajustarAncho]="true" *ngIf="ctx.tienePermiso('presupuesto.pago_sugerido_categoria') && f.categoria !== categoriaSinClasificar" [valor]="f.pagoSugerido" [disabled]="!!guardandoCategorias()[f.categoria]"
+                                    (commit)="setPagoSugeridoCategoria(f, $event)"></app-gp-celda-monto>
+                <span *ngIf="!ctx.tienePermiso('presupuesto.pago_sugerido_categoria') || f.categoria === categoriaSinClasificar" class="tabular-nums font-semibold">{{ f.categoria === categoriaSinClasificar ? '—' : cp(f.pagoSugerido) }}</span>
+              </td>
+              <td class="px-4 py-2">
+                <input *ngIf="ctx.tienePermiso('presupuesto.pago_sugerido_categoria') && f.categoria !== categoriaSinClasificar" type="text" class="input-field !py-1 !text-xs w-40"
+                       [disabled]="guardandoCategorias()[f.categoria]"
+                       [value]="f.notas ?? ''" (blur)="setNotasCategoriaEvent(f, $event)"
+                       placeholder="Notas…">
+                <span *ngIf="!ctx.tienePermiso('presupuesto.pago_sugerido_categoria') || f.categoria === categoriaSinClasificar" class="text-xs text-t3">{{ f.categoria === categoriaSinClasificar ? 'Sin categoría — clasifícalos para sugerir un pago' : (f.notas ?? '') }}</span>
+              </td>
+            </tr>
+            <tr class="gp-fila-total">
+              <td class="px-5 py-3 font-bold text-t1">Total</td>
+              <td class="px-2 py-3 text-right font-bold tabular-nums">{{ cpPar(sumaColumna('proveedores')) }}</td>
+              <td class="px-2 py-3 text-right font-bold tabular-nums">{{ cpPar(sumaColumna('anticipos')) }}</td>
+              <td class="px-2 py-3 text-right font-bold tabular-nums">{{ cpPar(sumaColumna('cxPagar')) }}</td>
+              <td class="px-2 py-3 text-right font-bold tabular-nums">{{ cpPar(sumaColumna('cxCobrar')) }}</td>
+              <td class="px-2 py-3 text-right font-bold tabular-nums">{{ cpPar(sumaColumna('impuestos')) }}</td>
+              <td class="px-2 py-3 text-right font-bold tabular-nums text-acc">{{ cpPar(sumaColumna('total')) }}</td>
+              <td></td><td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    </ng-template>
+
+    <!-- ══════ TERCEROS ══════ -->
+    <div data-compare-slot="31" *ngIf="!bannerCategorias || detalle().length" @gpExpander>
+      <ng-container *ngTemplateOutlet="panelTerceros"></ng-container>
+    </div>
+
+    <ng-template #panelTerceros>
+      <div appGpCargaVisible (gpAproximarse)="cargarSeccion('terceros')">
+      <ng-container *ngTemplateOutlet="estadoCargaSeccion; context: {id:'terceros'}"></ng-container>
+      <ng-container *ngIf="seccionLista('terceros')">
+      <div class="gp-detail-filters"><app-gp-icon name="users" [size]="15"/><select class="field" aria-label="Categoría de terceros" [ngModel]="detalleCategoria()" (ngModelChange)="onDetalleFiltro({campo:'categoria',valor:$event})"><option value="">Todas las categorías</option><option *ngFor="let c of categoriasHistoricas" [value]="c">{{c}}</option></select><select class="field" aria-label="Proveedor exacto" [ngModel]="detalleNombre()" (ngModelChange)="onDetalleFiltro({campo:'nombre',valor:$event})"><option value="">Todos los proveedores</option><option *ngFor="let n of detalleNombres()" [value]="n">{{n}}</option></select><select class="field" aria-label="Alertas" [ngModel]="detalleAlerta()" (ngModelChange)="onDetalleFiltro({campo:'estado',valor:$event})"><option value="">Todas las alertas</option><option *ngFor="let a of detalleAlertas" [value]="a.valor">{{a.label}}</option></select><span role="status">{{detalleCargando() ? 'Cargando…' : detalleTotalElementos() + ' proveedores'}}</span></div>
+      <div class="card gp-detail-table overflow-auto"><table class="w-full"><thead><tr><th>Nombre</th><th>Alerta</th><th>Proveedores</th><th>Anticipos</th><th>Cuentas por Pagar</th><th>Cuentas por Cobrar</th><th [attr.aria-sort]="detalleOrden() === 'asc' ? 'ascending' : 'descending'"><button (click)="cambiarOrdenDetalle()" aria-label="Invertir orden por total">Total {{ detalleOrden() === 'asc' ? '↑' : '↓' }}</button></th><th>Observación</th></tr></thead><tbody>
+      <tr *ngFor="let d of detalleVisible(); trackBy: trackNit"><td><strong>{{d.nombre}}</strong><small>{{d.nit}}</small></td><td><span class="gp-detail-alert" [class.warning]="alertaDetalle(d)">{{alertaDetalle(d) ? 'Revisar saldo o cruce' : 'Sin alerta'}}</span></td><td>{{importeDetalle(d.proveedores)}}</td><td>{{importeDetalle(d.anticipos)}}</td><td>{{importeDetalle(d.cxPagar)}}</td><td>{{importeDetalle(d.cxCobrar)}}</td><td [style.color]="d.total < 0 ? 'var(--ok-solid)' : 'var(--acc-solid)'">{{d.total ? saldoDetalle(d.total) : '—'}}</td><td><input *ngIf="ctx.tienePermiso('presupuesto.observaciones'); else notaSoloLectura" class="field" [disabled]="guardandoNotas()[d.nit]" [attr.aria-label]="'Observación de ' + d.nit" [value]="d.observacion ?? ''" (blur)="guardarObservacion(d, $event)" placeholder="Agregar observación…"><ng-template #notaSoloLectura>{{d.observacion || '—'}}</ng-template></td></tr>
+      <tr *ngIf="!detalleFiltrado().length"><td colspan="8" class="text-center p-5">Ningún tercero coincide con los filtros.</td></tr>
+      </tbody></table></div>
+      <div *ngIf="detallePaginas() > 1" class="flex items-center justify-between gap-3 p-4"><button class="btn-ghost" [disabled]="detallePagina() === 0 || detalleCargando()" (click)="irPaginaDetalle(-1)">Anterior</button><span>Página {{detallePagina()+1}} / {{detallePaginas()}}</span><button class="btn-ghost" [disabled]="detallePagina()+1 >= detallePaginas() || detalleCargando()" (click)="irPaginaDetalle(1)">Siguiente</button></div>
+      <p *ngIf="detalleCargando()" role="status">Cargando terceros…</p>
+      <app-gp-error-state *ngIf="errorDetalle()" [mensaje]="errorDetalle()!" (reintentar)="cargarDetalle()"/>
+      </ng-container></div>
+    </ng-template>
+
+    <!-- ══════ TODOS ══════ -->
+    <div *ngIf="pestanaAbierta('todos')" class="space-y-4" @gpExpander>
+
+      <!-- Aviso de la vista completa -->
+      <div class="gp-item gp-estado gp-estado--info">
+        <div class="flex items-center gap-3.5">
+          <div class="gp-estado__icon gp-estado__icon--info">
+            <app-gp-icon name="layout-dashboard" [size]="20"></app-gp-icon>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-t1">Vista completa — todas las tablas</p>
+            <p class="text-xs text-t3 mt-0.5" *ngIf="meses().length; else sinMensual">
+              Presupuesto mensual, consolidado anual y detalle por tercero, uno debajo del otro.
+              Usa el menú para saltar a cualquier tabla.
+            </p>
+            <ng-template #sinMensual>
+              <p class="text-xs text-amber-600 mt-0.5">
+                Esta empresa aún no tiene meses de presupuesto configurados: se muestran solo el
+                consolidado anual y el detalle por tercero.
+              </p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Todas las tablas del mensual, una debajo de la otra -->
+      <ng-container *ngIf="meses().length">
+        <div *ngFor="let s of seccionesTabla; let i = index; trackBy: trackSeccion"
+             class="gp-item gp-todos-card card gp-panel" [style.--sec]="s.color" [style.--i]="i"
+             [attr.id]="'gp-sec-' + s.id" appGpCargaVisible (gpAproximarse)="cargarSeccion(s.id)">
+          <div class="gp-panel-hero">
+            <div class="min-w-0">
+              <h2 class="gp-panel-hero__titulo">{{ s.titulo }}</h2>
+              <p class="gp-panel-hero__desc">{{ s.subtitulo }}</p>
+            </div>
+            <div class="gp-panel-hero__acciones">
+              <button *ngIf="s.id === 'proveedores' && esGerencia && ctx.tienePermiso('presupuesto.recalcular_sugeridos')" type="button"
+                      (click)="recalcularSugeridos()" [disabled]="actualizandoSugeridos()"
+                      class="gp-hero-btn">
+                <app-gp-icon name="trending" [size]="13"></app-gp-icon>
+                {{ actualizandoSugeridos() ? 'Actualizando…' : 'Actualizar' }}
+              </button>
+              <button *ngIf="s.id !== 'notas'" type="button" class="gp-month-masivo" (click)="alternarTodosMeses(s.id)" [title]="mesesTodosColapsados(s.id) ? 'Mostrar todas las columnas de meses' : 'Ocultar las columnas de meses para reducir el ancho de la tabla'">
+                <app-gp-icon [name]="mesesTodosColapsados(s.id) ? 'plus' : 'minus'" [size]="12"/>
+                <span>{{ mesesTodosColapsados(s.id) ? 'Expandir meses' : 'Colapsar meses' }}</span>
+              </button>
+              <span class="gp-panel-hero__chip">{{ contadorSeccion(s.id) }}</span>
+            </div>
+          </div>
+          <div class="gp-panel__body" (wheel)="onPanelWheelHorizontal($event)">
+            <ng-container *ngTemplateOutlet="tablaSeccion; context: { sec: s }"></ng-container>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Consolidado anual -->
+      <div class="gp-item gp-todos-card" id="gp-sec-consolidado" [style.--i]="seccionesTabla.length">
+        <ng-container *ngTemplateOutlet="panelConsolidado"></ng-container>
+      </div>
+
+      <!-- Detalle por tercero -->
+      <div class="gp-item gp-todos-card" id="gp-sec-terceros" [style.--i]="seccionesTabla.length + 1">
+        <ng-container *ngTemplateOutlet="panelTerceros"></ng-container>
+      </div>
+
+      <div class="flex justify-center pt-1">
+        <button type="button" class="btn-secondary !py-2.5 !px-5 !text-sm" (click)="volverArriba()">
+          <span class="flex items-center gap-2">
+            <app-gp-icon name="arrow-right" [size]="14" style="transform: rotate(-90deg);"></app-gp-icon>
+            Volver arriba
+          </span>
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Modal observación rápida por beneficiario (Pagos Proyectados) -->
+  <app-gp-modal *ngIf="observacionPago()" titulo="Observación" icono="message-square" ancho="sm"
+                [subtitulo]="observacionPago()!.nombre"
+                [cargando]="guardandoObservacion()" (cerrar)="cerrarObservacionPago()">
+    <p *ngIf="errorObservacion()" role="alert" class="text-sm text-red-700">{{ errorObservacion() }}</p>
+    <div class="space-y-3">
+      <div>
+        <label class="block text-[11px] font-bold text-t3 uppercase tracking-wide mb-1">Observación</label>
+        <textarea class="input-field !text-sm w-full" rows="3" maxlength="300"
+                  [value]="observacionPago()!.texto"
+                  (input)="observacionPago.set({ nit: observacionPago()!.nit, nombre: observacionPago()!.nombre, texto: $any($event.target).value })"
+                  placeholder="Escribe una observación para este pago…"></textarea>
+        <p class="text-[10px] text-t3 mt-1">Se guarda contra el beneficiario (NIT {{ observacionPago()!.nit }}) y se ve en el presupuesto.</p>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <button type="button" class="btn-primary !py-2 !px-4 !text-sm" [disabled]="guardandoObservacion() || !ctx.tienePermiso('presupuesto.observaciones')" (click)="guardarObservacionPago()">
+          {{ guardandoObservacion() ? 'Guardando…' : 'Guardar observación' }}
+        </button>
+      </div>
+    </div>
+  </app-gp-modal>
+
+  <app-gp-modal *ngIf="modalContrato()" titulo="Datos del contrato" ancho="contrato" subtitulo="Se digitan una sola vez — no cambian mes a mes" [cargando]="guardando()" (cerrar)="modalContrato.set(false)">
+    <form id="gp-contract-form" class="gp-contract-form" (ngSubmit)="guardarContratoModal(num.value,fini.value,ffin.value,valor.value.replaceAll('.', ''),dias.value,dinero.value.replaceAll('.', ''),plazoCxc.value)">
+      <label>Número de contrato<input class="field" #num [value]="contrato()?.numeroContrato ?? ''" placeholder="Ej. LP-009-2025"/></label>
+      <label>Valor inicial del contrato<div class="gp-contract-money"><span aria-hidden="true">$</span><input aria-label="Valor inicial del contrato" class="field field-mono" inputmode="numeric" #valor [value]="montoContrato(contrato()?.valorInicialContrato)" (input)="formatearMontoContrato($event)" required/></div></label>
+      <label>Fecha inicial del contrato<input type="date" class="field" #fini [value]="contrato()?.fechaInicial ?? ''" required/></label>
+      <label>Fecha final del contrato<input type="date" class="field" #ffin [value]="contrato()?.fechaFinal ?? ''" required/></label>
+      <label>Días de entrega de alimentación<input type="number" min="0" step="1" class="field field-mono" #dias [value]="contrato()?.diasEntregaAlimentacion ?? ''" placeholder="Ej. 60"/></label>
+      <label>Plazo de cobro — Cuentas por Cobrar<input type="number" min="30" max="60" step="1" class="field field-mono" #plazoCxc [value]="contrato()?.plazoCxcDias ?? 45" required/><small>Días desde la fecha de elaboración de cada movimiento hasta que se considera vencido. La plantilla de Cuentas por Cobrar no trae una fecha de vencimiento real, así que se calcula con este plazo (entre 30 y 60 días).</small></label>
+      <label>Dinero líquido disponible al inicio del presupuesto<div class="gp-contract-money"><span>$</span><input class="field field-mono" inputmode="numeric" #dinero [value]="montoContrato(contrato()?.dineroInicialDisponible)" (input)="formatearMontoContrato($event)" placeholder="0"/></div><small>Saldo de caja con el que arranca. El "Dinero disponible al inicio" de cada mes siguiente se calcula solo — es el TOTAL DISPONIBLE del mes anterior.</small></label>
+      <div class="gp-contract-range"><label class="gp-contract-check"><input type="checkbox" [checked]="usarMismasFechas()" (change)="onMismasFechasToggle($event)"/>El presupuesto usa las mismas fechas del contrato</label><div *ngIf="!usarMismasFechas()" class="grid grid-cols-2 gap-3"><label>Fecha inicial del presupuesto<input type="date" class="field" name="inicialPresupuesto" [(ngModel)]="fechaInicialPresupuesto" required/></label><label>Fecha final del presupuesto<input type="date" class="field" name="finalPresupuesto" [(ngModel)]="fechaFinalPresupuesto" required/></label></div><p>Este rango es el que determina qué meses aparecen en la tabla — puede diferir del contrato (p.ej. si la ejecución real arranca después de la firma).</p></div>
+      <p class="gp-contract-note">La tabla mensual muestra un mes por cada mes entre fecha inicial y fecha final. Las adiciones al contrato y el valor facturado se digitan aparte, mes a mes, directo en la tabla de "Sección A — Contrato y facturación".</p>
+      <p *ngIf="errorContrato()" role="alert" class="gp-contract-error">{{errorContrato()}}</p>
+    </form>
+    <div pie><button type="submit" form="gp-contract-form" class="btn-primary text-sm" [disabled]="guardando()"><app-gp-icon name="check" [size]="14"/>{{guardando() ? 'Guardando…' : 'Guardar contrato'}}</button></div>
+  </app-gp-modal>
+
+  <!-- Modal aprobación: Proveedores con Pago Sugerido · Anticipos/Cx Cobrar por
+       módulo · Provisiones por beneficiario -->
+  <app-gp-modal *ngIf="modalSugerido()" [titulo]="tituloPreview()" icono="shield" ancho="md"
+                [cargando]="aprobandoSugerido()" (cerrar)="cerrarModalSugerido()">
+    <ng-container *ngIf="preview() as p">
+      <div class="rounded-xl px-4 py-3 text-sm border mb-3"
+           style="background: rgba(4,92,148,.04); border-color: rgba(4,92,148,.12);">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <p class="font-bold text-t1">{{ p.nombre }}</p>
+            <p class="font-mono text-[11px] text-t3">{{ p.nit || 'Sin NIT' }}</p>
+          </div>
+          <div class="text-right" *ngIf="p.sugerido != null">
+            <p class="text-[11px] uppercase tracking-wide text-t3 font-semibold">Pago Sugerido</p>
+            <p class="font-bold text-t1">{{ cp(p.sugerido) }}</p>
+          </div>
+          <div class="text-right" *ngIf="p.sugerido == null && previewModulo() !== 'provisiones'">
+            <p class="text-[11px] uppercase tracking-wide text-t3 font-semibold">Módulo</p>
+            <p class="font-bold text-t1">{{ moduloLegible(previewModulo()!) }}</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-between flex-wrap gap-2 mt-2 pt-2 border-t"
+             style="border-color: rgba(4,92,148,.08);">
+          <p class="text-sm text-t2">Se van a aprobar <strong>{{ p.facturas.length }}</strong> {{ previewModulo() === 'proveedores' ? 'facturas' : (previewModulo() === 'provisiones' ? 'provisiones' : 'ítems') }} por</p>
+          <p class="font-bold text-emerald-600">{{ cp(p.totalAprobar) }}</p>
+        </div>
+        <p *ngIf="p.primeraFacturaOmitida" class="text-[11px] text-amber-600 mt-2">
+          La primera factura que no cabe completa se deja pendiente (no se aprueban facturas parciales).
+        </p>
+      </div>
+
+      <div *ngIf="p.facturas.length" class="overflow-auto rounded-xl border" style="max-height: 260px;">
+        <table class="w-full text-sm">
+          <thead class="gp-thead">
+            <tr class="text-left text-[11px] uppercase tracking-wide">
+              <th class="px-4 py-2.5 font-semibold">Comprobante</th>
+              <th class="px-2 py-2.5 font-semibold">Vencimiento</th>
+              <th class="px-4 py-2.5 font-semibold text-right">Monto</th>
+              <th class="px-2 py-2.5 font-semibold">Días vencida</th>
+              <th class="px-2 py-2.5 font-semibold">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of p.facturas" class="gp-fila">
+              <td class="px-4 py-2 font-mono text-xs text-t2">{{ f.comprobante || 'Sin comprobante' }}</td>
+              <td class="px-2 py-2 text-xs text-t3">{{ formatearFecha(f.fechaVencimiento ?? f.fecha) }}</td>
+              <td class="px-4 py-2 text-right font-bold tabular-nums" [class.text-rose-500]="f.vencida">
+                <div *ngIf="p.permiteParcial; else montoFijo" class="inline-flex items-center gap-1 justify-end">
+                  <app-gp-celda-monto class="w-28 inline-block"
+                                      [valor]="f.montoAprobar ?? f.monto"
+                                      [moneda]="true"
+                                      (cambio)="actualizarMontoParcial(f, $event)"
+                                      (commit)="actualizarMontoParcial(f, $event)">
+                  </app-gp-celda-monto>
+                  <span class="text-[10px] text-t3 font-normal" title="Saldo pendiente">/ {{ cp(f.saldoPendiente ?? f.monto) }}</span>
+                </div>
+                <ng-template #montoFijo>{{ cp(f.montoAprobar ?? f.monto) }}<span *ngIf="f.parcial" class="ml-1 text-[10px] font-normal" style="color: #b45309;" title="Pago parcial: el resto de la factura queda pendiente para una próxima aprobación">parcial</span></ng-template>
+              </td>
+              <td class="px-2 py-2 text-xs">{{ diasVencidos(f.fechaVencimiento) }}</td>
+              <td class="px-2 py-2"><button *ngIf="ctx.tienePermiso('pagos.eliminar') && !f.vencida && f.fechaVencimiento && diasVencidos(f.fechaVencimiento) === 0" class="btn-ghost text-err" [disabled]="aprobandoSugerido()" (click)="eliminarFacturaSugerida(f)">Eliminar</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="!p.facturas.length" class="text-sm text-t3 text-center py-4">
+        <p *ngIf="p.totalMovimientosPendientes != null && p.totalMovimientosPendientes > 0; else sinPendientes">
+          Movimientos pendientes en el sistema: {{ p.totalMovimientosPendientes }}, pero ninguno cumple las condiciones para ser aprobado en este momento.
+        </p>
+        <ng-template #sinPendientes>
+          <p>Sin facturas pendientes para este tercero en este módulo.</p>
+        </ng-template>
+      </div>
+    </ng-container>
+    <div pie>
+      <button class="btn-primary !py-2 !px-5 !text-sm" [disabled]="aprobandoSugerido() || !preview()?.facturas?.length"
+              (click)="confirmarAprobacionSugerido()">
+        <span class="flex items-center gap-2"><app-gp-icon name="check" [size]="15"></app-gp-icon>
+          {{ aprobandoSugerido() ? 'Aprobando…' : 'Confirmar aprobación' }}
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+  <!-- Modal Aprobar todo (lote de una tabla): lista TODOS los pagos/conceptos por aprobar -->
+  <app-gp-modal *ngIf="aprobacionTabla() as lote" [titulo]="'Aprobar todo · ' + etiquetaSeccionAprobar(lote.seccion)" icono="shield" [cargando]="aprobacionTablaOcupada()" (cerrar)="cerrarAprobacionTabla()">
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+      <p class="text-sm text-t2" *ngIf="lote.tipo === 'conceptos'">Se van a aprobar <strong>{{ totalFacturasTabla() }}</strong> concepto{{ totalFacturasTabla() === 1 ? '' : 's' }} · presionando Confirmar se aprueba TODO el lote.</p>
+      <p class="text-sm text-t2" *ngIf="lote.tipo !== 'conceptos'">Se van a aprobar <strong>{{ totalFacturasTabla() }}</strong> {{ lote.moduloBd === 'provisiones' ? (totalFacturasTabla() === 1 ? 'provisión' : 'provisiones') : (totalFacturasTabla() === 1 ? 'pago' : 'pagos') }} en {{ lote.tercerosConPagos }} {{ lote.moduloBd === 'provisiones' ? 'beneficiario' : 'tercero' }}{{ lote.tercerosConPagos === 1 ? '' : 's' }} · presionando Confirmar se aprueba TODO el lote.</p>
+      <p class="font-bold text-emerald-600">{{ cp(lote.totalAprobar) }}</p>
+    </div>
+    <div class="overflow-auto rounded-xl border" style="max-height: 340px;">
+      <ng-container *ngIf="lote.tipo === 'conceptos'; else loteFacturas">
+        <table class="w-full text-sm">
+          <thead class="gp-thead"><tr class="text-left text-[10px] uppercase tracking-wide">
+            <th class="px-4 py-1.5 font-semibold">Concepto</th><th class="px-2 py-1.5 font-semibold">Mes</th><th class="px-4 py-1.5 font-semibold text-right">Monto</th>
+          </tr></thead>
+          <tbody>
+            <tr *ngFor="let item of lote.filasConceptos" class="gp-fila">
+              <td class="px-4 py-1.5">{{ item.concepto }}</td>
+              <td class="px-2 py-1.5 text-xs text-t3">{{ fechaCorta(item.mes) }} {{ item.mes.slice(0,4) }}</td>
+              <td class="px-4 py-1.5 text-right font-bold tabular-nums">{{ cp(item.monto) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+      <ng-template #loteFacturas>
+        <ng-container *ngFor="let fila of lote.filasFacturas">
+          <div *ngIf="fila.facturas.length" class="gp-aprobacion-tabla-proveedor">
+            <div class="flex items-center justify-between px-4 py-2">
+              <div><strong class="text-t1">{{ fila.nombre }}</strong><span *ngIf="fila.nit" class="font-mono text-[11px] text-t3 ml-2">{{ fila.nit }}</span></div>
+              <span class="text-xs text-t3"><ng-container *ngIf="fila.sugerido != null">Sugerido <strong class="text-t1">{{ cp(fila.sugerido) }}</strong> · </ng-container>Aprobar <strong class="text-emerald-600">{{ cp(fila.totalAprobar) }}</strong></span>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="gp-thead"><tr class="text-left text-[10px] uppercase tracking-wide">
+                <th class="px-4 py-1.5 font-semibold">Comprobante</th><th class="px-2 py-1.5 font-semibold">Vencimiento</th><th class="px-4 py-1.5 font-semibold text-right">Monto</th><th class="px-2 py-1.5 font-semibold">Días vencida</th>
+              </tr></thead>
+              <tbody>
+                <tr *ngFor="let f of fila.facturas" class="gp-fila">
+                  <td class="px-4 py-1.5 font-mono text-xs text-t2">{{ f.comprobante || '—' }}</td>
+                  <td class="px-2 py-1.5 text-xs text-t3">{{ f.fechaVencimiento ?? f.fecha ?? 'S/F' }}</td>
+                  <td class="px-4 py-1.5 text-right font-bold tabular-nums" [class.text-rose-500]="f.vencida">{{ cp(f.monto) }}</td>
+                  <td class="px-2 py-1.5 text-xs">{{ diasVencidos(f.fechaVencimiento) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </ng-template>
+    </div>
+    <div pie>
+      <button class="btn-primary !py-2 !px-5 !text-sm" [disabled]="aprobacionTablaOcupada() || totalFacturasTabla() === 0" (click)="confirmarAprobacionTabla()">
+        <span class="flex items-center gap-2"><app-gp-icon name="check" [size]="15"></app-gp-icon>
+          {{ aprobacionTablaOcupada() ? 'Aprobando lote…' : 'Confirmar aprobación de todo' }}
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+  <!-- Modal rechazo -->
+  <app-gp-modal *ngIf="modalRechazo()" titulo="Rechazar presupuesto" icono="alert" ancho="sm"
+                [cargando]="guardando()" (cerrar)="modalRechazo.set(false)">
+    <label class="block text-sm">
+      <span class="label">Motivo del rechazo <span class="text-rose-500">*</span></span>
+      <textarea class="input-field !h-24" [(ngModel)]="motivoRechazo"
+                placeholder="Describe el motivo…"></textarea>
+    </label>
+    <div pie>
+      <button class="!py-2 !px-5 !text-sm rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-700 transition-all"
+              [disabled]="guardando() || !motivoRechazo().trim()" (click)="rechazar()">Rechazar presupuesto</button>
+    </div>
+  </app-gp-modal>
+</div>
+</div>
+
+<app-gp-confirmar-limpieza *ngIf="modalLimpiar()" titulo="Limpiar presupuesto" [empresa]="ctx.nombreEmpresa()" mensaje="Esto borra los datos de trabajo del presupuesto de esta empresa. No se puede deshacer." [borrados]="['Movimientos importados de los módulos (Proveedores, Anticipos, Cuentas por pagar, Cuentas por cobrar e Impuestos)','Pagos Proyectados y Pagos Sugeridos (por proveedor y por categoría)','Sugeridos de nómina y la Nómina y Estampillas digitadas a mano','Notas del presupuesto']" [conservados]="['El Contrato: configuración (número, fechas, valor) y sección mensual digitada','El Flujo de Caja: disponible inicial, ingresos y egresos digitados a mano o importados']" [ocupado]="limpiandoPresupuesto()" [error]="errorObservacion()" (cancelar)="modalLimpiar.set(false)" (confirmar)="limpiarPresupuesto()"/>
+<app-gp-modal *ngIf="conceptoPorAprobar() as dato" [titulo]="dato.tipo === 'nomina' ? 'Aprobar concepto de nómina' : 'Aprobar concepto de estampillas'" icono="shield" ancho="sm" [cargando]="!!aprobandoConcepto()" (cerrar)="conceptoPorAprobar.set(null)"><p>{{dato.concepto}} · {{fechaCorta(dato.periodo)}}</p><p class="text-lg font-bold my-4">{{cp(dato.monto)}}</p><p class="text-sm text-t2">El concepto aprobado se agrega a Pagos Proyectados.</p><p *ngIf="errorObservacion()" role="alert" class="text-err">{{errorObservacion()}}</p><div pie><button class="btn-primary" [disabled]="!!aprobandoConcepto() || mesCerrado(dato.periodo)" (click)="aprobarConcepto(dato.tipo,dato.periodo,dato.campo)">{{aprobandoConcepto() ? 'Aprobando…' : 'Confirmar aprobación'}}</button></div></app-gp-modal>
+
+@if(comprobantesAbiertos()) {
+  <app-gp-modal titulo="Comprobante de pago" ancho="lg" [cargando]="cargandoComprobantes()" (cerrar)="comprobantesAbiertos.set(false)">
+    @if(cargandoComprobantes()){<p role="status">Consultando comprobantes de Tesorería…</p>}
+    @if(errorComprobante()){<p role="alert">{{errorComprobante()}}</p>}
+    @for(doc of documentosPago();track doc.url){<button type="button" class="btn btn-ghost" (click)="seleccionarComprobante(doc.url)">{{doc.nombre || 'Comprobante de pago'}}</button><a [href]="doc.url" target="_blank" rel="noopener noreferrer">Abrir documento</a>}
+    @if(documentoPago()){<iframe [src]="documentoPago()" title="Documento del comprobante de pago" style="width:100%;height:65vh;border:0;margin-top:12px"></iframe>}
+  </app-gp-modal>
+}
+
+<!-- P7 — Comprobantes de legalización del tercero en un mes (grilla Anticipos) -->
+@if (legalizacionesAbiertas()) {
+  @if (panelLegalizaciones(); as panel) {
+    <app-gp-modal titulo="Comprobantes de legalización"
+                [subtitulo]="panel.tercero + ' · ' + fechaCorta(panel.mes) + ' ' + panel.mes.slice(0,4)"
+                icono="file" ancho="md" [hero]="true" acento="green"
+                [cargando]="cargandoLegalizacionesPanel()"
+                (cerrar)="legalizacionesAbiertas.set(false)">
+    @if (cargandoLegalizacionesPanel()) {
+      <p role="status" class="gp-legal-empty">Consultando comprobantes de legalización…</p>
+    } @else if (errorLegalizacionesPanel()) {
+      <p role="alert" class="gp-legal-error">{{ errorLegalizacionesPanel() }}</p>
+    } @else if (docsLegalizacion().length) {
+      <div class="gp-legal-lista">
+        @for (l of docsLegalizacion(); track l.id) {
+          <div class="gp-legal-fila">
+            <div class="gp-legal-icono" aria-hidden="true"><app-gp-icon name="file" [size]="16"></app-gp-icon></div>
+            <div class="gp-legal-datos">
+              <p class="gp-legal-nombre" [title]="l.archivoNombre || 'Comprobante'">{{ l.archivoNombre || 'Comprobante' }}</p>
+              <p class="gp-legal-meta">
+                @if (l.valorLegalizado != null) { Valor {{ cp(l.valorLegalizado) }} } @else { Legalización total }
+                · {{ formatearFecha(l.creadoEn) }}@if (l.creadoPor) { · {{ l.creadoPor }} }
+              </p>
+              @if (l.observacion) { <p class="gp-legal-nota" [title]="l.observacion">“{{ l.observacion }}”</p> }
+            </div>
+            <button type="button" class="gp-legal-abrir" (click)="abrirLegalizacion(l.id)"
+                    [title]="'Abrir ' + (l.archivoNombre || 'comprobante') + ' en una pestaña nueva'"
+                    [attr.aria-label]="'Abrir comprobante de legalización de ' + panel.tercero">
+              Abrir PDF
+            </button>
+          </div>
+        }
+      </div>
+      <p class="gp-legal-pie">Los comprobantes se abren en una pestaña nueva. Para quitar uno, ve al módulo Anticipos.</p>
+    } @else {
+      <p class="gp-legal-empty">No hay comprobantes vigentes de legalización para este mes. Si crees que falta alguno, súbelo desde el módulo Anticipos.</p>
+    }
+    </app-gp-modal>
+  }
+}

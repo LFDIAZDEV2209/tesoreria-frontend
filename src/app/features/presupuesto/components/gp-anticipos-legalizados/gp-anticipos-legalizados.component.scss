@@ -1,0 +1,313 @@
+@use '../../styles/legalizacion-anticipos';
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ANTICIPOS LEGALIZADOS — repositorio de anticipos de todos los meses.
+   Mismo lenguaje visual y de animaciones del módulo (banner degradado
+   navy→azul con acento oro, KPIs compactos, tabla con encabezado navy,
+   filas escalonadas) reutilizado de la vista "Todos los meses".
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:host { display: block; min-width: 0; max-width: 100%; }
+
+$navy: #213053;
+$navy-deep: #1b2844;
+$blue: #045c94;
+$gold: #ffb71b;
+
+/* ═══ Animaciones (mismo lenguaje de Control de Bancos) ═══ */
+@keyframes repoFilaIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes repoPulso {
+  0% { box-shadow: 0 0 0 0 rgba(255, 183, 27, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 183, 27, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 183, 27, 0); }
+}
+@keyframes repoLatido {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.78); }
+}
+@keyframes repoGiro { to { transform: rotate(360deg); } }
+
+.girando { animation: repoGiro 1.05s linear infinite; transform-origin: center; }
+
+/* ═══ Banner del repositorio ═══ */
+.repo-hero {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(110deg, $navy, $navy-deep 46%, $blue);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(33, 48, 83, 0.22);
+}
+.repo-hero__glow { position: absolute; border-radius: 50%; pointer-events: none; }
+.repo-hero__glow--a { top: -48px; right: -26px; width: 150px; height: 150px; background: rgba(255, 255, 255, 0.06); }
+.repo-hero__glow--b { bottom: -36px; left: 88px; width: 96px; height: 96px; background: rgba(255, 183, 27, 0.12); }
+
+.repo-hero__icono {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  color: $gold;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.repo-hero__icono::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: repoPulso 2.6s ease-out infinite;
+}
+
+.repo-hero__txt { position: relative; z-index: 1; flex: 1 1 260px; min-width: 0; }
+.repo-hero__eyebrow {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $gold;
+}
+.repo-hero__txt h2 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
+.repo-hero__txt p { margin: 2px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.72); }
+
+.repo-hero__acciones { position: relative; z-index: 1; margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.repo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.repo-chip i { width: 7px; height: 7px; border-radius: 50%; background: #34d399; animation: repoLatido 2s ease-in-out infinite; }
+
+.repo-btn-refrescar {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  transition: background 0.18s ease;
+}
+.repo-btn-refrescar:hover:not(:disabled) { background: rgba(255, 255, 255, 0.20); }
+.repo-btn-refrescar:disabled { opacity: 0.6; cursor: default; }
+.repo-btn-refrescar:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.75); outline-offset: 2px; }
+
+/* ═══ KPIs ═══ */
+.repo-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  gap: 1rem;
+}
+
+/* ═══ Filtros ═══ */
+.repo-filtros { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; padding: 14px 18px; }
+.repo-campo { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.repo-campo > span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tx-3, #64748b);
+}
+.repo-campo select.field { min-width: 148px; }
+.repo-campo--busqueda { flex: 1 1 260px; }
+.repo-busqueda { position: relative; display: block; }
+.repo-busqueda app-gp-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--tx-3, #64748b);
+  pointer-events: none;
+}
+.repo-busqueda .field { width: 100%; padding-left: 36px; }
+
+.repo-seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--bg-elevated, #f2f5fa);
+  border: 1px solid rgba(33, 48, 83, 0.08);
+}
+.repo-seg button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tx-2, #475569);
+  padding: 8px 14px;
+  border-radius: 9px;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+.repo-seg button:hover { color: var(--tx-1, #213053); }
+.repo-seg button.activo { background: #fff; color: var(--acc-solid, #045c94); box-shadow: 0 2px 8px rgba(33, 48, 83, 0.10); }
+.repo-seg button:focus-visible { outline: 2px solid var(--acc-solid, #045c94); outline-offset: 2px; }
+
+.repo-limpiar { display: inline-flex; align-items: center; gap: 6px; }
+.repo-filtros__meta { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--tx-3, #64748b); }
+
+/* ═══ Tabla ═══ */
+.repo-tabla-card { overflow: hidden; }
+.repo-scroll {
+  overflow: auto;
+  max-width: 100%;
+  max-height: 66vh;
+  isolation: isolate;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(33, 48, 83, 0.22) transparent;
+}
+.repo-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.repo-scroll::-webkit-scrollbar-track { background: transparent; }
+.repo-scroll::-webkit-scrollbar-thumb { background: rgba(33, 48, 83, 0.22); border-radius: 99px; }
+
+.repo-tabla {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+  font-size: 0.8125rem;
+}
+.repo-tabla th,
+.repo-tabla td {
+  padding: 0.75rem 0.95rem;
+  border-bottom: 1px solid rgba(33, 48, 83, 0.08);
+  text-align: left;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.16s ease;
+}
+.repo-tabla td { color: var(--tx-1, #213053); }
+.repo-tabla .repo-total-col { text-align: right; }
+
+.repo-tabla thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: $navy;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(8, 28, 48, 0.45);
+}
+.repo-tabla thead .repo-total-col { background: $blue; box-shadow: inset 0 -3px 0 $gold; }
+
+.repo-fila { animation: repoFilaIn 0.38s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.repo-tabla tbody tr:nth-child(even) > * { background-color: #f7f9fd; }
+.repo-tabla tbody tr:hover > * { background-color: #eef6fc; }
+
+.repo-mes-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--acc-solid, #045c94);
+  background: rgba(4, 92, 148, 0.08);
+  border: 1px solid rgba(4, 92, 148, 0.14);
+  white-space: nowrap;
+}
+.repo-mono { font-size: 12px; color: var(--tx-2, #475569); font-variant-numeric: tabular-nums; }
+.repo-mono-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--acc-solid, #045c94);
+  background: rgba(4, 92, 148, 0.08);
+}
+.repo-nombre { display: block; max-width: 240px; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; font-weight: 600; color: var(--tx-1, #213053); }
+.repo-detalle { display: block; margin-top: 2px; font-size: 10.5px; color: var(--tx-3, #64748b); }
+.repo-vacio { color: var(--tx-3, #64748b); }
+.repo-fecha { font-size: 12px; color: var(--tx-2, #475569); }
+.repo-saldo { font-size: 12px; font-weight: 700; color: var(--tx-1, #213053); }
+.repo-saldo.repo-neg { color: var(--err-solid, #dc2626); }
+
+/* ═══ Paginación ═══ */
+.repo-pager { border-top: 1px solid rgb(var(--bdr-rgb, 33 48 83) / 0.08); }
+.repo-pager .gp-page-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border-radius: 999px;
+  font-weight: 400;
+  color: var(--tx-3, #64748b);
+  background: transparent;
+  box-shadow: none;
+  font-variant-numeric: tabular-nums;
+}
+.repo-pager .btn-secondary {
+  width: 32px;
+  height: 32px;
+  padding: 0 !important;
+  border-radius: 12px !important;
+  display: grid;
+  place-items: center;
+  background: rgb(var(--bdr-rgb, 33 48 83) / 0.05);
+  color: var(--tx-3, #64748b);
+  border: 0;
+  box-shadow: none;
+}
+.repo-pager .btn-secondary:disabled { opacity: 0.3; }
+
+:focus-visible { outline: 2px solid var(--acc-solid, #045c94); outline-offset: 3px; }
+
+/* ═══ Responsive ═══ */
+@media (max-width: 640px) {
+  .repo-hero { padding: 14px 16px; gap: 12px; }
+  .repo-hero__acciones { width: 100%; margin-left: 0; }
+  .repo-kpis { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; }
+  .repo-filtros { padding: 12px 14px; gap: 10px; }
+  .repo-filtros__meta { width: 100%; margin-left: 0; }
+  .repo-tabla th, .repo-tabla td { padding: 0.65rem 0.75rem; }
+  .repo-nombre { max-width: 150px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .repo-fila,
+  .repo-hero__icono::after,
+  .repo-chip i,
+  .girando { animation: none; }
+  .repo-btn-refrescar, .repo-seg button { transition: none; }
+  .repo-scroll { scroll-behavior: auto; }
+}

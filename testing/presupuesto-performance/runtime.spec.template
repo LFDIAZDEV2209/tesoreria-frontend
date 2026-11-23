@@ -1,0 +1,209 @@
+import {HTTP_INTERCEPTORS, HttpClient, HttpInterceptorFn, HttpResponse, provideHttpClient, withInterceptors, withInterceptorsFromDi} from '@angular/common/http';
+import {TestBed} from '@angular/core/testing';
+import {provideNoopAnimations} from '@angular/platform-browser/animations';
+import {provideRouter} from '@angular/router';
+import {finalize, firstValueFrom, of, Subject, tap} from 'rxjs';
+import {AuthService} from '../../../../core/services/auth.service';
+import {AuthorizationService} from '../../../../core/services/authorization.service';
+import {GpAuthInterceptor} from '../../../../core/interceptors/gp-auth.interceptor';
+import {PresupuestoService} from '../../services/presupuesto.service';
+import {PresupuestoContextService} from '../../services/presupuesto-context.service';
+import {GpSessionService} from '../../services/gp-session.service';
+import {permisosDesdeSesion} from '../../services/gp-mapper';
+import {PresupuestoPageComponent} from './presupuesto-page.component';
+import {PresupuestoBaselineRuntimeComponent} from './runtime-presupuesto-baseline.component';
+
+// Generated only by verify-runtime.cjs, outside ordinary unit tests.
+describe('Presupuesto: render real y consultas bajo demanda', () => {
+  const requests: any[] = [];
+  let activeRequests = 0, maxActiveRequests = 0;
+  const user = {username: 'admin', roles: [{name: 'SUPER_ADMIN'}]};
+  const identity = {getCurrentUser: () => user, cambiosSesion$: new Subject<void>()};
+  let state: any;
+  const session: any = {estado: () => state, consultarEstado: () => of(state)};
+  const telemetry: HttpInterceptorFn = (request, next) => {
+    const start = performance.now();
+    const section = /\/mensual\/secciones\/([^?]+)/.exec(request.url)?.[1];
+    const id = ({impuestosEstampillasSeguros: 'impuestos', pagosProyectados: 'pagos', cobrosProyectados: 'cobros'} as any)[section ?? ''] ?? section;
+    let target = id ? document.querySelector('#gp-seccion-' + id) : undefined;
+    if (/\/presupuesto\/$/.test(request.url)) target = Array.from(document.querySelectorAll('.gp-panel-hero__titulo'))
+      .find(element => element.textContent?.includes('Consolidado por categoría'))?.closest('[appGpCargaVisible]');
+    if (/\/presupuesto\/detalle$/.test(request.url)) target = document.querySelector('[data-compare-slot="31"]');
+    const rect = target?.getBoundingClientRect();
+    const viewportAtRequest = rect ? {top: rect.top, bottom: rect.bottom, height: innerHeight} : undefined;
+    // Count starts, including requests cancelled before receiving a response.
+    const measured: any = {url: request.urlWithParams, status: null, outcome: 'pending',
+      ms: null, bytes: 0, viewportAtRequest, supplierDocuments: 0};
+    requests.push(measured);
+    activeRequests++;
+    maxActiveRequests = Math.max(maxActiveRequests, activeRequests);
+    return next(request.clone({setHeaders: {'X-User-Name': 'admin'}})).pipe(
+      tap({
+        next: event => {
+          if (event instanceof HttpResponse) Object.assign(measured, {status: event.status, outcome: 'success',
+            ms: +(performance.now() - start).toFixed(2), bytes: new TextEncoder().encode(JSON.stringify(event.body)).length,
+            supplierDocuments: (event.body as any)?.proveedores?.detalle?.length ?? 0});
+        },
+        error: error => Object.assign(measured, {status: error.status ?? 0, outcome: 'error',
+          ms: +(performance.now() - start).toFixed(2)}),
+      }),
+      finalize(() => {
+        activeRequests--;
+        if (measured.outcome === 'pending') Object.assign(measured, {outcome: 'cancelled',
+          ms: +(performance.now() - start).toFixed(2)});
+      }),
+    );
+  };
+  function networkRequests(list: any[]): any[] {
+    return list.map(request => {
+      const url = new URL(request.url, location.origin).href;
+      const resources = performance.getEntriesByName(url) as PerformanceResourceTiming[];
+      const resource = request.outcome === 'success' ? resources[resources.length - 1] : undefined;
+      return {...request, reserializedBytes: request.bytes,
+        bytes: resource?.decodedBodySize || request.bytes,
+        encodedBytes: resource?.encodedBodySize, transferBytes: resource?.transferSize};
+    });
+  }
+  afterEach(() => {TestBed.resetTestingModule(); window.scrollTo({top: 0, behavior: 'instant'});});
+
+  async function visitSection(fixture: any, id: string, element: HTMLElement) {
+    // The application uses CSS smooth scrolling. Wait for real arrival and HTTP,
+    // rather than redirecting an unfinished animation after a fixed 100 ms.
+    element.scrollIntoView({block: 'center', behavior: 'instant'});
+    const deadline = performance.now() + 5000;
+    do {
+      await new Promise<void>(resolve => setTimeout(resolve, 40));
+      await fixture.whenStable();
+    } while (!fixture.componentInstance.estadoSeccion(id).cargado && performance.now() < deadline);
+    if (!fixture.componentInstance.estadoSeccion(id).cargado) {
+      const rect = element.getBoundingClientRect();
+      throw new Error('Section did not load after real scroll: ' + JSON.stringify({id,
+        top: rect.top, bottom: rect.bottom, height: innerHeight, scrollY,
+        documentHidden: document.hidden, state: fixture.componentInstance.estadoSeccion(id), requests}));
+    }
+  }
+
+  async function render(componentType: any, phase: string) {
+    TestBed.configureTestingModule({imports: [componentType], providers: [
+      provideHttpClient(withInterceptorsFromDi(), withInterceptors([telemetry])), provideRouter([]), provideNoopAnimations(),
+      {provide: HTTP_INTERCEPTORS, useClass: GpAuthInterceptor, multi: true},
+      {provide: AuthService, useValue: identity}, {provide: GpSessionService, useValue: session},
+      {provide: AuthorizationService, useValue: {hasAnyRole: () => true}},
+      {provide: PresupuestoContextService, useFactory: (service: PresupuestoService) => new PresupuestoContextService(service), deps: [PresupuestoService]},
+    ]});
+    // The server validates the existing identity and its permissions on every request.
+    const http = TestBed.inject(HttpClient);
+    state = await firstValueFrom(http.get('/api/gp/auth/estado'));
+    expect(state.autenticado).toBeTrue();
+    expect(state.permisos).toContain('presupuesto.ver');
+    const service = TestBed.inject(PresupuestoService);
+    const ctx = TestBed.inject(PresupuestoContextService);
+    ctx.empresas.set(await firstValueFrom(service.empresas()));
+    ctx.permisos.set(permisosDesdeSesion(state));
+    ctx.empresaId.set(51);
+    requests.length = 0;
+    maxActiveRequests = activeRequests;
+    const start = performance.now();
+    const fixture = TestBed.createComponent<any>(componentType);
+    fixture.autoDetectChanges();
+    if (phase === 'after') expect(fixture.nativeElement.querySelector('.gp-loading-spinner')).not.toBeNull();
+    await fixture.whenStable();
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    expect(fixture.componentInstance.error()).toBeNull();
+    expect(fixture.componentInstance.loading()).toBeFalse();
+    expect(fixture.componentInstance.mensual()?.meses.length).toBeGreaterThan(0);
+    expect(fixture.nativeElement.querySelector('table')).not.toBeNull();
+    const measuredRequests = networkRequests(requests);
+    const initial = {phase, usableMs: +(performance.now() - start).toFixed(2), requests: measuredRequests,
+      count: requests.length, bytes: measuredRequests.reduce((sum, r) => sum + r.bytes, 0),
+      renderedRows: fixture.nativeElement.querySelectorAll('tbody tr').length,
+      viewport: {width: innerWidth, height: innerHeight}};
+    console.log('BUDGET_PERFORMANCE_JSON ' + JSON.stringify(initial));
+    return {fixture, ctx, initial};
+  }
+
+  for (const sample of [1, 2, 3]) {
+    it('mide el componente anterior contra los mismos endpoints y datos reales, muestra ' + sample, async () => {
+      await render(PresupuestoBaselineRuntimeComponent, 'before');
+    });
+  }
+
+  for (const sample of [1, 2]) {
+    it('mide el componente optimizado sin consultas anticipadas, muestra ' + sample, async () => {
+      const {initial} = await render(PresupuestoPageComponent, 'after');
+      expect(initial.requests.length).toBe(1);
+      expect(initial.requests.some(r => r.url.includes('/mensual/secciones/'))).toBeFalse();
+      expect(initial.requests[0]?.supplierDocuments).toBe(0);
+    });
+  }
+
+  it('consulta proveedores al acercarse y conserva su carga', async () => {
+    const {fixture, initial} = await render(PresupuestoPageComponent, 'after');
+    expect(initial.requests.length).toBe(1);
+    expect(initial.requests.filter(r => r.url.includes('/presupuesto/mensual?')).length).toBe(1);
+    expect(initial.requests.some(r => r.url.includes('resumen=true'))).toBeTrue();
+    expect(initial.requests.some(r => r.url.includes('/mensual/secciones/'))).toBeFalse();
+    expect(initial.requests.some(r => r.url.includes('/detalle'))).toBeFalse();
+    expect(initial.requests.reduce((n, r) => n + r.supplierDocuments, 0)).toBe(0);
+    const supplier = fixture.nativeElement.querySelector('#gp-seccion-proveedores') as HTMLElement;
+    expect(supplier).not.toBeNull();
+    if (!supplier) return;
+    const before = requests.length;
+    const start = performance.now();
+    await visitSection(fixture, 'proveedores', supplier);
+    const sectionRequests = requests.slice(before).filter(r => r.url.includes('/mensual/secciones/proveedores'));
+    expect(sectionRequests.length).toBe(1);
+    expect(sectionRequests[0]?.status).toBe(200);
+    expect(fixture.componentInstance.mensual()?.proveedores?.detalle.length).toBeGreaterThan(0);
+    const sectionMs = +(performance.now() - start).toFixed(2);
+    window.scrollTo({top: 0, behavior: 'instant'});
+    await new Promise<void>(resolve => setTimeout(resolve, 60));
+    supplier.scrollIntoView({block: 'center', behavior: 'instant'});
+    await new Promise<void>(resolve => setTimeout(resolve, 150));
+    await fixture.whenStable();
+    expect(requests.filter(r => r.url.includes('/mensual/secciones/proveedores')).length).toBe(1);
+    console.log('BUDGET_PERFORMANCE_JSON ' + JSON.stringify({phase: 'suppliers-on-viewport',
+      usableMs: sectionMs, requests: networkRequests(sectionRequests),
+      loadedRows: fixture.componentInstance.mensual()?.proveedores?.detalle.length,
+      repeatedRequests: requests.filter(r => r.url.includes('/mensual/secciones/proveedores')).length - 1}));
+
+    // Real IntersectionObserver, real scroll and real HTTP, without observer or API mocks.
+    const sectionNames = ['prestamos', 'impuestos', 'provisiones', 'cuentasCobrar', 'anticipos', 'pagos', 'cobros'];
+    for (const id of sectionNames) {
+      const element = fixture.nativeElement.querySelector('#gp-seccion-' + id) as HTMLElement;
+      expect(element).not.toBeNull();
+      if (element) await visitSection(fixture, id, element);
+      expect(fixture.componentInstance.estadoSeccion(id).cargado).toBeTrue();
+    }
+    const allSections = requests.filter(r => r.url.includes('/mensual/secciones/'));
+    expect(allSections.length).toBe(8);
+    for (const request of allSections) {
+      expect(request.status).toBe(200);
+      expect(request.viewportAtRequest).toBeDefined();
+      expect(request.viewportAtRequest.top).toBeLessThanOrEqual(request.viewportAtRequest.height + 301);
+      expect(request.viewportAtRequest.bottom).toBeGreaterThanOrEqual(-301);
+    }
+    console.log('BUDGET_PERFORMANCE_JSON ' + JSON.stringify({phase: 'all-sections-on-viewport', requests: networkRequests(allSections),
+      observedSections: allSections.length, allOnlyNearViewport: allSections.every(r =>
+        r.viewportAtRequest?.top <= r.viewportAtRequest?.height + 301 && r.viewportAtRequest?.bottom >= -301)}));
+
+    const consolidated = Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('.gp-panel-hero__titulo'))
+      .find(element => element.textContent?.includes('Consolidado por categoría'))?.closest<HTMLElement>('[appGpCargaVisible]');
+    const detail = fixture.nativeElement.querySelector('[data-compare-slot="31"]') as HTMLElement;
+    for (const [id, element] of [['consolidado', consolidated], ['terceros', detail]] as const) {
+      expect(element).not.toBeNull();
+      if (element) await visitSection(fixture, id, element);
+      expect(fixture.componentInstance.estadoSeccion(id).cargado).toBeTrue();
+    }
+    const extraPanels = requests.filter(request => /\/presupuesto\/(\?|detalle\?)/.test(request.url));
+    expect(extraPanels.length).toBe(2);
+    for (const request of extraPanels) {
+      expect(request.status).toBe(200);
+      expect(request.viewportAtRequest?.top).toBeLessThanOrEqual(request.viewportAtRequest?.height + 301);
+      expect(request.viewportAtRequest?.bottom).toBeGreaterThanOrEqual(-301);
+    }
+    expect(maxActiveRequests).toBeLessThanOrEqual(2);
+    console.log('BUDGET_PERFORMANCE_JSON ' + JSON.stringify({phase: 'consolidated-and-detail-on-viewport',
+      requests: networkRequests(extraPanels), observedSections: extraPanels.length, maxActiveRequests}));
+  });
+});

@@ -1,0 +1,229 @@
+<div class="dynamic-section" [formGroup]="formGroup">
+  <!-- Header -->
+  <div class="dynamic-section__header">
+    <div class="dynamic-section__header-icon" style="background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04)); color: #8b5cf6;">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+      </svg>
+    </div>
+    <div class="dynamic-section__header-text">
+      <p class="dynamic-section__header-title">Solicitud de Fumigación</p>
+      <p class="dynamic-section__header-subtitle">Control de plagas y desinfección</p>
+    </div>
+  </div>
+
+  <!-- ═══ UBICACIÓN ═══ -->
+  <div class="sub-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📍</span> Ubicación del Servicio</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Sede / Edificio</label>
+        <input type="text" formControlName="sedeEdificio" placeholder="Sede o edificio" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Metraje Aproximado (m²)</label>
+        <input type="number" formControlName="metrajeAproximado" placeholder="0" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Área Específica</label>
+        <div class="option-chips">
+          <div *ngFor="let a of areasEspecificas"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('areaEspecifica')?.value === a"
+               (click)="selectOption('areaEspecifica', a)">
+            <span class="option-chip__dot"></span>
+            {{ a }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Nivel de Infestación</label>
+        <div class="option-chips">
+          <div *ngFor="let n of nivelesInfestacion"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('nivelInfestacion')?.value === n.value"
+               (click)="selectOption('nivelInfestacion', n.value)">
+            <span class="option-chip__dot"></span>
+            {{ n.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TIPO DE CONTROL ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🐀</span> Tipo de Control Requerido</p>
+    <div class="checkbox-group">
+      <div *ngFor="let t of tiposControl"
+           class="checkbox-chip"
+           [class.checkbox-chip--selected]="isInArray('tiposControl', t.value)"
+           (click)="toggleControlArray('tiposControl', t.value)">
+        <div class="checkbox-chip__box">
+          <svg *ngIf="isInArray('tiposControl', t.value)" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        {{ t.label }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ JUSTIFICACIÓN ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📝</span> Justificación</p>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Motivo</label>
+        <div class="option-chips">
+          <div *ngFor="let m of motivos"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('motivo')?.value === m.value"
+               (click)="selectOption('motivo', m.value)">
+            <span class="option-chip__dot"></span>
+            {{ m.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Descripción del Problema</label>
+        <textarea formControlName="descripcionProblema" rows="3" placeholder="Describa la situación encontrada..." class="form-textarea"></textarea>
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Riesgo</label>
+        <div class="option-chips">
+          <div *ngFor="let r of riesgos"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('riesgo')?.value === r"
+               (click)="selectOption('riesgo', r)">
+            <span class="option-chip__dot"></span>
+            {{ r }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ URGENCIA ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🚨</span> Nivel de Urgencia</p>
+    <div class="criticidad-options">
+      <div class="criticidad-badge criticidad-badge--alta"
+           [class.criticidad-badge--selected]="formGroup.get('nivelUrgencia')?.value === 'ALTA'"
+           (click)="selectOption('nivelUrgencia', 'ALTA')">
+        <span class="criticidad-badge__indicator criticidad-badge__indicator--alta"></span> Alta
+      </div>
+      <div class="criticidad-badge criticidad-badge--media"
+           [class.criticidad-badge--selected]="formGroup.get('nivelUrgencia')?.value === 'MEDIA'"
+           (click)="selectOption('nivelUrgencia', 'MEDIA')">
+        <span class="criticidad-badge__indicator criticidad-badge__indicator--media"></span> Media
+      </div>
+      <div class="criticidad-badge criticidad-badge--baja"
+           [class.criticidad-badge--selected]="formGroup.get('nivelUrgencia')?.value === 'BAJA'"
+           (click)="selectOption('nivelUrgencia', 'BAJA')">
+        <span class="criticidad-badge__indicator criticidad-badge__indicator--baja"></span> Baja
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INFORMACIÓN FINANCIERA ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">💵</span> Información Financiera</p>
+    <div class="form-row form-row--1" style="margin-bottom: 16px;">
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <div class="option-chips">
+          <div *ngFor="let t of tiposFinanciero"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('tipoFinanciero')?.value === t.value"
+               (click)="selectOption('tipoFinanciero', t.value)">
+            <span class="option-chip__dot"></span>
+            {{ t.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Centro de Costos</label>
+        <input type="text" formControlName="centroCostos" placeholder="Centro de costos" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Presupuesto Estimado</label>
+        <input type="number" formControlName="presupuestoEstimado" placeholder="$ 0" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">¿Contemplado en Presupuesto Anual?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('contempladoPresupuesto')?.value"
+             (click)="toggleBoolean('contempladoPresupuesto')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('contempladoPresupuesto')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Contemplado en presupuesto anual</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('contempladoPresupuesto')?.value">
+            {{ formGroup.get('contempladoPresupuesto')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROVEEDOR ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏢</span> Información del Proveedor</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Proveedor Sugerido</label>
+        <input type="text" formControlName="proveedorSugerido" placeholder="Nombre del proveedor" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Proveedor Certificado?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('proveedorCertificado')?.value"
+             (click)="toggleBoolean('proveedorCertificado')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('proveedorCertificado')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Certificado</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('proveedorCertificado')?.value">
+            {{ formGroup.get('proveedorCertificado')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Nº Cotizaciones Requeridas</label>
+        <div class="option-chips">
+          <div *ngFor="let n of [1, 2, 3]"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('numCotizaciones')?.value === n"
+               (click)="formGroup.get('numCotizaciones')?.setValue(n)">
+            {{ n }}
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de Servicio</label>
+        <div class="option-chips">
+          <div *ngFor="let t of tiposServicio"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('tipoServicio')?.value === t"
+               (click)="selectOption('tipoServicio', t)">
+            <span class="option-chip__dot"></span>
+            {{ t }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

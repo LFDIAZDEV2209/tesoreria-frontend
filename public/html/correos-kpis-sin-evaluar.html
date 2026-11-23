@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correo Empresa Demo - KPIs sin Evaluar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;   
+                     
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .container{
+            background-color: rgb(250, 250, 250);
+            padding: 10px;
+        }
+
+        .email-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 10px;            
+        }
+
+        .email-header {
+            background: linear-gradient(to right, #213053, #1b2844, #045C94);
+            padding: 10px 5px;
+            text-align: start;
+            color: white;
+            border-radius: 8px 8px;
+        }
+
+        .email-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin-bottom: 5px;
+        }
+
+        .email-header p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .email-content {
+            padding: 40px 30px;
+        }
+
+        .email-greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #213053;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .email-body {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .email-body p {
+            margin-bottom: 15px;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #213053, transparent);
+            margin: 30px 0;
+        }
+
+        .email-footer {
+            padding: 20px 30px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .footer-brand {
+            font-size: 14px;
+            font-weight: 700;
+            color: #213053;
+            margin-bottom: 10px;
+        }
+
+        .footer-contact {
+            margin: 10px 0;
+            line-height: 1.8;
+        }
+
+        .footer-contact a {
+            color: #213053;
+            text-decoration: none;
+        }
+
+        .footer-contact a:hover {
+            text-decoration: underline;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #213053, #045C94);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .highlight {
+            color: #FFB71B;
+            font-weight: 600;
+        }
+
+        .employee-card {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #213053;
+        }
+
+        .employee-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #213053;
+            margin-bottom: 8px;
+        }
+
+        .employee-detail {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .employee-detail strong {
+            color: #213053;
+        }
+
+        .kpi-list {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .kpi-item {
+            font-size: 13px;
+            color: #555;
+            margin: 6px 0;
+            padding: 6px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .kpi-item:last-child {
+            border-bottom: none;
+        }
+
+        .kpi-badge {
+            display: inline-block;
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                max-width: 100%;
+            }
+
+            .email-header {
+                padding: 20px 15px;
+            }
+
+            .email-header h1 {
+                font-size: 24px;
+            }
+
+            .email-content {
+                padding: 25px 15px;
+            }
+
+            .email-greeting {
+                font-size: 16px;
+            }
+
+            .email-body {
+                font-size: 14px;
+            }
+
+            .employee-card {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+            <img src="https://example.com/wp-content/uploads/2023/03/cropped-logoPrincipal-.png" alt="Empresa Demo">
+        </div>
+
+        <!-- Content -->
+        <div class="email-content">
+            <!-- Greeting -->
+            <div class="email-greeting">
+                Estimados {{NOMBRE}},
+            </div>
+
+            <!-- Body Content -->
+            <div class="email-body">
+                <p>Se ha identificado que algunos colaboradores de su área cuentan con KPIs asignados, sin embargo, las evaluaciones aún no han sido registradas.</p>
+
+                <p>A continuación, se presenta el detalle correspondiente:</p>
+
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #213053;">
+                    <strong style="color: #213053; font-size: 15px;">Colaboradores con evaluación de KPIs pendiente</strong>
+                    
+                    <table style="width: 100%; margin-top: 15px; border-collapse: collapse;">
+                        <tr style="background-color: #ffffff; border-radius: 8px;">
+                            <td style="padding: 12px; color: #213053; font-weight: 700; font-size: 14px; width: 25%;">Nombre</td>
+                            <td style="padding: 12px; color: #213053; font-weight: 700; font-size: 14px; width: 25%;">Cargo</td>
+                            <td style="padding: 12px; color: #213053; font-weight: 700; font-size: 14px;">KPIs pendientes de evaluación</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #ddd;">
+                            <td style="padding: 12px; font-size: 14px; font-weight: 600; color: #213053;">Carlos Rodríguez</td>
+                            <td style="padding: 12px; font-size: 14px; color: #666;">Jefe de Operaciones</td>
+                            <td style="padding: 12px; font-size: 13px; color: #555;">
+                                • Cumplimiento de objetivos operativos <span style="background-color: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 11px;">Pendiente</span><br>
+                                • Eficiencia en procesos <span style="background-color: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 11px;">Pendiente</span><br>
+                                • Gestión de equipo <span style="background-color: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 11px;">Pendiente</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; font-size: 14px; font-weight: 600; color: #213053;">Laura Martínez</td>
+                            <td style="padding: 12px; font-size: 14px; color: #666;">Especialista Comercial</td>
+                            <td style="padding: 12px; font-size: 13px; color: #555;">
+                                • Cumplimiento de metas comerciales <span style="background-color: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 11px;">Pendiente</span><br>
+                                • Retención de clientes <span style="background-color: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 11px;">Pendiente</span><br>
+                                • Calidad de servicio <span style="background-color: #fff3cd; color: #856404; padding: 2px 6px; border-radius: 3px; font-weight: 600; font-size: 11px;">Pendiente</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p>Les solicitamos <strong>realizar la evaluación de KPIs pendientes</strong> a la mayor brevedad, con el fin de completar el proceso de gestión del desempeño.</p>
+
+                <p>La evaluación oportuna de KPIs permite:</p>
+                <ul style="margin: 15px 0 15px 20px; line-height: 1.8; font-size: 14px;">
+                    <li>Cerrar el ciclo evaluativo de forma integral</li>
+                    <li>Proporcionar retroalimentación valiosa a los colaboradores</li>
+                    <li>Generar reportes de desempeño actualizados</li>
+                    <li>Tomar decisiones informadas sobre desarrollo profesional</li>
+                </ul>
+
+                <p>Agradecemos su compromiso y apoyo para cumplir con este requerimiento.</p>
+
+                <p style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #ddd;">
+                    <strong>Cordialmente,</strong><br><br>
+                    <strong style="color: #213053;">David Bustamante</strong><br>
+                    Gerente Ejecutivo
+                </p>
+            </div>
+
+            <div class="divider"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <div class="footer-brand">EMPRESA DEMO</div>
+            <div class="footer-contact">
+                <p>Soluciones en Gestión de Desempeño</p>
+                <p>
+                    <a href="mailto:contacto@example.com">contacto@example.com</a>
+                </p>
+                <p>
+                    <a href="https://www.example.com" target="_blank">www.example.com</a>
+                </p>
+            </div>
+            <p style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+                &copy; 2025 Empresa Demo. Todos los derechos reservados.
+            </p>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

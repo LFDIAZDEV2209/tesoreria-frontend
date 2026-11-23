@@ -1,0 +1,58 @@
+<section class="detalle-shell" *ngIf="detalle as data">
+  <div class="topbar">
+    <button class="btn-back" type="button" (click)="volver()">Volver a bandeja</button>
+    <h1>Detalle de conciliacion #{{ data.movimiento.id }}</h1>
+    <span class="status-pill" [class.status-pill--ok]="data.estado === 'COMPLETO'" [class.status-pill--review]="data.estado === 'REVISION'">
+      Estado conciliacion: {{ data.estado }}
+    </span>
+  </div>
+
+  <div class="cards-grid">
+    <div class="panel-card">
+      <h2 class="panel-title">Movimiento bancario</h2>
+      <div class="kpi-grid">
+        <div><span>Banco</span><strong>{{ data.movimiento.banco }}</strong></div>
+        <div><span>Cuenta</span><strong>{{ data.movimiento.cuenta }}</strong></div>
+        <div><span>Fecha</span><strong>{{ data.movimiento.fechaPago }}</strong></div>
+        <div><span>Valor</span><strong>{{ data.movimiento.valor | currency: 'COP' : 'symbol' : '1.0-0' }}</strong></div>
+        <div><span>Referencia</span><strong>{{ data.movimiento.referencia }}</strong></div>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <h2 class="panel-title">Coincidencias encontradas</h2>
+      <div>
+        <div class="coincidencia" *ngFor="let item of data.coincidencias">
+          <div>
+            <p>{{ item.tipo }} - {{ item.codigo }}</p>
+            <small>{{ item.fecha }}</small>
+          </div>
+          <div>
+            <strong>{{ item.valor | currency: 'COP' : 'symbol' : '1.0-0' }}</strong>
+            <small>Match {{ item.score }}%</small>
+          </div>
+        </div>
+
+        <p class="empty" *ngIf="!data.coincidencias.length">Sin coincidencias. Estado en revision.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="acciones-card panel-card">
+    <h2 class="panel-title">Acciones de conciliacion</h2>
+    <form [formGroup]="vincularForm" class="actions-grid">
+      <div class="field-group">
+        <label for="ocCodigo">Codigo OC</label>
+        <input id="ocCodigo" type="text" formControlName="ocCodigo" placeholder="OC-2026-0001" />
+        <small class="field-error" *ngIf="vincularForm.controls.ocCodigo.invalid && vincularForm.controls.ocCodigo.touched">Ingrese una OC valida</small>
+      </div>
+
+      <button class="btn-action btn-action--primary" type="button" (click)="vincularOc()">Vincular OC</button>
+      <button class="btn-action btn-action--accent" type="button" (click)="generarEgreso()">Generar egreso</button>
+      <button class="btn-action btn-action--warn" type="button" (click)="marcarConciliado()">Marcar como conciliado manualmente</button>
+    </form>
+  </div>
+</section>
+
+<p *ngIf="loading" class="loading">Cargando detalle...</p>
+<p *ngIf="!loading && !detalle" class="loading">No se encontro informacion de conciliacion para este movimiento.</p>

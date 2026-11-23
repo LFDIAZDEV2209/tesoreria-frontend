@@ -1,0 +1,1110 @@
+﻿<div
+  class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3"
+>
+  <!-- ═══ HEADER ═══ -->
+  <div
+    class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white shadow-2xl rounded-2xl mb-4 header-animate"
+  >
+    <div class="px-6 py-4">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg header-icon-pulse"
+        >
+          <svg
+            class="w-7 h-7 text-[#FFB71B]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"
+            />
+          </svg>
+        </div>
+        <div>
+          <p
+            class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-semibold mb-0.5"
+          >
+            Bandeja de Entrada
+          </p>
+          <h1 class="text-xl font-bold tracking-tight">Gestión de Compras</h1>
+          <p class="text-white/80 text-xs">
+            Control y seguimiento de solicitudes de compra
+          </p>
+        </div>
+        <div class="ml-auto">
+          <a
+            routerLink="/compras/seguimiento"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-xl transition-all duration-200 border border-white/20 hover:border-white/30 shadow-lg"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+            Seguimiento
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ KPI / STATS CARDS ═══ -->
+  <section class="kpi-section-compact">
+    <div class="kpi-card-compact kpi-teal">
+      <div class="kpi-icon-wrapper-compact kpi-icon-teal">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Solicitudes</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ solicitudes().length }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Total</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-warning">
+      <div class="kpi-icon-wrapper-compact kpi-icon-warning">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Pendientes</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ pendientesCount }}</span>
+          <span class="kpi-trend-compact kpi-trend-warning">Pendiente</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-success">
+      <div class="kpi-icon-wrapper-compact kpi-icon-success">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Realizadas</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ realizadasCount }}</span>
+          <span class="kpi-trend-compact kpi-trend-up">Cerrada</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-purple">
+      <div class="kpi-icon-wrapper-compact kpi-icon-purple">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">En Trámite</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ enTramiteCount }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Activa</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TABLE SECTION ═══ -->
+  <div class="table-wrapper animate-fade-in-up" style="animation-delay: 0.45s">
+    <!-- Table Header -->
+    <div
+      class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] px-6 py-3 rounded-t-xl"
+    >
+      <div
+        class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3"
+      >
+        <div>
+          <h2 class="text-lg font-bold text-white">Bandeja de Solicitudes</h2>
+          <p class="text-white/80 mt-0.5 text-xs">
+            Seguimiento y gestión de órdenes de compra
+          </p>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+          <input
+            type="text"
+            placeholder="🔍 Buscar solicitud..."
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="filterSolicitudes()"
+            class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white/40 text-sm flex-1 lg:w-64"
+          />
+
+          <select
+            [(ngModel)]="filterEstado"
+            (change)="filterSolicitudes()"
+            class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40 text-sm appearance-none cursor-pointer"
+          >
+            <option value="" class="bg-[#213053]">Todos los estados</option>
+            <option value="PENDIENTE" class="bg-[#213053]">🟡 Pendiente</option>
+            <option value="REALIZADO" class="bg-[#213053]">✅ Realizado</option>
+            <option value="TRAMITE" class="bg-[#213053]">🔄 En Trámite</option>
+            <option value="RECHAZADO" class="bg-[#213053]">❌ Rechazado</option>
+            <option value="ESPERANDO_VOBO" class="bg-[#213053]">
+              ⏳ Esperando VoBo
+            </option>
+          </select>
+
+          <button
+            (click)="refreshData()"
+            class="px-4 py-2 bg-[#154e43] text-white font-semibold rounded-lg hover:bg-[#0f3d34] transition-all shadow-md text-xs whitespace-nowrap flex items-center justify-center gap-2"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table -->
+    <div
+      class="hidden md:block bg-white rounded-b-xl shadow-lg border border-gray-100 overflow-x-auto"
+    >
+      <table class="w-full">
+        <thead class="bg-[#f4f4f4] border-b-2 border-[#213053]/10 sticky top-0">
+          <tr>
+            <th
+              class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              # Solicitud
+            </th>
+            <th
+              class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              F. Solicitud
+            </th>
+            <th
+              class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Solicitante
+            </th>
+            <th
+              class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Área Solicitante
+            </th>
+            <th
+              class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Días Transc.
+            </th>
+            <th
+              class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              SLA (días)
+            </th>
+            <th
+              class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Semáforo
+            </th>
+            <th
+              class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Estado
+            </th>
+            <th
+              class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <tr
+            *ngFor="let s of paginatedSolicitudes(); let i = index"
+            class="table-row"
+            [style.animation-delay]="i * 0.04 + 's'"
+            [style.position]="openMenuId() === s.id ? 'relative' : 'static'"
+            [style.z-index]="openMenuId() === s.id ? 100 : 'auto'"
+          >
+            <!-- # Solicitud -->
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span
+                class="inline-flex items-center gap-1.5 text-xs font-bold text-[#045C94]"
+              >
+                <span class="w-2 h-2 rounded-full bg-[#045C94]"></span>
+                {{ s.codigoSolicitud }}
+              </span>
+            </td>
+            <!-- Fecha -->
+            <td class="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">
+              {{ s.fechaSolicitud }}
+            </td>
+            <!-- Solicitante -->
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <div
+                  class="w-7 h-7 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-[10px] shadow-md flex-shrink-0"
+                >
+                  {{ s.solicitante.charAt(0) }}
+                </div>
+                <span class="text-xs font-semibold text-gray-800">{{
+                  s.solicitante
+                }}</span>
+              </div>
+            </td>
+            <!-- Área -->
+            <td class="px-4 py-3">
+              <span
+                class="px-2 py-0.5 bg-[#045C94]/10 text-[#045C94] rounded-md text-[11px] font-medium"
+              >
+                {{ s.areaSolicitante }}
+              </span>
+            </td>
+            <!-- Días Transcurridos -->
+            <td class="px-4 py-3 text-center">
+              <span class="text-sm font-bold text-[#213053]">{{
+                s.diasTranscurridos
+              }}</span>
+            </td>
+            <!-- SLA -->
+            <td class="px-4 py-3 text-center">
+              <span class="text-sm font-bold text-[#213053]">{{
+                s.slaDias
+              }}</span>
+            </td>
+            <!-- Semáforo -->
+            <td class="px-4 py-3 text-center">
+              <div class="flex justify-center">
+                <div
+                  class="semaforo-indicator"
+                  [ngClass]="getSemaforoClass(getSemaforo(s))"
+                  [title]="getSemaforoTooltip(getSemaforo(s))"
+                >
+                  <div class="semaforo-dot"></div>
+                </div>
+              </div>
+            </td>
+            <!-- Estado -->
+            <td class="px-4 py-3 text-center">
+              <span class="estado-badge" [ngClass]="getEstadoClass(s.estado)">
+                {{ getEstadoLabel(s.estado) }}
+              </span>
+            </td>
+            <!-- Acciones -->
+            <td class="px-4 py-3 text-center">
+              <div class="relative inline-block">
+                <button
+                  (click)="toggleMenu(s.id)"
+                  class="p-1 text-gray-600 hover:text-[#213053] hover:bg-gray-100 rounded transition-all"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M12 8c1.1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2zm0 2c-1.1 0-2 1-2 2s1 2 2 2 2-1 2-2-1-2-2-2zm0 6c-1.1 0-2 1-2 2s1 2 2 2 2-1 2-2-1-2-2-2z"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Dropdown Menu -->
+                @if (openMenuId() === s.id) {
+                  <div class="fixed inset-0 z-40" (click)="openMenuId.set(null)"></div>
+                  <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 animate-fade-in">
+                    @if (isRechazado(s)) {
+                      <button
+                        (click)="verRechazo(s)"
+                        class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 text-sm font-bold flex items-center gap-2 border-b border-gray-100 bg-red-50/50"
+                      >
+                        <svg
+                          class="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                          />
+                        </svg>
+                        Ver Rechazo
+                      </button>
+                    }
+                    <button
+                      (click)="tramitarRequisicion(s)"
+                      class="w-full text-left px-4 py-2.5 hover:bg-[#213053]/10 text-[#213053] text-sm font-bold flex items-center gap-2 rounded-b-lg bg-gradient-to-r from-[#FFB71B]/5 to-transparent"
+                    >
+                      <svg
+                        class="w-4 h-4 text-[#FFB71B]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                        />
+                      </svg>
+                      Tramitar Requisición
+                    </button>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div
+        *ngIf="filteredSolicitudes().length > 0"
+        class="flex flex-col sm:flex-row items-center justify-between px-6 py-3 bg-white border-t border-gray-100"
+      >
+        <div class="flex items-center gap-3 mb-2 sm:mb-0">
+          <span class="text-xs text-gray-500">
+            Mostrando {{ (currentPage() - 1) * pageSize() + 1 }}–{{
+              currentPage() * pageSize() > filteredSolicitudes().length
+                ? filteredSolicitudes().length
+                : currentPage() * pageSize()
+            }}
+            de {{ filteredSolicitudes().length }} solicitudes
+          </span>
+          <div class="flex items-center gap-1.5">
+            <label
+              class="text-[10px] text-gray-400 font-semibold uppercase tracking-wide"
+              >Registros</label
+            >
+            <select
+              [ngModel]="pageSize()"
+              (ngModelChange)="changePageSize($event)"
+              class="px-2 py-1 text-xs border border-gray-200 rounded-lg bg-white text-gray-700 focus:outline-none focus:border-[#045C94] cursor-pointer"
+            >
+              <option *ngFor="let opt of pageSizeOptions" [ngValue]="opt">
+                {{ opt }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <button
+            (click)="goToPage(1)"
+            [disabled]="currentPage() === 1"
+            class="px-2 py-1.5 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            &laquo;
+          </button>
+          <button
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 1"
+            class="px-2 py-1.5 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            &lsaquo;
+          </button>
+          <button
+            *ngFor="let p of visiblePages"
+            (click)="goToPage(p)"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
+            [ngClass]="
+              p === currentPage()
+                ? 'bg-[#213053] text-white border-[#213053]'
+                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+            "
+          >
+            {{ p }}
+          </button>
+          <button
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()"
+            class="px-2 py-1.5 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            &rsaquo;
+          </button>
+          <button
+            (click)="goToPage(totalPages())"
+            [disabled]="currentPage() === totalPages()"
+            class="px-2 py-1.5 text-xs font-medium rounded-lg border border-gray-200 hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            &raquo;
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="filteredSolicitudes().length === 0" class="text-center py-16">
+        <svg
+          class="w-16 h-16 mx-auto text-gray-300 mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"
+          />
+        </svg>
+        <p class="text-gray-400 text-sm font-medium">
+          No se encontraron solicitudes
+        </p>
+        <p class="text-gray-300 text-xs mt-1">
+          Ajusta los filtros o busca con otro término
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══ MOBILE CARDS ═══ -->
+    <div class="md:hidden space-y-3 mt-3">
+      <div *ngFor="let s of paginatedSolicitudes()" class="mobile-card">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-bold text-[#045C94]">{{
+            s.codigoSolicitud
+          }}</span>
+          <span class="estado-badge" [ngClass]="getEstadoClass(s.estado)">{{
+            getEstadoLabel(s.estado)
+          }}</span>
+        </div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Solicitante</span>
+            <span class="font-semibold text-gray-800">{{ s.solicitante }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Área</span>
+            <span class="font-medium text-gray-700">{{
+              s.areaSolicitante
+            }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Fecha</span>
+            <span class="text-gray-600">{{ s.fechaSolicitud }}</span>
+          </div>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-gray-500">Días / SLA</span>
+            <span class="font-bold text-[#213053]"
+              >{{ s.diasTranscurridos }} / {{ s.slaDias }}</span
+            >
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500">Semáforo</span>
+            <div
+              class="semaforo-indicator"
+              [ngClass]="getSemaforoClass(getSemaforo(s))"
+            >
+              <div class="semaforo-dot"></div>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+          <button (click)="tramitarRequisicion(s)" class="flex-1 text-[10px] bg-[#213053] text-white py-1.5 rounded-lg font-semibold hover:bg-[#213053]/90 transition-all flex items-center justify-center gap-1">
+            <svg class="w-3 h-3 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            Tramitar
+          </button>
+        </div>
+        @if (isRechazado(s)) {
+          <div class="mt-2">
+            <button
+              (click)="verRechazo(s)"
+              class="w-full text-[10px] bg-red-50 text-red-600 py-2 rounded-lg font-bold hover:bg-red-100 transition-all flex items-center justify-center gap-1.5 border border-red-200"
+            >
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              Ver Rechazo — Gestionar
+            </button>
+          </div>
+        }
+        <div class="mt-2">
+          <button
+            (click)="tramitarRequisicion(s)"
+            class="w-full text-[10px] bg-[#213053] text-white py-2 rounded-lg font-bold hover:bg-[#213053]/90 transition-all flex items-center justify-center gap-1.5"
+          >
+            <svg
+              class="w-3.5 h-3.5 text-[#FFB71B]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+              />
+            </svg>
+            Tramitar Requisición
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Pagination -->
+      <div
+        *ngIf="filteredSolicitudes().length > 0"
+        class="flex items-center justify-between mt-3"
+      >
+        <span class="text-[10px] text-gray-500">
+          {{ (currentPage() - 1) * pageSize() + 1 }}–{{
+            currentPage() * pageSize() > filteredSolicitudes().length
+              ? filteredSolicitudes().length
+              : currentPage() * pageSize()
+          }}
+          de {{ filteredSolicitudes().length }}
+        </span>
+        <div class="flex items-center gap-1">
+          <button
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 1"
+            class="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            &lsaquo;
+          </button>
+          <span class="px-2 text-xs font-semibold text-[#213053]"
+            >{{ currentPage() }} / {{ totalPages() }}</span
+          >
+          <button
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()"
+            class="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-gray-200 bg-white hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            &rsaquo;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DETAIL MODAL ═══ -->
+  <div
+    *ngIf="showDetail()"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  >
+    <!-- Backdrop -->
+    <div
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm modal-backdrop-enter"
+      (click)="closeDetail()"
+    ></div>
+
+    <!-- Modal Content -->
+    <div
+      class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden modal-enter"
+    >
+      <!-- Modal Header -->
+      <div
+        class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] px-6 py-4"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <p
+              class="text-[10px] uppercase tracking-widest text-[#FFB71B] font-bold"
+            >
+              Detalle de Solicitud
+            </p>
+            <h3 class="text-lg font-bold text-white">
+              {{ selectedSolicitud()?.codigoSolicitud }}
+            </h3>
+          </div>
+          <button
+            (click)="closeDetail()"
+            class="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-all"
+          >
+            <svg
+              class="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4" *ngIf="selectedSolicitud() as sol">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="detail-field">
+            <span class="detail-field__label">Solicitante</span>
+            <span class="detail-field__value">{{ sol.solicitante }}</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field__label">Área</span>
+            <span class="detail-field__value">{{ sol.areaSolicitante }}</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field__label">Fecha de Solicitud</span>
+            <span class="detail-field__value">{{ sol.fechaSolicitud }}</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field__label">Estado</span>
+            <span class="estado-badge" [ngClass]="getEstadoClass(sol.estado)">{{
+              getEstadoLabel(sol.estado)
+            }}</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field__label">Días Transcurridos</span>
+            <span class="text-2xl font-black text-[#213053]">{{
+              sol.diasTranscurridos
+            }}</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-field__label">SLA (días)</span>
+            <span class="text-2xl font-black text-[#213053]">{{
+              sol.slaDias
+            }}</span>
+          </div>
+        </div>
+
+        <!-- Semáforo visual -->
+        <div
+          class="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100"
+        >
+          <div
+            class="semaforo-indicator semaforo-indicator--lg"
+            [ngClass]="getSemaforoClass(getSemaforo(sol))"
+          >
+            <div class="semaforo-dot"></div>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-[#213053]"
+              >Semáforo de cumplimiento</span
+            >
+            <p class="text-[10px] text-gray-500">
+              {{ getSemaforoTooltip(getSemaforo(sol)) }}
+            </p>
+          </div>
+        </div>
+
+        <div *ngIf="sol.observaciones" class="detail-field">
+          <span class="detail-field__label">Observaciones</span>
+          <p class="text-xs text-gray-600 leading-relaxed">
+            {{ sol.observaciones }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div
+        class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-2"
+      >
+        <button
+          (click)="closeDetail()"
+          class="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RECHAZO MODAL ═══ -->
+  <div
+    *ngIf="showRechazoModal()"
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  >
+    <!-- Backdrop -->
+    <div
+      class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+      (click)="closeRechazoModal()"
+    ></div>
+
+    <!-- Modal Content -->
+    <div
+      class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
+    >
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p
+                class="text-[10px] uppercase tracking-widest text-red-200 font-bold"
+              >
+                Requisición Rechazada
+              </p>
+              <h3 class="text-lg font-bold text-white">
+                {{ rechazoSolicitud()?.codigoSolicitud }}
+              </h3>
+            </div>
+          </div>
+          <button
+            (click)="closeRechazoModal()"
+            class="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg flex items-center justify-center transition-all"
+          >
+            <svg
+              class="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6" *ngIf="!rechazoLoading(); else rechazoLoadingTpl">
+        <ng-container *ngIf="rechazoTramite() as tramite">
+          <!-- Rejection Details -->
+          <div class="space-y-4">
+            <!-- Información de la Solicitud -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <span
+                  class="text-[10px] uppercase tracking-wide text-gray-400 font-bold"
+                  >Solicitante</span
+                >
+                <p class="text-sm font-semibold text-gray-800">
+                  {{ rechazoSolicitud()?.solicitante }}
+                </p>
+              </div>
+              <div>
+                <span
+                  class="text-[10px] uppercase tracking-wide text-gray-400 font-bold"
+                  >Área</span
+                >
+                <p class="text-sm font-semibold text-gray-800">
+                  {{ rechazoSolicitud()?.areaSolicitante }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Motivo de Rechazo -->
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <svg
+                  class="w-5 h-5 text-red-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span class="text-sm font-bold text-red-700"
+                  >Motivo del Rechazo</span
+                >
+              </div>
+              <p class="text-sm text-red-800 leading-relaxed">
+                {{ rechazoMotivo() || "No hay causal registrada" }}
+              </p>
+            </div>
+
+            <!-- Observaciones -->
+            <div
+              *ngIf="rechazoObservaciones()"
+              class="bg-amber-50 border border-amber-200 rounded-xl p-4"
+            >
+              <div class="flex items-center gap-2 mb-2">
+                <svg
+                  class="w-5 h-5 text-amber-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                  />
+                </svg>
+                <span class="text-sm font-bold text-amber-700"
+                  >Observaciones</span
+                >
+              </div>
+              <p class="text-sm text-amber-800 leading-relaxed">
+                {{ rechazoObservaciones() }}
+              </p>
+            </div>
+
+            <!-- Revisado por y fecha -->
+            <div
+              class="flex items-center justify-between text-xs text-gray-500 px-1"
+            >
+              <span *ngIf="rechazoRevisadoPor()">
+                Revisado por:
+                <strong class="text-gray-700">{{
+                  rechazoRevisadoPor()
+                }}</strong>
+              </span>
+              <span *ngIf="rechazoFecha()">
+                {{ rechazoFecha() }}
+              </span>
+            </div>
+
+            <!-- Info: Qué se puede hacer -->
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <p class="text-xs text-blue-700 leading-relaxed">
+                <strong>¿Qué desea hacer con esta requisición?</strong><br />
+                Puede devolver la petición a
+                <strong>Solicitud de Compra</strong> para revisarla desde cero,
+                o <strong>reenviarla al Jefe de Compras</strong> para una nueva
+                evaluación.
+              </p>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- No tramite found -->
+        <div *ngIf="!rechazoTramite()" class="text-center py-8">
+          <svg
+            class="w-12 h-12 mx-auto text-gray-300 mb-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p class="text-sm text-gray-500">
+            No se encontró información del trámite
+          </p>
+        </div>
+      </div>
+
+      <ng-template #rechazoLoadingTpl>
+        <div class="p-6 text-center">
+          <div
+            class="inline-block w-8 h-8 border-4 border-red-200 border-t-red-500 rounded-full animate-spin mb-3"
+          ></div>
+          <p class="text-sm text-gray-500">
+            Cargando información del rechazo...
+          </p>
+        </div>
+      </ng-template>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+        <div *ngIf="rechazoTramite()" class="flex flex-col sm:flex-row gap-2">
+          <button
+            (click)="devolverASolicitud()"
+            [disabled]="rechazoActionLoading()"
+            class="flex-1 px-4 py-2.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-lg hover:bg-amber-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+              />
+            </svg>
+            Devolver a Solicitud
+          </button>
+          <button
+            (click)="reenviarAJefe()"
+            [disabled]="rechazoActionLoading()"
+            class="flex-1 px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-[#045C94] to-[#034a78] rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>
+            Reenviar al Jefe de Compras
+          </button>
+        </div>
+        <div *ngIf="!rechazoTramite()" class="flex justify-end">
+          <button
+            (click)="closeRechazoModal()"
+            class="px-4 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST NOTIFICATION ═══ -->
+  @if (showToast()) {
+    <div class="fixed bottom-6 right-6 z-[100] animate-fade-in-up">
+      <div
+        class="flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border"
+        [class.bg-green-50]="toastType() === 'success'"
+        [class.border-green-200]="toastType() === 'success'"
+        [class.bg-red-50]="toastType() === 'error'"
+        [class.border-red-200]="toastType() === 'error'"
+        [class.bg-amber-50]="toastType() === 'warning'"
+        [class.border-amber-200]="toastType() === 'warning'"
+        [class.bg-blue-50]="toastType() === 'info'"
+        [class.border-blue-200]="toastType() === 'info'"
+      >
+        @switch (toastType()) {
+          @case ("success") {
+            <svg
+              class="w-5 h-5 text-green-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          }
+          @case ("error") {
+            <svg
+              class="w-5 h-5 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          }
+          @case ("warning") {
+            <svg
+              class="w-5 h-5 text-amber-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          }
+          @case ("info") {
+            <svg
+              class="w-5 h-5 text-blue-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          }
+        }
+        <span
+          class="text-sm font-semibold"
+          [class.text-green-700]="toastType() === 'success'"
+          [class.text-red-700]="toastType() === 'error'"
+          [class.text-amber-700]="toastType() === 'warning'"
+          [class.text-blue-700]="toastType() === 'info'"
+        >
+          {{ toastMessage() }}
+        </span>
+      </div>
+    </div>
+  }
+</div>

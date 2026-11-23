@@ -1,0 +1,204 @@
+<div class="dynamic-section" [formGroup]="formGroup">
+  <!-- Header -->
+  <div class="dynamic-section__header">
+    <div class="dynamic-section__header-icon" style="background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04)); color: #8b5cf6;">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+      </svg>
+    </div>
+    <div class="dynamic-section__header-text">
+      <p class="dynamic-section__header-title">Solicitud de Dotación</p>
+      <p class="dynamic-section__header-subtitle">Uniforme, calzado, EPP y elementos de dotación</p>
+    </div>
+  </div>
+
+  <!-- ═══ IDENTIFICACIÓN EMPRESA ═══ -->
+  <div class="sub-section" style="margin-top: 4px; border-top: none; padding-top: 0;">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏢</span> Identificación de la Empresa</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">
+          Empresa / Razón Social
+          <span *ngIf="loadingEmpresas()" style="font-size: 11px; color: #6b7280; margin-left: 6px;">⏳ Cargando...</span>
+          <span style="font-size: 10px; color: #3b82f6; margin-left: 6px;">📡 PeopleNet</span>
+        </label>
+        <select class="form-input" (change)="onEmpresaChange($any($event.target).value)">
+          <option value="">Seleccione una empresa...</option>
+          <option *ngFor="let emp of empresas()" [value]="emp.id">{{ emp.nombre }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">NIT</label>
+        <input type="text" formControlName="nit" placeholder="Ej: 900.123.456-7" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">
+          Sede / Sucursal
+          <span *ngIf="loadingSedes()" style="font-size: 11px; color: #6b7280; margin-left: 6px;">⏳ Cargando...</span>
+        </label>
+        <select formControlName="sedeSucursal" class="form-input" [attr.disabled]="sedes().length === 0 ? true : null">
+          <option value="">{{ sedes().length === 0 ? 'Seleccione empresa primero' : 'Seleccione sede...' }}</option>
+          <option *ngFor="let s of sedes()" [value]="s.nombre">{{ s.nombre }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Centro de Costos</label>
+        <input type="text" formControlName="centroCostos" placeholder="Centro de costos" class="form-input" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TIPO DE DOTACIÓN ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">👕</span> Tipo de Dotación</p>
+    <div class="option-chips">
+      <div *ngFor="let t of tiposDotacion"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('tipoDotacion')?.value === t.value"
+           (click)="selectOption('tipoDotacion', t.value)">
+        <span class="option-chip__dot">{{ t.icon }}</span>
+        {{ t.label }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ESPECIFICACIONES ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📏</span> Especificaciones</p>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Talla Camisa</label>
+        <select formControlName="tallaCamisa" class="form-select">
+          <option value="">Seleccionar...</option>
+          <option *ngFor="let t of tallasCamisa" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Talla Pantalón</label>
+        <select formControlName="tallaPantalon" class="form-select">
+          <option value="">Seleccionar...</option>
+          <option *ngFor="let t of tallasPantalon" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Talla Calzado</label>
+        <select formControlName="tallaCalzado" class="form-select">
+          <option value="">Seleccionar...</option>
+          <option *ngFor="let t of tallasCalzado" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Género</label>
+        <div class="option-chips option-chips--compact">
+          <div *ngFor="let g of generos"
+               class="option-chip option-chip--small"
+               [class.option-chip--selected]="formGroup.get('genero')?.value === g"
+               (click)="selectOption('genero', g)">
+            {{ g }}
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cantidad</label>
+        <input type="number" formControlName="cantidad" placeholder="0" min="1" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Color / Referencia</label>
+        <input type="text" formControlName="colorReferencia" placeholder="Si aplica..." class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Características Especiales</label>
+        <textarea formControlName="caracteristicasEspeciales" rows="2" placeholder="Tela antifluidos, reflectiva, manga larga, etc." class="form-textarea"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MOTIVO DE SOLICITUD ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🔁</span> Motivo de Solicitud</p>
+    <div class="option-chips">
+      <div *ngFor="let m of motivosSolicitud"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('motivoSolicitud')?.value === m.value"
+           (click)="selectOption('motivoSolicitud', m.value)">
+        <span class="option-chip__dot">{{ m.icon }}</span>
+        {{ m.label }}
+      </div>
+    </div>
+    <div class="form-row form-row--1 mt-4" *ngIf="formGroup.get('motivoSolicitud')?.value === 'REPOSICION_DESGASTE' || formGroup.get('motivoSolicitud')?.value === 'REPOSICION_PERDIDA' || formGroup.get('motivoSolicitud')?.value === 'DETERIORO'">
+      <div class="form-group">
+        <label class="form-label">Justificación (reposición extraordinaria)</label>
+        <textarea formControlName="justificacion" rows="2" placeholder="Explique el motivo de la reposición..." class="form-textarea"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INFORMACIÓN FINANCIERA ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">💵</span> Información Financiera</p>
+    <div class="form-row form-row--1" style="margin-bottom: 12px;">
+      <label class="form-label">Tipo financiero</label>
+      <div class="option-chips option-chips--compact">
+        <div *ngFor="let tf of tiposFinanciero"
+             class="option-chip option-chip--small"
+             [class.option-chip--selected]="formGroup.get('tipoFinanciero')?.value === tf.value"
+             (click)="selectOption('tipoFinanciero', tf.value)">
+          {{ tf.label }}
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Valor Estimado ($)</label>
+        <input type="number" formControlName="valorEstimado" placeholder="0" min="0" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Presupuesto disponible?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('presupuestoDisponible')?.value"
+             (click)="toggleBoolean('presupuestoDisponible')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('presupuestoDisponible')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Presupuesto</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('presupuestoDisponible')?.value">
+            {{ formGroup.get('presupuestoDisponible')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROVEEDOR ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏢</span> Proveedor (si compra)</p>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Proveedor Sugerido</label>
+        <input type="text" formControlName="proveedorSugerido" placeholder="Nombre del proveedor" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Proveedor homologado?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('proveedorHomologado')?.value"
+             (click)="toggleBoolean('proveedorHomologado')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('proveedorHomologado')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Homologado</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('proveedorHomologado')?.value">
+            {{ formGroup.get('proveedorHomologado')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">N° Cotizaciones Requeridas</label>
+        <input type="number" formControlName="numCotizaciones" placeholder="1" min="1" class="form-input" />
+      </div>
+    </div>
+  </div>
+</div>

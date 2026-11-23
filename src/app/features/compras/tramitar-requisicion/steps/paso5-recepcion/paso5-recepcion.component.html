@@ -1,0 +1,100 @@
+<!-- PASO 5: Recepción del Recurso -->
+<div class="step-card animate-in">
+
+  <!-- Step Header -->
+  <div class="step-header">
+    <div class="step-header-icon bg-gradient-to-br from-[#0D9488] to-[#0f766e]">
+      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="step-header-title">Recepción del Recurso</h2>
+      <p class="step-header-subtitle">Registro de la recepción de bienes/servicios — OC {{ numeroOC }}</p>
+    </div>
+  </div>
+
+  <!-- OC Reference -->
+  <div class="info-banner mb-5">
+    <svg class="w-5 h-5 text-[#045C94] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <div>
+      <p class="text-sm font-bold text-[#213053]">Orden de Compra: {{ numeroOC }}</p>
+      <p class="text-xs text-gray-500">Proveedor: {{ tramite.ordenCompra?.proveedor || 'N/A' }} — Total: $ {{ (tramite.ordenCompra?.valorTotal || 0) | number:'1.0-0' }}</p>
+    </div>
+  </div>
+
+  <!-- Estado de recepción selector -->
+  <div class="mb-5">
+    <label class="form-label mb-3">Estado de Recepción *</label>
+    <div class="grid grid-cols-3 gap-3">
+      @for (estado of estadosRecepcion; track estado.value) {
+        <button (click)="estadoRecepcion = estado.value"
+                class="estado-selector-card"
+                [class.estado-selector-active]="estadoRecepcion === estado.value"
+                [style.--active-color]="estado.color">
+          <div class="estado-selector-icon" [style.color]="estadoRecepcion === estado.value ? estado.color : '#9ca3af'">
+            @switch (estado.icon) {
+              @case ('check-circle') {
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              }
+              @case ('exclamation-circle') {
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              }
+              @case ('x-circle') {
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              }
+            }
+          </div>
+          <span class="text-xs font-bold" [style.color]="estadoRecepcion === estado.value ? estado.color : '#6b7280'">{{ estado.label }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+    <div class="form-group">
+      <label class="form-label">Fecha Recepción *</label>
+      <input type="date" [(ngModel)]="fechaRecepcion" class="form-input">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Recibido por *</label>
+      <input type="text" [(ngModel)]="recibidoPor" class="form-input" placeholder="Nombre de quien recibe">
+    </div>
+    <div class="form-group sm:col-span-2">
+      <label class="form-label">Observaciones</label>
+      <textarea [(ngModel)]="observaciones" class="form-textarea" placeholder="Notas sobre la recepción..." rows="3"></textarea>
+    </div>
+  </div>
+
+  <!-- File upload -->
+  <div class="mb-5">
+    <label class="form-label mb-2">Adjuntar evidencia (remisión / acta / foto)</label>
+    <label class="file-upload-area">
+      <input type="file" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+      @if (archivoNombre) {
+        <span class="file-uploaded-badge">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+          {{ archivoNombre }}
+        </span>
+      } @else {
+        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <span class="file-upload-label">Adjuntar remisión, acta o foto</span>
+        <span class="file-upload-hint">PDF, JPG, PNG — Máx. 10MB</span>
+      }
+    </label>
+  </div>
+
+  <!-- Confirm -->
+  <div class="flex justify-end">
+    <button (click)="confirmar()" class="step-action-btn"
+            [disabled]="!isFormValid"
+            [class.opacity-50]="!isFormValid"
+            [class.cursor-not-allowed]="!isFormValid">
+      Continuar al Paso 6
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div>

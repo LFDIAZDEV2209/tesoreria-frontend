@@ -1,0 +1,748 @@
+<div class="dynamic-section" [formGroup]="formGroup">
+  <!-- Header -->
+  <div class="dynamic-section__header">
+    <div class="dynamic-section__header-icon" style="background: linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.04)); color: #f59e0b;">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+      </svg>
+    </div>
+    <div class="dynamic-section__header-text">
+      <p class="dynamic-section__header-title">Solicitud de Materia Prima</p>
+      <p class="dynamic-section__header-subtitle">Adjunte las planeaciones de materia prima para esta solicitud</p>
+    </div>
+  </div>
+
+
+  <!-- ═══ GUÍA DE USO ═══ -->
+  <div class="mp-guide">
+    <div class="mp-guide__header">
+      <div class="mp-guide__header-icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="mp-guide__title">¿Qué es y cómo funciona esta solicitud?</p>
+        <p class="mp-guide__subtitle">Esta opción permite gestionar requerimientos de materias primas. Sigue los pasos para completar tu solicitud correctamente.</p>
+      </div>
+    </div>
+
+    <div class="mp-guide__steps">
+      <!-- Paso 1 -->
+      <div class="mp-guide__step">
+        <div class="mp-guide__step-number">1</div>
+        <div class="mp-guide__step-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+        </div>
+        <p class="mp-guide__step-title">Descarga la plantilla</p>
+        <p class="mp-guide__step-desc">Usa el formato oficial Excel para registrar las planeaciones de materia prima por bodega</p>
+      </div>
+
+      <div class="mp-guide__arrow">›</div>
+
+      <!-- Paso 2 -->
+      <div class="mp-guide__step">
+        <div class="mp-guide__step-number">2</div>
+        <div class="mp-guide__step-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+        </div>
+        <p class="mp-guide__step-title">Diligencia la plantilla</p>
+        <p class="mp-guide__step-desc">Completa las columnas con los materiales, cantidades y bodegas requeridas para cada período</p>
+      </div>
+
+      <div class="mp-guide__arrow">›</div>
+
+      <!-- Paso 3 -->
+      <div class="mp-guide__step">
+        <div class="mp-guide__step-number">3</div>
+        <div class="mp-guide__step-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+        </div>
+        <p class="mp-guide__step-title">Carga el archivo</p>
+        <p class="mp-guide__step-desc">Arrastra o selecciona el archivo Excel en la zona de carga para procesar la planeación automáticamente</p>
+      </div>
+
+      <div class="mp-guide__arrow">›</div>
+
+      <!-- Paso 4 -->
+      <div class="mp-guide__step">
+        <div class="mp-guide__step-number">4</div>
+        <div class="mp-guide__step-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="mp-guide__step-title">Revisa y envía</p>
+        <p class="mp-guide__step-desc">Verifica el resumen procesado, completa los datos de entrega y envía la solicitud para aprobación</p>
+      </div>
+    </div>
+
+    <!-- Descarga de plantilla -->
+    <div class="mp-guide__download">
+      <div class="mp-guide__download-label">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span>Plantilla oficial para cargue de planeaciones:</span>
+      </div>
+      <a href="assets/templates/Formato_planeacion_2026.xlsx"
+         download="Formato_planeacion_2026.xlsx"
+         class="mp-guide__download-btn">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>
+          <span class="mp-guide__download-title">Descargar plantilla</span>
+          <span class="mp-guide__download-meta">Formato_planeacion_2026.xlsx · Excel</span>
+        </span>
+      </a>
+    </div>
+  </div>
+
+
+  <!-- ═══ BORRADORES GUARDADOS ═══ -->
+  <div *ngIf="borradores().length > 0" class="mp-borradores">
+    <button type="button" class="mp-borradores__toggle" (click)="mostrarBorradores.set(!mostrarBorradores())">
+      <div class="mp-borradores__toggle-left">
+        <div class="mp-borradores__toggle-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+          </svg>
+        </div>
+        <div class="mp-borradores__toggle-text">
+          <span class="mp-borradores__toggle-title">Borradores guardados</span>
+          <span class="mp-borradores__toggle-subtitle">{{ borradores().length }} {{ borradores().length === 1 ? 'borrador disponible' : 'borradores disponibles' }}</span>
+        </div>
+      </div>
+      <div class="mp-borradores__toggle-right">
+        <span class="mp-borradores__count-badge">{{ borradores().length }}</span>
+        <svg class="mp-borradores__chevron" [class.mp-borradores__chevron--open]="mostrarBorradores()"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+    </button>
+
+    <!-- Lista de borradores -->
+    <div *ngIf="mostrarBorradores()" class="mp-borradores__list">
+      <div *ngFor="let b of borradores(); trackBy: trackByBorrador"
+           class="mp-borrador-card"
+           (click)="seleccionarBorrador(b)">
+        <div class="mp-borrador-card__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="mp-borrador-card__info">
+          <p class="mp-borrador-card__nombre">{{ b.nombre }}</p>
+          <div class="mp-borrador-card__meta">
+            <span class="mp-borrador-card__fecha">{{ formatFechaBorrador(b.fechaGuardado) }}</span>
+            <span class="mp-borrador-card__sep">·</span>
+            <span class="mp-borrador-card__archivos">{{ getBorradorResumen(b) }}</span>
+            <ng-container *ngIf="b.empresa">
+              <span class="mp-borrador-card__sep">·</span>
+              <span class="mp-borrador-card__empresa">{{ b.empresa }}</span>
+            </ng-container>
+          </div>
+        </div>
+        <div class="mp-borrador-card__actions">
+          <span class="mp-borrador-card__load-label">Cargar</span>
+          <button type="button" class="mp-borrador-card__delete"
+                  (click)="eliminarBorrador(b.id, $event)"
+                  title="Eliminar borrador"
+                  aria-label="Eliminar borrador">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ EMPRESA Y ÁREA (solo lectura) ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏢</span> Datos del Solicitante</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Empresa</label>
+        <div class="form-input form-input--readonly">{{ empresaNombre || 'No seleccionada' }}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Área</label>
+        <div class="form-input form-input--readonly">{{ areaNombre || 'No seleccionada' }}</div>
+      </div>
+    </div>
+    <div class="form-row form-row--2" *ngIf="fechaEntrega()">
+      <div class="form-group">
+        <label class="form-label">📅 Fecha de Entrega</label>
+        <div class="form-input form-input--readonly mp-fecha-auto">{{ fechaEntrega() || 'Pendiente' }}</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ ZONA DE CARGA (siempre visible para múltiples archivos) ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title">
+      <span class="sub-section__title-icon">📎</span> Planeaciones de Materia Prima
+      <span *ngIf="totalArchivos() > 0" class="mp-badge">{{ archivosListos() }}/{{ totalArchivos() }}</span>
+    </p>
+
+    <!-- Drop Zone -->
+    <div class="mp-dropzone"
+         [class.mp-dropzone--dragover]="isDragOver()"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave($event)"
+         (drop)="onDrop($event)">
+      <div class="mp-dropzone__content">
+        <div class="mp-dropzone__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/>
+          </svg>
+        </div>
+        <div class="mp-dropzone__text">
+          <p class="mp-dropzone__title">
+            {{ totalArchivos() === 0 ? 'Arrastra tus archivos aquí' : 'Agregar otra planeación' }}
+          </p>
+          <p class="mp-dropzone__subtitle">Excel (.xlsx, .xls) — Puedes subir múltiples archivos</p>
+        </div>
+      </div>
+      <input type="file" class="mp-dropzone__input" multiple
+             accept=".xlsx,.xls,.pdf,.png,.jpg,.jpeg,.tiff,.tif"
+             (change)="onFileSelected($event)" />
+    </div>
+  </div>
+
+
+  <!-- ═══ LISTA DE ARCHIVOS CARGADOS ═══ -->
+  <div *ngFor="let archivo of archivos(); trackBy: trackById" class="mp-archivo"
+       [class.mp-archivo--expanded]="archivoExpandido() === archivo.id"
+       [class.mp-archivo--error]="archivo.estado === 'error'">
+
+    <!-- Cabecera del archivo (siempre visible) -->
+    <div class="mp-archivo__header" (click)="toggleExpand(archivo.id)">
+      <div class="mp-archivo__header-left">
+        <span class="mp-archivo__icon">{{ getFileIcon(archivo.nombre) }}</span>
+        <div class="mp-archivo__info">
+          <p class="mp-archivo__nombre">{{ archivo.nombre }}</p>
+          <p class="mp-archivo__meta">
+            <span>{{ archivo.tamano }}</span>
+            <ng-container *ngIf="archivo.estado === 'done' && archivo.hojas.length > 0">
+              <span class="mp-archivo__sep">·</span>
+              <span>{{ archivo.hojas[0].nombre }}</span>
+            </ng-container>
+          </p>
+        </div>
+      </div>
+      <div class="mp-archivo__header-right">
+        <span *ngIf="archivo.estado === 'uploading'" class="mp-archivo__status mp-archivo__status--loading">
+          <span class="mp-archivo__spinner"></span> {{ archivo.progreso }}%
+        </span>
+        <span *ngIf="archivo.estado === 'done'" class="mp-archivo__status mp-archivo__status--done">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          Procesado
+        </span>
+        <span *ngIf="archivo.estado === 'error'" class="mp-archivo__status mp-archivo__status--error">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          Error
+        </span>
+        <button
+          *ngIf="canViewOriginal(archivo)"
+          type="button"
+          class="mp-archivo__btn-view"
+          (click)="verDocumentoOriginal(archivo, $event)"
+          title="Ver documento original"
+          aria-label="Ver documento original">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </button>
+        <button type="button" class="mp-archivo__btn-delete" (click)="eliminarArchivo(archivo.id); $event.stopPropagation()" title="Eliminar">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
+        <svg class="mp-archivo__chevron" [class.mp-archivo__chevron--open]="archivoExpandido() === archivo.id"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Barra de progreso (uploading) -->
+    <div *ngIf="archivo.estado === 'uploading'" class="mp-archivo__progress">
+      <div class="mp-archivo__progress-bar">
+        <div class="mp-archivo__progress-fill" [style.width.%]="archivo.progreso"></div>
+      </div>
+    </div>
+
+    <!-- Error message -->
+    <div *ngIf="archivo.estado === 'error'" class="mp-archivo__error-msg">
+      <p>{{ archivo.error }}</p>
+      <button type="button" class="mp-archivo__retry-btn" (click)="reintentarArchivo(archivo.id); $event.stopPropagation()">Reintentar</button>
+    </div>
+
+    <!-- ═══ CONTENIDO EXPANDIDO (cuando archivo.estado === 'done') ═══ -->
+    <div *ngIf="archivoExpandido() === archivo.id && archivo.estado === 'done'" class="mp-archivo__body">
+
+      <!-- Toggle vista + pestañas de hojas -->
+      <div class="mp-toolbar">
+        <div class="mp-toolbar__tabs">
+          <button *ngFor="let hoja of archivo.hojas; let hi = index"
+                  type="button"
+                  class="mp-tab"
+                  [class.mp-tab--active]="archivo.hojaActiva === hi"
+                  (click)="cambiarHoja(archivo.id, hi); $event.stopPropagation()">
+            <span class="mp-tab__dot"></span>
+            {{ hoja.nombre }}
+            <span class="mp-tab__count">{{ hoja.totalFilas }}</span>
+          </button>
+        </div>
+        <div class="mp-toolbar__actions">
+          <div class="mp-view-toggle">
+            <button type="button" class="mp-view-btn" [class.mp-view-btn--active]="getVista(archivo.id) === 'resumen'"
+                    (click)="cambiarVista(archivo.id, 'resumen'); $event.stopPropagation()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+              Resumen
+            </button>
+            <button type="button" class="mp-view-btn" [class.mp-view-btn--active]="getVista(archivo.id) === 'detalle'"
+                    (click)="cambiarVista(archivo.id, 'detalle'); $event.stopPropagation()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+              Detalle
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CAMPOS POR BODEGA ═══ -->
+      <div class="mp-bodega-fields mp-bodega-fields--enhanced">
+        <div class="mp-bodega-fields__header">
+          <div class="mp-bodega-fields__header-icon mp-bodega-fields__header-icon--animated">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <div class="mp-bodega-fields__header-text">
+            <span class="mp-bodega-fields__title">{{ archivo.hojas[archivo.hojaActiva].nombre || 'Bodega' }}</span>
+            <span class="mp-bodega-fields__subtitle">Datos de entrega y consumo para esta bodega</span>
+          </div>
+          <div class="mp-bodega-fields__header-badge">
+            <span class="mp-bodega-fields__status-pill"
+                  [class.mp-bodega-fields__status-pill--complete]="getCostoPorCategoria(archivo, archivo.hojaActiva).length > 0">
+              <span class="mp-bodega-fields__status-dot"></span>
+              {{ getCostoPorCategoria(archivo, archivo.hojaActiva).length > 0 ? 'Datos procesados' : 'Pendiente' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="mp-bodega-fields__content">
+          <!-- Observaciones -->
+          <div class="mp-bodega-fields__section mp-bodega-fields__section--obs" style="animation-delay: 0.1s">
+            <div class="mp-bodega-fields__section-label">
+              <div class="mp-bodega-fields__section-icon mp-bodega-fields__section-icon--notes">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+                </svg>
+              </div>
+              <div class="mp-bodega-fields__section-text">
+                <span class="mp-bodega-fields__section-title">Observaciones</span>
+                <span class="mp-bodega-fields__section-hint">Notas o instrucciones especiales</span>
+              </div>
+            </div>
+            <div class="mp-bodega-fields__textarea-wrapper">
+              <textarea class="mp-bodega-fields__textarea mp-bodega-fields__textarea--elevated"
+                        rows="2"
+                        placeholder="Escribe notas o instrucciones especiales para esta bodega..."
+                        [value]="getDatosBodega(archivo.id, archivo.hojaActiva).observaciones"
+                        (input)="onObservacionesBodegaChange(archivo.id, archivo.hojaActiva, $event)"
+                        (click)="$event.stopPropagation()"></textarea>
+            </div>
+          </div>
+
+          <!-- Fechas de consumo por categoría -->
+          <div *ngIf="getCategoriasDeHoja(archivo, archivo.hojaActiva).length > 0"
+               class="mp-bodega-fields__section mp-bodega-fields__section--categorias" style="animation-delay: 0.15s">
+            <div class="mp-bodega-fields__cat-header-enhanced">
+              <div class="mp-bodega-fields__cat-header-left">
+                <div class="mp-bodega-fields__section-icon mp-bodega-fields__section-icon--category">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                  </svg>
+                </div>
+                <div class="mp-bodega-fields__section-text">
+                  <span class="mp-bodega-fields__section-title">Fechas de Consumo por Categoría</span>
+                  <span class="mp-bodega-fields__section-hint">Asigne una fecha de consumo a cada categoría detectada</span>
+                </div>
+              </div>
+              <span class="mp-bodega-fields__cat-count-enhanced">
+                {{ getCategoriasDeHoja(archivo, archivo.hojaActiva).length }}
+                <span class="mp-bodega-fields__cat-count-label">categorías</span>
+              </span>
+            </div>
+
+            <div class="mp-bodega-fields__cat-grid-enhanced">
+              <div *ngFor="let cat of getCategoriasDeHoja(archivo, archivo.hojaActiva); let i = index"
+                   class="mp-bodega-fields__cat-card-enhanced"
+                   [class.mp-bodega-fields__cat-card-enhanced--filled]="getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat]"
+                   [style.animation-delay.ms]="200 + (i * 60)">
+                <div class="mp-bodega-fields__cat-card-header">
+                  <div class="mp-bodega-fields__cat-indicator"
+                       [class.mp-bodega-fields__cat-indicator--active]="getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat]">
+                    <svg *ngIf="getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat]"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24" class="mp-bodega-fields__check-icon">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </div>
+                  <span class="mp-bodega-fields__cat-name-enhanced" [title]="cat">{{ cat }}</span>
+                </div>
+                <div class="mp-datepicker mp-datepicker--compact"
+                     [class.mp-datepicker--has-value]="getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat]"
+                     [class.mp-datepicker--open]="calendarOpen() === 'cat-' + archivo.id + '-' + archivo.hojaActiva + '-' + cat">
+                  <div class="mp-datepicker__trigger mp-datepicker__trigger--compact"
+                       (click)="toggleCalendar('cat-' + archivo.id + '-' + archivo.hojaActiva + '-' + cat, getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat] || '', $event)">
+                    <div class="mp-datepicker__calendar-icon mp-datepicker__calendar-icon--sm">
+                      <div class="mp-datepicker__cal-top"></div>
+                      <div class="mp-datepicker__cal-body">
+                        <span class="mp-datepicker__cal-day mp-datepicker__cal-day--sm">
+                          {{ (getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat]) ? (getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat] | slice:8:10) : '—' }}
+                        </span>
+                      </div>
+                    </div>
+                    <span class="mp-datepicker__display-value mp-datepicker__display-value--compact">
+                      {{ getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat] ? formatDateDisplay(getDatosBodega(archivo.id, archivo.hojaActiva).fechasConsumoCategoria[cat]) : 'Seleccionar' }}
+                    </span>
+                    <div class="mp-datepicker__arrow mp-datepicker__arrow--sm">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── VISTA RESUMEN ─── -->
+      <div *ngIf="getVista(archivo.id) === 'resumen'" class="mp-resumen">
+        <div *ngIf="getInfoHojaActiva(archivo).length > 0" class="mp-resumen__section">
+          <p class="mp-resumen__section-title">Información General</p>
+          <div class="mp-resumen__cards">
+            <div *ngFor="let kv of getInfoHojaActiva(archivo)" class="mp-kv-card">
+              <span class="mp-kv-card__label">{{ kv.key }}</span>
+              <span class="mp-kv-card__value">{{ kv.value !== null && kv.value !== undefined ? kv.value : '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mp-resumen__stats">
+          <div class="mp-stat-card">
+            <span class="mp-stat-card__number">{{ getResumen(archivo).totalFilas }}</span>
+            <span class="mp-stat-card__label">Productos Total</span>
+          </div>
+          <div class="mp-stat-card" *ngIf="getResumen(archivo).categorias.length > 0">
+            <span class="mp-stat-card__number">{{ getResumen(archivo).categorias.length }}</span>
+            <span class="mp-stat-card__label">Categorías</span>
+          </div>
+          <div class="mp-stat-card mp-stat-card--money">
+            <span class="mp-stat-card__number">{{ formatMoneda(getResumen(archivo).totalCosto) }}</span>
+            <span class="mp-stat-card__label">Costo Total</span>
+          </div>
+        </div>
+
+        <div class="mp-resumen__section" *ngIf="archivo.hojas.length > 0">
+          <p class="mp-resumen__section-title">Hoja de Datos</p>
+          <div class="mp-sede-list">
+            <div class="mp-sede-card" *ngFor="let hoja of archivo.hojas; let hi = index"
+                 (click)="cambiarHoja(archivo.id, hi); cambiarVista(archivo.id, 'detalle'); $event.stopPropagation()">
+              <div class="mp-sede-card__header">
+                <span class="mp-sede-card__name">{{ hoja.nombre }}</span>
+                <span class="mp-sede-card__badge">{{ hoja.totalFilas }} items</span>
+              </div>
+              <div class="mp-sede-card__columns">
+                <span *ngFor="let col of hoja.encabezados.slice(0, 5)" class="mp-sede-card__col">{{ col }}</span>
+                <span *ngIf="hoja.encabezados.length > 5" class="mp-sede-card__col mp-sede-card__col--more">+{{ hoja.encabezados.length - 5 }} más</span>
+              </div>
+              <span class="mp-sede-card__action">Ver detalle →</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="getResumen(archivo).categorias.length > 0" class="mp-resumen__section">
+          <p class="mp-resumen__section-title">Categorías Encontradas</p>
+          <div class="mp-resumen__tags">
+            <span *ngFor="let cat of getResumen(archivo).categorias" class="mp-category-tag">{{ cat }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="getCostoPorCategoria(archivo, archivo.hojaActiva).length > 0" class="mp-resumen__section mp-resumen__section--costos">
+          <div class="mp-cost-section-header">
+            <div class="mp-cost-section-header__left">
+              <div class="mp-cost-section-header__icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="mp-resumen__section-title">Costos por Categoría</p>
+            </div>
+            <span class="mp-cost-total-badge">{{ formatMoneda(getCostoTotalHoja(archivo, archivo.hojaActiva)) }}</span>
+          </div>
+          <div class="mp-cost-cards-grid">
+            <div *ngFor="let item of getCostoPorCategoria(archivo, archivo.hojaActiva); let i = index; trackBy: trackByCat"
+                 class="mp-cost-card">
+              <div class="mp-cost-card__icon-wrapper" [style.--card-hue]="(i * 55) + 200">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+              </div>
+              <div class="mp-cost-card__info">
+                <span class="mp-cost-card__category">{{ item.categoria }}</span>
+                <span class="mp-cost-card__amount">{{ formatMoneda(item.costo) }}</span>
+              </div>
+              <div class="mp-cost-card__bar">
+                <div class="mp-cost-card__bar-fill"
+                     [style.width.%]="getCostoTotalHoja(archivo, archivo.hojaActiva) > 0 ? (item.costo / getCostoTotalHoja(archivo, archivo.hojaActiva) * 100) : 0"
+                     [style.--card-hue]="(i * 55) + 200"></div>
+              </div>
+              <span class="mp-cost-card__percent">
+                {{ getCostoTotalHoja(archivo, archivo.hojaActiva) > 0 ? ((item.costo / getCostoTotalHoja(archivo, archivo.hojaActiva)) * 100 | number:'1.1-1') : '0.0' }}%
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── VISTA DETALLE ─── -->
+      <div *ngIf="getVista(archivo.id) === 'detalle'" class="mp-detalle">
+        <div class="mp-detalle__searchbar">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" placeholder="Buscar en {{ getHojaActiva(archivo)?.nombre || 'tabla' }}..."
+                 [value]="getBusqueda(archivo.id)"
+                 (input)="onBusqueda(archivo.id, $event)"
+                 (click)="$event.stopPropagation()" />
+          <span class="mp-detalle__count">
+            {{ getFilasVisibles(archivo).length }} de {{ getHojaActiva(archivo)?.totalFilas || 0 }} filas
+          </span>
+        </div>
+
+        <div *ngIf="getHojaActiva(archivo) as hoja" class="mp-table-wrap">
+          <table class="mp-table">
+            <thead>
+              <tr>
+                <th class="mp-table__num mp-table__sticky-col">#</th>
+                <th *ngFor="let col of hoja.encabezados; let ci = index"
+                    class="mp-table__th mp-table__th--sortable"
+                    (click)="sortBy(archivo.id, ci); $event.stopPropagation()"
+                    [title]="col">
+                  {{ col }}<span class="mp-table__sort-icon">{{ getSortIndicator(archivo.id, ci) }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let fila of getFilasVisibles(archivo); let ri = index" class="mp-table__row">
+                <td class="mp-table__num mp-table__sticky-col">{{ ri + 1 }}</td>
+                <td *ngFor="let celda of fila"
+                    class="mp-table__td"
+                    [class.mp-table__td--number]="isNumericCell(celda)"
+                    [class.mp-table__td--empty]="!celda"
+                    [title]="celda">
+                  {{ celda }}
+                </td>
+              </tr>
+              <tr *ngIf="getFilasVisibles(archivo).length === 0">
+                <td [attr.colspan]="(hoja.encabezados.length || 1) + 1" class="mp-table__empty">
+                  {{ getBusqueda(archivo.id) ? 'Sin resultados para "' + getBusqueda(archivo.id) + '"' : 'Sin datos en esta hoja' }}
+                </td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="getColumnTotals(archivo) as totals">
+              <tr *ngIf="totals.length > 0" class="mp-table__totals-row">
+                <td class="mp-table__num mp-table__sticky-col">Σ</td>
+                <td *ngFor="let total of totals"
+                    class="mp-table__td mp-table__td--total"
+                    [class.mp-table__td--number]="total !== null">
+                  {{ total || '' }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═══ ACCIÓN: GUARDAR BORRADOR ═══ -->
+  <div *ngIf="archivosListos() > 0" class="mp-draft-bar">
+    <div class="mp-draft-bar__info">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>{{ archivosListos() }} {{ archivosListos() === 1 ? 'archivo procesado' : 'archivos procesados' }} — Guarda un borrador para recuperar esta información más tarde</span>
+    </div>
+    <button type="button" class="mp-draft-btn" [class.mp-draft-btn--saved]="guardadoExitoso()" (click)="abrirModalGuardarBorrador()">
+      <svg *ngIf="!guardadoExitoso()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+      </svg>
+      <svg *ngIf="guardadoExitoso()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span>{{ guardadoExitoso() ? '¡Borrador guardado!' : 'Guardar borrador' }}</span>
+    </button>
+  </div>
+
+
+  <!-- ═══ MODAL VISTA PREVIA DEL DOCUMENTO ═══ -->
+  <div *ngIf="previewArchivo() as preview" class="mp-preview-overlay" (click)="cerrarPreview()">
+    <div class="mp-preview-modal" (click)="$event.stopPropagation()">
+      <div class="mp-preview-header">
+        <div class="mp-preview-header__info">
+          <span class="mp-preview-header__icon">{{ getFileIcon(preview.nombre) }}</span>
+          <span class="mp-preview-header__title">{{ preview.nombre }}</span>
+        </div>
+        <div class="mp-preview-header__actions">
+          <a [href]="preview.fileUrl" target="_blank" rel="noopener noreferrer"
+             class="mp-preview-btn mp-preview-btn--download" title="Descargar">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+          </a>
+          <button type="button" class="mp-preview-btn mp-preview-btn--close" (click)="cerrarPreview()" title="Cerrar">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="mp-preview-body">
+        <img *ngIf="getPreviewType(preview.nombre) === 'image'"
+             [src]="preview.fileUrl" [alt]="preview.nombre"
+             class="mp-preview-image" />
+        <iframe *ngIf="getPreviewType(preview.nombre) === 'pdf'"
+                [src]="getSafeUrl(preview.fileUrl!)"
+                class="mp-preview-iframe"
+                title="Vista previa PDF">
+        </iframe>
+        <iframe *ngIf="getPreviewType(preview.nombre) === 'office'"
+                [src]="getBackendPreviewUrl(preview.fileKey!)"
+                class="mp-preview-iframe"
+                title="Vista previa documento">
+        </iframe>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══ MODAL: NOMBRAR BORRADOR ═══ -->
+  <div *ngIf="mostrarModalBorrador()" class="mp-modal-overlay" (click)="cancelarGuardarBorrador()">
+    <div class="mp-modal" (click)="$event.stopPropagation()">
+      <div class="mp-modal__header">
+        <div class="mp-modal__header-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+          </svg>
+        </div>
+        <div class="mp-modal__header-text">
+          <h3 class="mp-modal__title">Guardar borrador</h3>
+          <p class="mp-modal__subtitle">Dale un nombre descriptivo para encontrarlo fácilmente</p>
+        </div>
+        <button type="button" class="mp-modal__close" (click)="cancelarGuardarBorrador()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mp-modal__body">
+        <div class="mp-modal__field">
+          <label class="mp-modal__label">Nombre del borrador</label>
+          <input type="text"
+                 class="mp-modal__input"
+                 [value]="nombreBorrador()"
+                 (input)="onNombreBorradorInput($event)"
+                 placeholder="Ej: Solicitud Planta Norte — Abril 2026"
+                 maxlength="80"
+                 autofocus />
+          <span class="mp-modal__char-count">{{ nombreBorrador().length }}/80</span>
+        </div>
+
+        <div class="mp-modal__summary">
+          <div class="mp-modal__summary-item">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span>{{ archivosListos() }} {{ archivosListos() === 1 ? 'archivo' : 'archivos' }} incluidos</span>
+          </div>
+          <div class="mp-modal__summary-item" *ngIf="empresaNombre">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <span>{{ empresaNombre }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mp-modal__footer">
+        <button type="button" class="mp-modal__btn mp-modal__btn--cancel" (click)="cancelarGuardarBorrador()">
+          Cancelar
+        </button>
+        <button type="button" class="mp-modal__btn mp-modal__btn--save"
+                [disabled]="!nombreBorrador().trim()"
+                (click)="guardarBorrador()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+          </svg>
+          Guardar borrador
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══ FLOATING CALENDAR PORTAL ═══ -->
+<div *ngIf="calendarOpen()" class="mp-calendar-overlay" (click)="closeCalendar()"></div>
+<div *ngIf="calendarOpen()" class="mp-calendar mp-calendar--floating"
+     [style.top.px]="calendarPos().top"
+     [style.left.px]="calendarPos().left"
+     [style.min-width.px]="calendarPos().width"
+     (click)="$event.stopPropagation()">
+  <div class="mp-calendar__header">
+    <button type="button" class="mp-calendar__nav" (click)="prevMonth($event)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <span class="mp-calendar__month-label">{{ mesActualLabel }}</span>
+    <button type="button" class="mp-calendar__nav" (click)="nextMonth($event)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+  <div class="mp-calendar__weekdays">
+    <span *ngFor="let d of diasSemana" class="mp-calendar__weekday">{{ d }}</span>
+  </div>
+  <div class="mp-calendar__grid">
+    <div *ngFor="let week of getCalendarWeeks()" class="mp-calendar__row">
+      <button *ngFor="let day of week" type="button"
+              class="mp-calendar__day"
+              [class.mp-calendar__day--empty]="!day"
+              [class.mp-calendar__day--today]="isToday(day)"
+              [class.mp-calendar__day--selected]="isSelected(day, getCalendarCurrentValue())"
+              [disabled]="!day"
+              (click)="selectDay(day, $event)">
+        {{ day || '' }}
+      </button>
+    </div>
+  </div>
+  <div class="mp-calendar__footer">
+    <button type="button" class="mp-calendar__footer-btn" (click)="clearCurrentDate($event)">Limpiar</button>
+    <button type="button" class="mp-calendar__footer-btn mp-calendar__footer-btn--today" (click)="goToToday($event)">Hoy</button>
+  </div>
+</div>

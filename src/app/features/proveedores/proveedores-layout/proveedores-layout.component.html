@@ -1,0 +1,41 @@
+<div class="proveedores-layout">
+  <!-- ═══ MENU HORIZONTAL ═══ -->
+  <div class="menu-container">
+    <nav class="menu-nav">
+      <ul class="menu-list">
+        <li *ngFor="let item of menuItems" class="menu-item">
+          <a
+            [routerLink]="item.path"
+            [class.active]="isActive(item.path)"
+            class="menu-link"
+          >
+            <span class="menu-icon">{{ item.icon }}</span>
+            <div class="menu-content">
+              <span class="menu-label">{{ item.label }}</span>
+              <span class="menu-desc">{{ item.description }}</span>
+            </div>
+            <svg
+              *ngIf="isActive(item.path)"
+              class="menu-check"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- ═══ CONTENT ═══ -->
+  <div class="content-container">
+    <router-outlet></router-outlet>
+  </div>
+</div>

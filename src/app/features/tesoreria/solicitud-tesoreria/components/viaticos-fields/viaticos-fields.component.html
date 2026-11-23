@@ -1,0 +1,556 @@
+<div class="viat-wrapper" [formGroup]="formGroup">
+  <section class="viat-flow-entry animate-card" *ngIf="!flujoConfirmado()">
+    <div class="viat-flow-entry__header">
+      <p class="viat-flow-entry__eyebrow">Paso 1 de 2</p>
+      <h2 class="viat-flow-entry__title">Elige el tipo de solicitud de viaticos</h2>
+    </div>
+    <p class="viat-flow-entry__subtitle">
+      Antes de diligenciar, selecciona el tipo de requerimiento: <b>Solicitud de viaticos</b> cuando vas a legalizar gastos ya realizados, o <b>Adelanto de viaticos</b> cuando necesitas un anticipo de dinero para gastos futuros del desplazamiento.
+    </p>
+
+    <div class="viat-flow-entry__meta">
+      <article class="viat-flow-entry__meta-item">
+        <span class="viat-flow-entry__meta-icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 2" />
+            <circle cx="12" cy="12" r="9" />
+          </svg>
+        </span>
+        <span class="viat-flow-entry__meta-copy">
+          <strong>Momento de uso</strong>
+          <small>Define si el gasto ya ocurrio o si necesitas anticipo.</small>
+        </span>
+      </article>
+
+      <article class="viat-flow-entry__meta-item">
+        <span class="viat-flow-entry__meta-icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 2v6h6" />
+          </svg>
+        </span>
+        <span class="viat-flow-entry__meta-copy">
+          <strong>Soportes requeridos</strong>
+          <small>Ten listos conceptos claros, fechas y documentos de respaldo.</small>
+        </span>
+      </article>
+
+      <article class="viat-flow-entry__meta-item">
+        <span class="viat-flow-entry__meta-icon" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h16" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16" />
+          </svg>
+        </span>
+        <span class="viat-flow-entry__meta-copy">
+          <strong>Registro agil</strong>
+          <small>Selecciona un flujo y diligencia solo los campos necesarios.</small>
+        </span>
+      </article>
+    </div>
+
+    <div class="viat-mode-select viat-mode-select--entry">
+      <div class="viat-mode-select__grid">
+        <button
+          type="button"
+          class="viat-mode-select__card"
+          [class.viat-mode-select__card--active]="tipoSolicitudViaticos() === 'SOLICITUD_VIATICOS'"
+          (click)="setTipoSolicitud('SOLICITUD_VIATICOS')"
+        >
+          <span class="viat-mode-select__badge">Reembolso</span>
+          <span class="viat-mode-select__title">Solicitud de viaticos</span>
+          <span class="viat-mode-select__text">Flujo completo con estructura base, IVA y total.</span>
+        </button>
+
+        <button
+          type="button"
+          class="viat-mode-select__card"
+          [class.viat-mode-select__card--active]="tipoSolicitudViaticos() === 'ADELANTO_VIATICOS'"
+          (click)="setTipoSolicitud('ADELANTO_VIATICOS')"
+        >
+          <span class="viat-mode-select__badge">Anticipo</span>
+          <span class="viat-mode-select__title">Adelanto de viaticos</span>
+          <span class="viat-mode-select__text">Cada item exige valor, concepto, fecha y observacion obligatoria.</span>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="viat-flow-shell animate-flow-enter" *ngIf="flujoConfirmado()">
+    <div class="viat-mode-select animate-card">
+      <p class="viat-mode-select__eyebrow">Tipo seleccionado</p>
+      <div class="viat-mode-select__grid viat-mode-select__grid--single">
+        <div
+          *ngIf="tipoSolicitudViaticos() === 'SOLICITUD_VIATICOS'"
+          class="viat-mode-select__card viat-mode-select__card--active"
+        >
+          <span class="viat-mode-select__badge">Reembolso</span>
+          <span class="viat-mode-select__title">Solicitud de viaticos</span>
+          <span class="viat-mode-select__text">Flujo actual con estructura de base, IVA y total.</span>
+        </div>
+
+        <div
+          *ngIf="tipoSolicitudViaticos() === 'ADELANTO_VIATICOS'"
+          class="viat-mode-select__card viat-mode-select__card--active"
+        >
+          <span class="viat-mode-select__badge">Anticipo</span>
+          <span class="viat-mode-select__title">Adelanto de viaticos</span>
+          <span class="viat-mode-select__text">Cada item exige valor, concepto, fecha y observacion obligatoria.</span>
+        </div>
+      </div>
+      <div class="viat-mode-select__toolbar">
+        <button type="button" class="viat-mode-select__back" (click)="volverASeleccionFlujo()">
+          Cambiar tipo de solicitud
+        </button>
+      </div>
+    </div>
+
+  <div class="viat-layout">
+    <div class="viat-main">
+      <div class="viat-card viat-card--empresa animate-card" style="animation-delay: 0ms">
+        <div class="viat-card__header">
+          <div class="viat-card__header-icon viat-card__header-icon--empresa">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="viat-card__title">Informacion de la Empresa</h3>
+          </div>
+        </div>
+        <div class="viat-card__body">
+          <div class="viat-grid-2">
+            <div class="viat-field">
+              <label class="viat-label">NIT *</label>
+              <div class="viat-autofill-wrap">
+                <input type="text" formControlName="nit" class="viat-input" [class.viat-input--readonly]="nitEmpresa" [attr.readonly]="nitEmpresa ? true : null" placeholder="Ej: 890903938-3">
+                <span class="viat-autofill-badge" *ngIf="nitEmpresa">Auto</span>
+              </div>
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Nombre de la Empresa *</label>
+              <div class="viat-autofill-wrap">
+                <input type="text" formControlName="nombreEmpresa" class="viat-input" [class.viat-input--readonly]="empresaNombre" [attr.readonly]="empresaNombre ? true : null" placeholder="Ej: Bancolombia S.A.">
+                <span class="viat-autofill-badge" *ngIf="empresaNombre">Auto</span>
+              </div>
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Centro de Costo *</label>
+              <div class="viat-autofill-wrap">
+                <input type="text" formControlName="centroCosto" class="viat-input" [class.viat-input--readonly]="empresaNombre" [attr.readonly]="empresaNombre ? true : null" placeholder="Ej: CC-400 Operaciones">
+                <span class="viat-autofill-badge" *ngIf="empresaNombre">Auto</span>
+              </div>
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Ciudad destino *</label>
+              <input type="text" formControlName="ciudad" class="viat-input" placeholder="Ej: Bogota">
+            </div>
+          </div>
+          <div *ngIf="empresaNombre" class="viat-autofill-banner">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Los datos de empresa se completaron automaticamente desde tu perfil y no pueden modificarse.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="viat-card viat-card--solicitante animate-card" style="animation-delay: 80ms">
+        <div class="viat-card__header">
+          <div class="viat-card__header-icon viat-card__header-icon--solicitante">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="viat-card__title">Informacion del Solicitante</h3>
+          </div>
+        </div>
+        <div class="viat-card__body">
+          <div class="viat-grid-2">
+            <div class="viat-field">
+              <label class="viat-label">Nombre Completo</label>
+              <input type="text" [value]="solicitanteNombre" readonly class="viat-input viat-input--readonly">
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Cargo</label>
+              <input type="text" [value]="cargoNombre" readonly class="viat-input viat-input--readonly">
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Area / Dependencia</label>
+              <div class="viat-autofill-wrap">
+                <input type="text" [value]="areaNombre" readonly class="viat-input viat-input--readonly">
+                <span class="viat-autofill-badge" *ngIf="areaNombre">Auto</span>
+              </div>
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Correo Electronico</label>
+              <input type="email" [value]="correoElectronico" readonly class="viat-input viat-input--readonly">
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Telefono / Ext.</label>
+              <input type="text" [value]="telefonoContacto" readonly class="viat-input viat-input--readonly">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viat-card viat-card--items animate-card" style="animation-delay: 160ms">
+        <div class="viat-card__header viat-card__header--between">
+          <div class="viat-card__header-left">
+            <div class="viat-card__header-icon viat-card__header-icon--items">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="viat-card__title">{{ esAdelantoViaticos() ? 'Concepto de Gasto' : 'Items de Gasto' }}</h3>
+              <p class="viat-card__subtitle">{{ esAdelantoViaticos() ? 'Diligencie en este mismo bloque la informacion del adelanto' : 'Agregue uno o mas conceptos de gasto' }}</p>
+            </div>
+          </div>
+          <button type="button" class="viat-btn-add" (click)="openModal()">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 4v16m8-8H4"/></svg>
+            Agregar item
+          </button>
+        </div>
+
+        <div class="viat-card__body">
+          <div class="viat-field" style="margin-bottom: 12px;">
+            <label class="viat-label">Fecha maxima del evento *</label>
+            <input type="date" formControlName="fechaMaximaEvento" class="viat-input">
+          </div>
+
+          <div *ngIf="items().length === 0" class="viat-empty">
+            <div class="viat-empty__icon">#</div>
+            <p class="viat-empty__text">Sin items. Agregue el primer concepto de gasto.</p>
+          </div>
+
+          <div *ngIf="items().length > 0" class="viat-table-wrap">
+            <table class="viat-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Fecha</th>
+                  <th>Concepto</th>
+                  <th *ngIf="esAdelantoViaticos()">Observacion</th>
+                  <th class="text-right">Base</th>
+                  <th class="text-right">IVA</th>
+                  <th class="text-right">Total</th>
+                  <th>Soporte</th>
+                  <th style="width:80px"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of items(); let i = index" class="viat-table__row animate-row" [style.animation-delay]="i * 50 + 'ms'">
+                  <td><span class="viat-badge">{{ item.tipoViatico }}</span></td>
+                  <td class="viat-table__date">{{ item.fechaGasto }}</td>
+                  <td>{{ item.conceptoDetallado }}</td>
+                  <td *ngIf="esAdelantoViaticos()">{{ item.observacionItem || '' }}</td>
+                  <td class="text-right">{{ formatCurrency(item.valorBase) }}</td>
+                  <td class="text-right">{{ formatCurrency(item.valorIva) }}</td>
+                  <td class="text-right viat-table__total">{{ formatCurrency(item.valorTotal) }}</td>
+                  <td>
+                    <span *ngIf="item.soporte" class="viat-file-tag" style="display:inline-flex;gap:4px;align-items:center;font-size:11px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" [title]="item.soporte.name">
+                      {{ item.soporte.name }}
+                    </span>
+                    <span *ngIf="!item.soporte" style="color:#9ca3af;font-size:11px">-</span>
+                  </td>
+                  <td>
+                    <div class="viat-table__actions">
+                      <button type="button" class="viat-btn-edit" (click)="openEditModal(item)" title="Editar">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                      </button>
+                      <button type="button" class="viat-btn-remove" (click)="removeItem(item.id)" title="Eliminar">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td [attr.colspan]="esAdelantoViaticos() ? 5 : 4" class="text-right" style="font-weight:700; color:#213053">Totales:</td>
+                  <td class="text-right" style="font-weight:600">{{ formatCurrency(subtotalBase()) }}</td>
+                  <td class="text-right" style="font-weight:600">{{ formatCurrency(totalIva()) }}</td>
+                  <td class="text-right viat-table__grand-total">{{ formatCurrency(totalItems()) }}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="viat-card animate-card" style="animation-delay: 200ms">
+        <div class="viat-card__header">
+          <div class="viat-card__header-icon viat-card__header-icon--docs">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h10" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="viat-card__title">Datos Bancarios para Desembolso</h3>
+          </div>
+        </div>
+        <div class="viat-card__body">
+          <div class="viat-grid-2">
+            <div class="viat-field">
+              <label class="viat-label">Banco *</label>
+              <input type="text" formControlName="bancoCuenta" class="viat-input" placeholder="Ej: Bancolombia">
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Tipo de cuenta *</label>
+              <select formControlName="tipoCuentaBancaria" class="viat-input">
+                <option value="">Seleccione</option>
+                <option value="AHORROS">Ahorros</option>
+                <option value="CORRIENTE">Corriente</option>
+              </select>
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Número de cuenta *</label>
+              <input type="text" formControlName="numeroCuentaBancaria" class="viat-input" placeholder="Ej: 1234567890">
+            </div>
+            <div class="viat-field">
+              <label class="viat-label">Nombre titular de la cuenta *</label>
+              <input type="text" formControlName="nombreTitularCuenta" class="viat-input" placeholder="Nombre completo del titular">
+            </div>
+          </div>
+
+          <div class="viat-field" style="margin-top: 12px;">
+            <label class="viat-label">Certificado bancario *</label>
+            <div class="viat-file-area">
+              <input #certificadoInput type="file" (change)="onCertificadoBancarioChange($event)" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+              <button type="button" class="viat-file-btn viat-file-btn--secondary" (click)="certificadoInput.click()">Adjuntar certificado</button>
+              <span class="viat-file-name" *ngIf="!certificadoBancario()">Ningun archivo seleccionado</span>
+            </div>
+            <div *ngIf="certificadoBancario()" class="viat-files-list">
+              <div class="viat-file-tag">
+                <span>{{ certificadoBancario()?.name }}</span>
+                <button type="button" class="viat-file-tag__remove" (click)="removeCertificadoBancario()">x</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viat-card animate-card" style="animation-delay: 240ms">
+        <div class="viat-card__header">
+          <div class="viat-card__header-icon viat-card__header-icon--docs">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="viat-card__title">Soportes Documentales</h3>
+          </div>
+        </div>
+        <div class="viat-card__body">
+          <div class="viat-field">
+            <label class="viat-label">Soportes Documentales (Opcional)</label>
+            <div class="viat-file-area">
+              <input #soportesInput type="file" multiple (change)="onSoportesAdicionalesChange($event)" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none">
+              <button type="button" class="viat-file-btn viat-file-btn--secondary" (click)="soportesInput.click()">Elegir archivos</button>
+              <span class="viat-file-name" *ngIf="soportesAdicionales().length === 0">Ningun archivo seleccionado</span>
+            </div>
+            <div *ngIf="soportesAdicionales().length > 0" class="viat-files-list">
+              <div *ngFor="let file of soportesAdicionales(); let i = index" class="viat-file-tag">
+                <span>{{ file.name }}</span>
+                <button type="button" class="viat-file-tag__remove" (click)="removeSoporteAdicional(i)">x</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viat-card animate-card" style="animation-delay: 320ms">
+        <div class="viat-card__header">
+          <div class="viat-card__header-icon viat-card__header-icon--obs">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="viat-card__title">Observaciones</h3>
+          </div>
+        </div>
+        <div class="viat-card__body">
+          <textarea class="viat-textarea" rows="4" [placeholder]="esAdelantoViaticos() ? 'Observacion general opcional del adelanto...' : 'Escriba observaciones adicionales...'" [ngModel]="observacionesViaticos()" (ngModelChange)="observacionesViaticos.set($event)" [ngModelOptions]="{standalone: true}" maxlength="2000"></textarea>
+          <p class="viat-char-count">{{ observacionesViaticos().length }} / 2000</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="viat-sidebar">
+      <div class="viat-panel viat-panel--summary animate-card" style="animation-delay: 100ms">
+        <div class="viat-panel__icon-wrap"><div class="viat-panel__icon-box"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></div></div>
+        <p class="viat-panel__eyebrow">EN TIEMPO REAL</p>
+        <h4 class="viat-panel__title">Resumen</h4>
+        <p class="viat-panel__formula">Subtotal + IVA = Total</p>
+        <div class="viat-panel__divider"></div>
+
+        <div *ngIf="items().length === 0" class="viat-panel__empty">Agregue items para ver el resumen</div>
+
+        <ng-container *ngIf="items().length > 0">
+          <div class="viat-panel__grand-value">{{ formatCurrency(totalItems()) }}</div>
+          <div class="viat-panel__divider"></div>
+          <p class="viat-panel__section-label">DETALLE</p>
+          <div class="viat-panel__row"><span>{{ esAdelantoViaticos() ? 'items de adelanto' : 'items de gasto' }}</span><span class="viat-panel__row-val">{{ items().length }}</span></div>
+          <div class="viat-panel__row"><span>Subtotal base</span><span class="viat-panel__row-val">{{ formatCurrency(subtotalBase()) }}</span></div>
+          <div class="viat-panel__row"><span>Total IVA</span><span class="viat-panel__row-val">{{ formatCurrency(totalIva()) }}</span></div>
+          <p class="viat-panel__section-label" style="margin-top: 8px">TOTAL GENERAL</p>
+          <div class="viat-panel__row viat-panel__row--highlight"><span>Total Solicitud</span><span class="viat-panel__row-val">{{ formatCurrency(totalItems()) }}</span></div>
+        </ng-container>
+      </div>
+
+      <div class="viat-panel viat-panel--checklist animate-card" style="animation-delay: 200ms">
+        <div class="viat-panel__icon-wrap"><div class="viat-panel__icon-box"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg></div></div>
+        <p class="viat-panel__eyebrow">VERIFICACION</p>
+        <h4 class="viat-panel__title">Checklist</h4>
+        <p class="viat-panel__formula">Requisitos para enviar</p>
+        <div class="viat-panel__divider"></div>
+        <p class="viat-panel__section-label">REQUISITOS</p>
+
+        <div class="viat-panel-check" [class.viat-panel-check--done]="empresaCompleta()"><span class="viat-panel-check__dot"></span><span>Empresa completada</span></div>
+        <div class="viat-panel-check" [class.viat-panel-check--done]="solicitanteCompleto()"><span class="viat-panel-check__dot"></span><span>Solicitante completado</span></div>
+        <div class="viat-panel-check" [class.viat-panel-check--done]="tieneItems()"><span class="viat-panel-check__dot"></span><span>{{ esAdelantoViaticos() ? 'Al menos 1 adelanto' : 'Al menos 1 item de gasto' }}</span></div>
+        <div class="viat-panel-check" [class.viat-panel-check--done]="totalMayorCero()"><span class="viat-panel-check__dot"></span><span>Total mayor a $0</span></div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div class="viat-modal-backdrop" *ngIf="showModal()" (click)="onBackdropClick($event)">
+  <div class="viat-modal animate-modal">
+    <div class="viat-modal__header">
+      <div class="viat-modal__header-left">
+        <span class="viat-modal__header-icon">$</span>
+        <div>
+          <h3 class="viat-modal__title">{{ editingItemId() !== null ? 'Editar item' : 'Agregar item' }}</h3>
+          <p class="viat-modal__subtitle">{{ esAdelantoViaticos() ? 'Registre valor, concepto, fecha y observacion del adelanto' : (editingItemId() !== null ? 'Modifique los datos del concepto registrado' : 'Complete los datos del concepto a registrar') }}</p>
+        </div>
+      </div>
+      <button type="button" class="viat-modal__close" (click)="closeModal()">x</button>
+    </div>
+
+    <div class="viat-modal__body">
+      <div class="viat-field" style="margin-bottom:16px" *ngIf="!esAdelantoViaticos()">
+        <label class="viat-label">Tipo de Viatico *</label>
+        <div class="viat-select-wrap">
+          <select class="viat-select" [ngModel]="modalTipo()" (ngModelChange)="modalTipo.set($event)" [ngModelOptions]="{standalone: true}">
+            <option value="">Seleccionar...</option>
+            <option *ngFor="let t of tiposViatico" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="viat-modal__row">
+        <div class="viat-field">
+          <label class="viat-label">{{ esAdelantoViaticos() ? 'Fecha del Adelanto *' : 'Fecha del Gasto *' }}</label>
+          <input type="date" class="viat-input" [ngModel]="modalFecha()" (ngModelChange)="modalFecha.set($event)" [ngModelOptions]="{standalone: true}">
+        </div>
+      </div>
+
+      <div class="viat-modal__row">
+        <div class="viat-field" style="flex:1">
+          <label class="viat-label">{{ esAdelantoViaticos() ? 'Concepto del Adelanto *' : 'Concepto Detallado *' }}</label>
+          <div *ngIf="esAdelantoViaticos(); else conceptoLibre" class="viat-select-wrap">
+            <select class="viat-select" [ngModel]="modalConcepto()" (ngModelChange)="modalConcepto.set($event)" [ngModelOptions]="{standalone: true}">
+              <option value="" disabled>Seleccione un concepto</option>
+              <option *ngFor="let concepto of conceptosAdelanto" [value]="concepto">{{ concepto }}</option>
+            </select>
+          </div>
+          <ng-template #conceptoLibre>
+            <input type="text" class="viat-input" placeholder="Describa el gasto..." [ngModel]="modalConcepto()" (ngModelChange)="modalConcepto.set($event)" [ngModelOptions]="{standalone: true}">
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="viat-field" *ngIf="esAdelantoViaticos()" style="margin-bottom: 16px;">
+        <label class="viat-label viat-label--accent">Observacion del item *</label>
+        <textarea class="viat-textarea" rows="3" placeholder="Explique la finalidad del adelanto" [ngModel]="modalObservacion()" (ngModelChange)="modalObservacion.set($event)" [ngModelOptions]="{standalone: true}" maxlength="600"></textarea>
+      </div>
+
+      <div class="viat-values-section">
+        <h4 class="viat-values-title"><span>$</span> {{ esAdelantoViaticos() ? 'VALOR DEL ADELANTO' : 'ESTRUCTURA DE VALORES' }}</h4>
+        <div class="viat-values-grid">
+          <div class="viat-field">
+            <label class="viat-label">{{ esAdelantoViaticos() ? 'Valor del Adelanto *' : 'Valor Base *' }}</label>
+            <div class="viat-currency-wrap">
+              <span class="viat-currency-prefix">$</span>
+              <input type="number" class="viat-input viat-input--currency" min="0" [ngModel]="modalValorBase()" (ngModelChange)="modalValorBase.set($event)" [ngModelOptions]="{standalone: true}">
+            </div>
+          </div>
+          <div class="viat-field" *ngIf="!esAdelantoViaticos()">
+            <label class="viat-label">Aplica IVA?</label>
+            <div class="viat-select-wrap">
+              <select class="viat-select" [ngModel]="modalAplicaIva()" (ngModelChange)="modalAplicaIva.set($event === 'true')" [ngModelOptions]="{standalone: true}">
+                <option [value]="false">No</option>
+                <option [value]="true">Si</option>
+              </select>
+            </div>
+          </div>
+          <div class="viat-field" *ngIf="!esAdelantoViaticos()">
+            <label class="viat-label">% IVA</label>
+            <div class="viat-currency-wrap">
+              <input type="number" class="viat-input" min="0" max="100" [disabled]="!modalAplicaIva()" [ngModel]="modalPorcentajeIva()" (ngModelChange)="modalPorcentajeIva.set($event)" [ngModelOptions]="{standalone: true}">
+              <span class="viat-currency-suffix">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="viat-values-grid" style="margin-top:12px">
+          <div class="viat-field" *ngIf="!esAdelantoViaticos()">
+            <label class="viat-label">Valor IVA (automatico)</label>
+            <div class="viat-currency-wrap viat-currency-wrap--readonly">
+              <span class="viat-currency-prefix">$</span>
+              <input type="text" class="viat-input" disabled [value]="formatCurrency(modalValorIva)">
+            </div>
+          </div>
+          <div class="viat-field" [style.grid-column]="esAdelantoViaticos() ? 'span 3' : 'span 2'">
+            <label class="viat-label">{{ esAdelantoViaticos() ? 'Total Adelanto' : 'Valor Total' }}</label>
+            <div class="viat-currency-wrap viat-currency-wrap--total">
+              <span class="viat-currency-prefix">$</span>
+              <input type="text" class="viat-input viat-input--total" disabled [value]="formatCurrency(esAdelantoViaticos() ? modalValorBase() : modalValorTotal)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viat-field" style="margin-top:16px">
+        <label class="viat-label">Soporte del item <span style="color:#6b7280;font-weight:400">(opcional)</span></label>
+        <div class="viat-file-area">
+          <input #modalSoporteInput type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none" (change)="onModalSoporteChange($event)">
+          <button type="button" class="viat-file-btn viat-file-btn--secondary" (click)="modalSoporteInput.click()">Adjuntar archivo</button>
+          <span class="viat-file-name" *ngIf="!modalSoporte()">Ningun archivo seleccionado</span>
+          <div *ngIf="modalSoporte()" class="viat-file-tag">
+            <span>{{ modalSoporte()!.name }}</span>
+            <button type="button" class="viat-file-tag__remove" (click)="removeModalSoporte()">x</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="viat-modal__footer">
+      <button type="button" class="viat-modal__btn viat-modal__btn--cancel" (click)="closeModal()">Cancelar</button>
+      <button type="button" class="viat-modal__btn viat-modal__btn--add" [disabled]="!canAddItem" (click)="addItemFromModal()">
+        {{ editingItemId() !== null ? 'Guardar Cambios' : 'Agregar item' }}
+      </button>
+    </div>
+
+    <div class="viat-confirm-overlay" *ngIf="showExitConfirm()">
+      <div class="viat-confirm-box animate-modal">
+        <div class="viat-confirm-icon">!</div>
+        <h4 class="viat-confirm-title">Salir sin guardar</h4>
+        <p class="viat-confirm-msg">Los datos ingresados no se guardaran.</p>
+        <div class="viat-confirm-actions">
+          <button type="button" class="viat-modal__btn viat-modal__btn--cancel" (click)="cancelExitConfirm()">Seguir editando</button>
+          <button type="button" class="viat-modal__btn viat-modal__btn--danger" (click)="confirmCloseModal()">Salir sin guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+

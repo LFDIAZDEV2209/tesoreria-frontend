@@ -1,0 +1,599 @@
+<!-- ═══════════════════════════════════════════════════════════════════════
+  TRAMITAR ORDEN DE COMPRA — Vista Comparación OC vs SIIGO
+  Cadena de Suministros
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Toast Stack -->
+<div class="toc-toast__stack">
+  @for (toast of toasts(); track toast.id) {
+    <div class="toc-toast" [class]="'toc-toast--' + toast.type" @fadeSlideIn>
+      <div class="toc-toast__icon">
+        @if (toast.type === 'success') {
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        } @else if (toast.type === 'error') {
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        } @else {
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+        }
+      </div>
+      <span class="toc-toast__message">{{ toast.message }}</span>
+      <button class="toc-toast__close" (click)="closeToast(toast.id)" aria-label="Cerrar">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  }
+</div>
+
+<div class="toc-page">
+  <!-- ═══ LOADING ═══ -->
+  @if (loading()) {
+    <div class="toc-loading">
+      <div class="toc-loading__spinner"></div>
+      <p>Cargando orden de compra...</p>
+    </div>
+  }
+
+  @if (!loading() && orden()) {
+    <!-- ═══ HEADER ═══ -->
+    <header class="toc-header" @fadeSlideIn>
+      <div class="toc-header__top">
+        <button class="toc-back" (click)="volver()" title="Volver al detalle">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          <span>Volver</span>
+        </button>
+        <div class="toc-header__badges">
+          <span class="toc-badge toc-badge--oc">{{ orden()!.numeroOC }}</span>
+          <span class="toc-badge toc-badge--count">{{ tablaOcRows().length }} producto(s)</span>
+          @if (comparisonDone()) {
+            <span class="toc-badge" [class.toc-badge--ok]="comparisonResult()?.coincide" [class.toc-badge--warn]="!comparisonResult()?.coincide">
+              {{ comparisonResult()?.coincide ? '✓ Sin discrepancias' : '⚠ ' + comparisonResult()?.totalDiscrepancias + ' discrepancia(s)' }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="toc-header__main">
+        <div class="toc-header__icon">
+          <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="toc-header__text">
+          <h1>Tramitar Orden de Compra</h1>
+          <p>Comparativo entre la Orden de Compra y el documento SIIGO — análisis OCR automático con Textract</p>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="toc-kpis">
+        <div class="toc-kpi toc-kpi--stagger-1">
+          <div class="toc-kpi__icon toc-kpi__icon--provider">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <div class="toc-kpi__content">
+            <span class="toc-kpi__label">Proveedor</span>
+            <span class="toc-kpi__value">{{ orden()!.proveedor }}</span>
+          </div>
+        </div>
+        @if (orden()!.nitProveedor) {
+          <div class="toc-kpi toc-kpi--stagger-2">
+            <div class="toc-kpi__icon toc-kpi__icon--nit">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+              </svg>
+            </div>
+            <div class="toc-kpi__content">
+              <span class="toc-kpi__label">NIT</span>
+              <span class="toc-kpi__value toc-kpi__value--mono">{{ orden()!.nitProveedor }}</span>
+            </div>
+          </div>
+        }
+        <div class="toc-kpi toc-kpi--stagger-3">
+          <div class="toc-kpi__icon toc-kpi__icon--subtotal">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="toc-kpi__content">
+            <span class="toc-kpi__label">Subtotal</span>
+            <span class="toc-kpi__value toc-kpi__value--mono">{{ formatCurrency(orden()!.valorAntesIva) }}</span>
+          </div>
+        </div>
+        <div class="toc-kpi toc-kpi--stagger-4">
+          <div class="toc-kpi__icon toc-kpi__icon--iva">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
+            </svg>
+          </div>
+          <div class="toc-kpi__content">
+            <span class="toc-kpi__label">IVA ({{ orden()!.ivaPorcentaje }}%)</span>
+            <span class="toc-kpi__value toc-kpi__value--mono">{{ formatCurrency(orden()!.valorIva) }}</span>
+          </div>
+        </div>
+        <div class="toc-kpi toc-kpi--highlight toc-kpi--stagger-5">
+          <div class="toc-kpi__icon toc-kpi__icon--total">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <div class="toc-kpi__content">
+            <span class="toc-kpi__label">Valor Total OC</span>
+            <span class="toc-kpi__value toc-kpi__value--mono toc-kpi__value--big">{{ formatCurrency(orden()!.valorTotal) }}</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══ ALIGNED COMPARISON VIEW (when comparison done) ═══ -->
+    @if (comparisonDone() && comparisonResult()?.documentoSiigo) {
+      <!-- Manual Edit Switch -->
+      <div class="toc-switch-bar" @fadeSlideIn>
+        <div class="toc-switch-bar__left">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          <span>Validación Manual</span>
+          <span class="toc-switch-bar__hint">
+            {{ manualEditMode() ? 'Los campos del documento SIIGO son editables' : 'Activa para editar los valores del documento SIIGO' }}
+          </span>
+        </div>
+        <label class="toc-toggle">
+          <input type="checkbox" [checked]="manualEditMode()" (change)="toggleManualEdit()" />
+          <span class="toc-toggle__slider"></span>
+        </label>
+      </div>
+
+      <!-- Extracted Data Bar -->
+      <div class="toc-extracted-bar" @fadeSlideIn>
+        <div class="toc-extracted-bar__left">
+          @if (comparisonResult()!.documentoSiigo.proveedor) {
+            <div class="toc-extracted-bar__item" [class.toc-extracted-bar__item--warn]="hasDiscrepancy('Proveedor')">
+              <span class="toc-extracted-bar__label">Proveedor SIIGO</span>
+              <span class="toc-extracted-bar__value">{{ comparisonResult()!.documentoSiigo.proveedor }}</span>
+            </div>
+          }
+          @if (comparisonResult()!.documentoSiigo.nit) {
+            <div class="toc-extracted-bar__item" [class.toc-extracted-bar__item--warn]="hasDiscrepancy('NIT')">
+              <span class="toc-extracted-bar__label">NIT SIIGO</span>
+              <span class="toc-extracted-bar__value toc-extracted-bar__value--mono">{{ comparisonResult()!.documentoSiigo.nit }}</span>
+            </div>
+          }
+          @if (comparisonResult()!.documentoSiigo.iva != null) {
+            <div class="toc-extracted-bar__item" [class.toc-extracted-bar__item--warn]="hasDiscrepancy('IVA')">
+              <span class="toc-extracted-bar__label">IVA SIIGO</span>
+              <span class="toc-extracted-bar__value toc-extracted-bar__value--mono">{{ formatCurrency(comparisonResult()!.documentoSiigo.iva!) }}</span>
+            </div>
+          }
+        </div>
+        <button class="toc-extracted-bar__reset" (click)="removeSiigoFile()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Reanalizar
+        </button>
+      </div>
+
+      <!-- Aligned Comparison Tables -->
+      <div class="toc-comparison" @fadeSlideIn>
+        <!-- LEFT: Orden de Compra -->
+        <div class="toc-comparison__side toc-comparison__side--oc">
+          <div class="toc-comparison__header">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <h3>Orden de Compra</h3>
+            <span class="toc-comparison__count">{{ comparisonResult()!.matchProductos.length }}</span>
+          </div>
+          <div class="toc-comparison__table-wrap">
+            <table class="toc-table toc-table--oc">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Producto</th>
+                  <th class="th-r">Cant.</th>
+                  <th class="th-r">Kg</th>
+                  <th class="th-r">Vr. Unitario</th>
+                  <th class="th-r">Valor Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (match of comparisonResult()!.matchProductos; track $index) {
+                  <tr class="toc-row"
+                    [class.toc-row--ok]="match.estado === 'COINCIDE'"
+                    [class.toc-row--diff]="match.estado === 'DIFERENTE'"
+                    [class.toc-row--miss]="match.estado === 'SOLO_OC'"
+                    [class.toc-row--solo-siigo]="match.estado === 'SOLO_SIIGO'">
+                    <td class="td-code">{{ match.productoOC?.codigo ?? '—' }}</td>
+                    <td class="td-product">
+                      <span>{{ match.productoOC?.producto ?? '—' }}</span>
+                      <span class="status-dot"
+                        [class.status-dot--ok]="match.estado === 'COINCIDE'"
+                        [class.status-dot--diff]="match.estado === 'DIFERENTE'"
+                        [class.status-dot--miss]="match.estado === 'SOLO_OC' || match.estado === 'SOLO_SIIGO'">
+                      </span>
+                    </td>
+                    <td class="td-r">{{ match.productoOC?.cantidad ?? '—' }}</td>
+                    <td class="td-r">{{ match.productoOC?.kg ?? '—' }}</td>
+                    <td class="td-r td-money">
+                      @if (match.productoOC?.valorUnitario != null) { {{ formatCurrency(match.productoOC!.valorUnitario!) }} } @else { — }
+                    </td>
+                    <td class="td-r td-money td-money--bold">
+                      @if (match.productoOC?.valorTotal != null) { {{ formatCurrency(match.productoOC!.valorTotal!) }} } @else { — }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="toc-total-row">
+                  <td colspan="5" class="td-r">Total OC</td>
+                  <td class="td-r td-money td-money--bold">{{ formatCurrency(getOcProductsTotal()) }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- RIGHT: Documento SIIGO -->
+        <div class="toc-comparison__side toc-comparison__side--siigo">
+          <div class="toc-comparison__header">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <h3>Documento SIIGO</h3>
+            <span class="toc-comparison__count">{{ comparisonResult()!.matchProductos.length }}</span>
+          </div>
+          <div class="toc-comparison__table-wrap">
+            <table class="toc-table toc-table--siigo">
+              <thead>
+                <tr>
+                  <th>Estado</th>
+                  <th>Producto</th>
+                  <th class="th-r">Cant SIIGO</th>
+                  <th class="th-r">Vr. Unit SIIGO</th>
+                  <th class="th-r">Total SIIGO</th>
+                  <th>Diferencias</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (match of comparisonResult()!.matchProductos; track $index) {
+                  <tr class="toc-row"
+                    [class.toc-row--ok]="match.estado === 'COINCIDE'"
+                    [class.toc-row--diff]="match.estado === 'DIFERENTE'"
+                    [class.toc-row--miss]="match.estado === 'SOLO_OC'"
+                    [class.toc-row--solo-siigo]="match.estado === 'SOLO_SIIGO'">
+                    <td>
+                      <span class="toc-status" [class]="'toc-status--' + match.estado.toLowerCase().replace('_', '-')">
+                        {{ getMatchStatusLabel(match.estado) }}
+                      </span>
+                    </td>
+                    <td class="td-product">
+                      @if (manualEditMode()) {
+                        <input class="toc-inline-input" [value]="match.productoSiigo?.producto ?? ''" (input)="updateSiigoProducto($index, 'producto', $any($event.target).value)" placeholder="Producto" />
+                      } @else {
+                        {{ match.productoSiigo?.producto ?? '—' }}
+                      }
+                    </td>
+                    <td class="td-r">
+                      @if (manualEditMode()) {
+                        <input type="number" class="toc-inline-input toc-inline-input--num" [value]="match.productoSiigo?.cantidad" (input)="updateSiigoProducto($index, 'cantidad', $any($event.target).value)" placeholder="0" />
+                      } @else {
+                        {{ match.productoSiigo?.cantidad ?? '—' }}
+                      }
+                    </td>
+                    <td class="td-r td-money">
+                      @if (manualEditMode()) {
+                        <input type="number" class="toc-inline-input toc-inline-input--num" [value]="match.productoSiigo?.valorUnitario" (input)="updateSiigoProducto($index, 'valorUnitario', $any($event.target).value)" placeholder="$ 0" />
+                      } @else {
+                        @if (match.productoSiigo?.valorUnitario != null) { {{ formatCurrency(match.productoSiigo!.valorUnitario!) }} } @else { — }
+                      }
+                    </td>
+                    <td class="td-r td-money td-money--bold">
+                      @if (manualEditMode()) {
+                        <input type="number" class="toc-inline-input toc-inline-input--num" [value]="match.productoSiigo?.valorTotal" (input)="updateSiigoProducto($index, 'valorTotal', $any($event.target).value)" placeholder="$ 0" />
+                      } @else {
+                        @if (match.productoSiigo?.valorTotal != null) { {{ formatCurrency(match.productoSiigo!.valorTotal!) }} } @else { — }
+                      }
+                    </td>
+                    <td class="td-diff">
+                      @if (match.diferencias.length > 0) {
+                        @for (diff of match.diferencias; track diff) {
+                          <span class="toc-diff-chip">{{ diff }}</span>
+                        }
+                      } @else if (match.estado === 'SOLO_OC') {
+                        <span class="toc-diff-chip toc-diff-chip--error">No encontrado en SIIGO</span>
+                      } @else if (match.estado === 'SOLO_SIIGO') {
+                        <span class="toc-diff-chip toc-diff-chip--info">Producto extra en SIIGO</span>
+                      } @else {
+                        <span class="toc-diff-chip toc-diff-chip--ok">✓ OK</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr class="toc-total-row">
+                  <td colspan="4" class="td-r">Total SIIGO</td>
+                  <td class="td-r td-money td-money--bold">{{ formatCurrency(getSiigoProductsTotal()) }}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ MAIN CONTENT: Two columns (only before comparison) ═══ -->
+    @if (!comparisonDone()) {
+    <div class="toc-content" @fadeSlideIn>
+      <!-- ── LEFT: Orden de Compra ── -->
+      <section class="toc-panel toc-panel--oc">
+        <div class="toc-panel__header">
+          <div class="toc-panel__title">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <h3>Orden de Compra</h3>
+            <span class="toc-panel__count">{{ tablaOcRows().length }}</span>
+          </div>
+          @if (previewUrl()) {
+            <button class="toc-btn-icon" (click)="togglePreview()" [title]="showPreview() ? 'Ocultar vista previa' : 'Ver documento'">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          }
+        </div>
+
+        <!-- Document Preview -->
+        @if (showPreview() && previewUrl()) {
+          <div class="toc-preview" @fadeIn>
+            @if (previewType() === 'pdf') {
+              <iframe [src]="previewUrl()" class="toc-preview__frame"></iframe>
+            } @else {
+              <img [src]="previewUrl()" class="toc-preview__img" alt="Documento OC" />
+            }
+          </div>
+        }
+
+        <!-- Loading Skeleton -->
+        @if (ocProductsLoading()) {
+          <div class="toc-skeleton" @fadeIn>
+            <div class="toc-skeleton__bar"></div>
+            <div class="toc-skeleton__bar toc-skeleton__bar--short"></div>
+            <div class="toc-skeleton__bar"></div>
+            <div class="toc-skeleton__bar toc-skeleton__bar--short"></div>
+            <div class="toc-skeleton__bar"></div>
+            <p class="toc-skeleton__text">Analizando productos de la OC con OCR...</p>
+          </div>
+        }
+
+        <!-- OC Table -->
+        @if (!ocProductsLoading()) {
+          <div class="toc-table-wrap">
+            <table class="toc-table toc-table--oc">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Producto</th>
+                  <th class="th-r">Cant.</th>
+                  <th class="th-r">Kg</th>
+                  <th class="th-r">Vr. Unitario</th>
+                  <th class="th-r">Valor Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of tablaOcRows(); track $index; let i = $index) {
+                  <tr class="toc-row">
+                    <td class="td-code">{{ row.codigo }}</td>
+                    <td class="td-product">
+                      <span>{{ row.producto }}</span>
+                    </td>
+                    <td class="td-r">{{ row.cantidad ?? '—' }}</td>
+                    <td class="td-r">{{ row.kg ?? '—' }}</td>
+                    <td class="td-r td-money">
+                      @if (row.valorUnitario != null) { {{ formatCurrency(row.valorUnitario!) }} } @else { — }
+                    </td>
+                    <td class="td-r td-money td-money--bold">
+                      @if (row.valor != null) { {{ formatCurrency(row.valor!) }} } @else { — }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              @if (tablaOcRows().length > 1) {
+                <tfoot>
+                  <tr class="toc-total-row">
+                    <td colspan="5" class="td-r">Total productos OC</td>
+                    <td class="td-r td-money td-money--bold">{{ formatCurrency(getOcProductsTotal()) }}</td>
+                  </tr>
+                </tfoot>
+              }
+            </table>
+          </div>
+
+          @if (tablaOcRows().length === 0) {
+            <div class="toc-empty" @fadeIn>
+              <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+              </svg>
+              <p>No se encontraron productos detallados en la OC.</p>
+              <span>Se usará el total general para la comparación.</span>
+            </div>
+          }
+        }
+      </section>
+
+      <!-- ── RIGHT: SIIGO Upload ── -->
+      <section class="toc-panel toc-panel--siigo">
+        <div class="toc-tabs">
+          <button type="button" class="toc-tab toc-tab--active">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            Documento SIIGO (OCR)
+          </button>
+        </div>
+
+        <div class="toc-siigo" @fadeIn>
+            <!-- Upload Zone -->
+            @if (!siigoFile() && !comparisonDone()) {
+              <div class="toc-drop"
+                [class.toc-drop--active]="siigoDragOver()"
+                (dragover)="onDragOver($event)"
+                (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)">
+                <div class="toc-drop__visual">
+                  <div class="toc-drop__ring">
+                    <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.3"
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                  </div>
+                  <h4>Arrastra tu documento SIIGO aquí</h4>
+                  <p>o haz clic para seleccionar archivo</p>
+                  <span class="toc-drop__formats">PDF · Imágenes · Excel · Word</span>
+                </div>
+                <input type="file" class="toc-drop__input"
+                  accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif,.xlsx,.xls,.docx,.doc"
+                  (change)="onFileSelected($event)" />
+              </div>
+
+              <div class="toc-hint">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>El documento será analizado automáticamente con <b>AWS Textract (OCR)</b> para extraer productos, cantidades, precios unitarios y totales.</span>
+              </div>
+            }
+
+            <!-- File Selected -->
+            @if (siigoFile() && !siigoAnalyzing() && !comparisonDone()) {
+              <div class="toc-file-ready" @fadeIn>
+                <div class="toc-file-card">
+                  <span class="toc-file-card__icon">{{ getSiigoFileIcon() }}</span>
+                  <div class="toc-file-card__info">
+                    <strong>{{ siigoFileName() }}</strong>
+                    <span>{{ formatFileSize(siigoFile()!.size) }}</span>
+                  </div>
+                  <button class="toc-file-card__remove" (click)="removeSiigoFile()" title="Quitar archivo">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <button class="toc-analyze-btn" (click)="analizarDocumentoSiigo()">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  Analizar y Comparar con OCR Textract
+                </button>
+
+                <div class="toc-hint">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span>Se compararán <b>{{ tablaOcRows().length }} producto(s)</b> de la OC contra el documento SIIGO.</span>
+                </div>
+              </div>
+            }
+
+            <!-- Analyzing Progress -->
+            @if (siigoAnalyzing()) {
+              <div class="toc-analyzing" @fadeIn>
+                <div class="toc-analyzing__spinner">
+                  <div class="toc-analyzing__ring"></div>
+                  <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="toc-analyzing__icon">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                </div>
+                <h4>Analizando documento SIIGO...</h4>
+                <p>Extrayendo productos, nombres, precios unitarios y totales con OCR Textract</p>
+                <div class="toc-progress">
+                  <div class="toc-progress__fill" [style.width.%]="siigoAnalyzingProgress()"></div>
+                </div>
+                <span class="toc-progress__pct">{{ siigoAnalyzingProgress() | number:'1.0-0' }}%</span>
+                <div class="toc-analyzing__steps">
+                  <span [class.step-active]="siigoAnalyzingProgress() < 30">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    Subiendo documento...
+                  </span>
+                  <span [class.step-active]="siigoAnalyzingProgress() >= 30 && siigoAnalyzingProgress() < 60">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    Analizando con OCR Textract...
+                  </span>
+                  <span [class.step-active]="siigoAnalyzingProgress() >= 60 && siigoAnalyzingProgress() < 85">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    Extrayendo productos y precios...
+                  </span>
+                  <span [class.step-active]="siigoAnalyzingProgress() >= 85">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Comparando productos...
+                  </span>
+                </div>
+              </div>
+            }
+
+            @if (siigoError()) {
+              <div class="toc-error" @alertSlideIn>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ siigoError() }}</span>
+              </div>
+            }
+          </div>
+      </section>
+    </div>
+    }
+
+    <!-- ═══ FOOTER ACTIONS ═══ -->
+    <footer class="toc-footer" @fadeSlideIn>
+      <button class="toc-btn toc-btn--ghost" (click)="volver()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver al detalle
+      </button>
+      <div class="toc-footer__right">
+        @if (comparisonDone()) {
+          <button class="toc-btn toc-btn--primary" (click)="guardarComparacion()">
+            @if (comparisonResult()?.coincide) {
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              Aprobar comparación
+            } @else {
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+              Guardar con Discrepancias
+            }
+          </button>
+        }
+      </div>
+    </footer>
+  }
+</div>

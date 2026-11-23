@@ -1,0 +1,865 @@
+﻿<div class="ticket-detail-wrapper">
+
+  <!-- ═══ TOAST NOTIFICATION ═══ -->
+  @if (toast()) {
+    <div class="toast-notification" [ngClass]="'toast--' + toast()!.type">
+      <div class="toast-icon">
+        @if (toast()!.type === 'success') {
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        }
+        @if (toast()!.type === 'error') {
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        }
+        @if (toast()!.type === 'info') {
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        }
+      </div>
+      <span class="toast-message">{{ toast()!.message }}</span>
+    </div>
+  }
+
+  <!-- ═══ SKELETON LOADING ═══ -->
+  @if (loading()) {
+    <div class="skeleton-wrapper">
+      <div class="skeleton-header">
+        <div class="skeleton-block" style="width:2.5rem;height:2.5rem;border-radius:0.75rem"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:0.5rem">
+          <div class="skeleton-block" style="width:140px;height:18px;border-radius:4px"></div>
+          <div class="skeleton-block" style="width:280px;height:28px;border-radius:4px"></div>
+        </div>
+        <div class="skeleton-block" style="width:90px;height:28px;border-radius:999px"></div>
+      </div>
+      <div class="skeleton-body">
+        <div style="display:flex;flex-direction:column;gap:1rem;flex:1">
+          @for (i of [1,2,3]; track i) {
+            <div class="skeleton-card">
+              <div class="skeleton-block" style="width:200px;height:18px;border-radius:4px;margin-bottom:1rem"></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+                @for (j of [1,2,3,4]; track j) {
+                  <div>
+                    <div class="skeleton-block" style="width:70px;height:10px;border-radius:3px;margin-bottom:0.375rem"></div>
+                    <div class="skeleton-block" style="width:120px;height:16px;border-radius:3px"></div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        <div style="width:380px;display:flex;flex-direction:column;gap:1rem">
+          <div class="skeleton-card" style="height:180px"></div>
+          <div class="skeleton-card" style="height:320px"></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ NOT FOUND ═══ -->
+  @if (!loading() && !ticket()) {
+    <div class="not-found animate-fade-in-up">
+      <div class="not-found__icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h3>Ticket no encontrado</h3>
+      <p>El ticket que buscas no existe o fue eliminado.</p>
+      <button class="btn-back-home" routerLink="/mesa-ayuda">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver al Dashboard
+      </button>
+    </div>
+  }
+
+  <!-- ═══ TICKET DETAIL ═══ -->
+  @if (!loading() && ticket()) {
+    <div class="ticket-content">
+
+      <!-- ─── HEADER ─── -->
+      <div class="ticket-header header-animate" [ngClass]="getNivelClass(ticket()!.nivel)">
+
+        <div class="ticket-header__left">
+          <button class="btn-back" (click)="goBack()" title="Volver">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+          </button>
+          <div class="ticket-header__info">
+            <div class="ticket-header__badges">
+              <span class="nivel-badge" [ngClass]="getNivelClass(ticket()!.nivel)">
+                Nivel {{ ticket()?.nivel }}
+              </span>
+              <span class="ticket-number-header">
+                <span class="ticket-number-dot"></span>
+                {{ ticket()?.numeroTicket }}
+              </span>
+            </div>
+            <h1 class="ticket-header__title">
+              {{ ticket()?.tipoSolicitud }}
+              @if (ticket()?.subClasificacion) {
+                <span class="ticket-header__subtitle"> — {{ ticket()?.subClasificacion }}</span>
+              }
+            </h1>
+            <p class="ticket-header__date">Creado el {{ formatDate(ticket()!.fechaCreacion) }}</p>
+          </div>
+        </div>
+
+        <div class="ticket-header__right">
+          <div class="header-badges-row">
+            <span class="estado-badge" [ngClass]="getEstadoClass(ticket()!.estado)">
+              <span class="estado-dot"></span>
+              {{ getEstadoLabel(ticket()!.estado) }}
+            </span>
+            <span class="estado-badge" [ngClass]="getUrgenciaClass(ticket()!.urgencia)">
+              {{ ticket()?.urgencia }}
+            </span>
+          </div>
+          @if (ticket()?.asignadoA) {
+            <div class="assigned-pill">
+              <div class="assigned-avatar">
+                {{ ticket()!.asignadoA![0].toUpperCase() }}
+              </div>
+              <span class="assigned-name">{{ ticket()?.asignadoA }}</span>
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- ─── MAIN LAYOUT ─── -->
+      <div class="ticket-layout">
+
+        <!-- Left Column -->
+        <div class="ticket-info">
+
+          <!-- Descripción -->
+          <div class="info-card animate-fade-in-up" style="animation-delay:0.05s">
+            <h2 class="info-card__title">
+              <span class="info-card__title-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </span>
+              Descripción del Incidente
+            </h2>
+            <p class="info-card__text">{{ ticket()?.descripcionIncidente }}</p>
+            <div class="info-card__meta">
+              @if (ticket()?.fechaIncidente) {
+                <span class="meta-chip">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  Fecha incidente: {{ ticket()?.fechaIncidente }}
+                </span>
+              }
+              <span class="meta-chip">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Impacto: {{ ticket()?.impacto }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Clasificación -->
+          <div class="info-card animate-fade-in-up" style="animation-delay:0.10s">
+            <h2 class="info-card__title">
+              <span class="info-card__title-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+              </span>
+              Clasificación
+            </h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Tipo Solicitud</span>
+                <span class="info-value">{{ ticket()?.tipoSolicitud }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Sub-clasificación</span>
+                <span class="info-value">{{ ticket()?.subClasificacion || '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Urgencia</span>
+                <span class="info-value">
+                  <span class="estado-badge" [ngClass]="getUrgenciaClass(ticket()!.urgencia)">
+                    {{ ticket()?.urgencia }}
+                  </span>
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Impacto</span>
+                <span class="info-value">{{ getImpactoIcon(ticket()!.impacto) }} {{ ticket()?.impacto }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Solicitante -->
+          <div class="info-card animate-fade-in-up" style="animation-delay:0.15s">
+            <h2 class="info-card__title">
+              <span class="info-card__title-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+              </span>
+              Información del Solicitante
+            </h2>
+            <div class="solicitante-hero">
+              <div class="solicitante-avatar-lg">
+                {{ (ticket()?.nombreCompleto || 'U')[0].toUpperCase() }}
+              </div>
+              <div>
+                <p class="solicitante-nombre">{{ ticket()?.nombreCompleto }}</p>
+                <p class="solicitante-cargo">{{ ticket()?.cargo }}</p>
+              </div>
+            </div>
+            <div class="info-grid" style="margin-top:1rem">
+              <div class="info-item">
+                <span class="info-label">Empresa</span>
+                <span class="info-value">{{ ticket()?.nombreEmpresa }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Tipo Empresa</span>
+                <span class="info-value">{{ ticket()?.tipoEmpresa }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Correo</span>
+                <span class="info-value info-value--link">{{ ticket()?.correoElectronico }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Teléfono</span>
+                <span class="info-value">{{ ticket()?.telefono }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Ciudad</span>
+                <span class="info-value">{{ ticket()?.ciudad || '—' }}</span>
+              </div>
+              @if (ticket()?.oficinaArea) {
+                <div class="info-item">
+                  <span class="info-label">Oficina/Área</span>
+                  <span class="info-value">{{ ticket()?.oficinaArea }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Asignación -->
+          <div class="info-card animate-fade-in-up" style="animation-delay:0.20s">
+            <h2 class="info-card__title">
+              <span class="info-card__title-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+              </span>
+              Asignación y Seguimiento
+            </h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Nivel Actual</span>
+                <span class="info-value">
+                  <span class="nivel-badge" [ngClass]="getNivelClass(ticket()!.nivel)">
+                    Nivel {{ ticket()?.nivel }}
+                  </span>
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Estado</span>
+                <span class="info-value">
+                  <span class="estado-badge" [ngClass]="getEstadoClass(ticket()!.estado)">
+                    <span class="estado-dot"></span>
+                    {{ getEstadoLabel(ticket()!.estado) }}
+                  </span>
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Asignado a</span>
+                <span class="info-value" [class.text-muted]="!ticket()?.asignadoA">
+                  @if (ticket()?.asignadoA) {
+                    <span class="assigned-inline">
+                      <span class="assigned-avatar-sm">{{ ticket()!.asignadoA![0].toUpperCase() }}</span>
+                      {{ ticket()?.asignadoA }}
+                    </span>
+                  } @else {
+                    Sin asignar
+                  }
+                </span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Fecha Creación</span>
+                <span class="info-value">{{ formatDate(ticket()!.fechaCreacion) }}</span>
+              </div>
+              @if (ticket()?.fechaResolucion) {
+                <div class="info-item">
+                  <span class="info-label">Fecha Resolución</span>
+                  <span class="info-value">{{ formatDate(ticket()!.fechaResolucion!) }}</span>
+                </div>
+              }
+            </div>
+
+            @if (ticket()?.diagnostico) {
+              <div class="diagnostico-box animate-fade-in">
+                <div class="diag-header">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  <h3>Diagnóstico</h3>
+                </div>
+                <p>{{ ticket()?.diagnostico }}</p>
+              </div>
+            }
+
+            @if (ticket()?.resolucion) {
+              <div class="solucion-box animate-fade-in">
+                <div class="diag-header">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <h3>Solución Aplicada</h3>
+                </div>
+                <p>{{ ticket()?.resolucion }}</p>
+              </div>
+            }
+
+            <div class="seguimiento-grid animate-fade-in-up" style="animation-delay:0.24s">
+              <div class="seguimiento-card seguimiento-card--assign">
+                <div class="seguimiento-card__header">
+                  <span class="seguimiento-card__label">Responsable actual</span>
+                  <span class="seguimiento-card__badge">{{ getEstadoLabel(ticket()!.estado) }}</span>
+                </div>
+                <strong class="seguimiento-card__title">{{ ticket()?.asignadoA || 'Pendiente de asignación' }}</strong>
+                <p class="seguimiento-card__meta">Nivel {{ ticket()?.nivel }} · {{ formatDate(ticket()!.fechaCreacion) }}</p>
+              </div>
+
+              <div class="seguimiento-card seguimiento-card--diag" [class.seguimiento-card--empty]="!latestDiagnostico()">
+                <div class="seguimiento-card__header">
+                  <span class="seguimiento-card__label">Último diagnóstico</span>
+                  <span class="seguimiento-card__badge">{{ latestDiagnostico()?.usuario || 'Sin registro' }}</span>
+                </div>
+                <strong class="seguimiento-card__title">
+                  {{ latestDiagnostico()?.descripcion || 'Todavía no se ha registrado un diagnóstico técnico.' }}
+                </strong>
+                <p class="seguimiento-card__meta">
+                  {{ latestDiagnostico() ? formatDate(latestDiagnostico()!.fecha) : 'Pendiente de análisis' }}
+                </p>
+              </div>
+
+              <div class="seguimiento-card seguimiento-card--comment" [class.seguimiento-card--empty]="!latestComentario()">
+                <div class="seguimiento-card__header">
+                  <span class="seguimiento-card__label">Último comentario</span>
+                  <span class="seguimiento-card__badge">{{ latestComentario()?.usuario || 'Sin comentarios' }}</span>
+                </div>
+                <strong class="seguimiento-card__title">
+                  {{ latestComentario()?.descripcion || 'No hay comentarios operativos registrados para este ticket.' }}
+                </strong>
+                <p class="seguimiento-card__meta">
+                  {{ latestComentario() ? formatDate(latestComentario()!.fecha) : 'Sin novedades aún' }}
+                </p>
+              </div>
+
+              <div class="seguimiento-card seguimiento-card--escalation" [class.seguimiento-card--empty]="!latestEscalamiento()">
+                <div class="seguimiento-card__header">
+                  <span class="seguimiento-card__label">Último escalamiento</span>
+                  <span class="seguimiento-card__badge">{{ latestEscalamiento()?.nivel ? 'Nivel ' + latestEscalamiento()!.nivel : 'No escalado' }}</span>
+                </div>
+                <strong class="seguimiento-card__title">
+                  {{ latestEscalamiento()?.descripcion || 'Este ticket aún no ha sido escalado a un nivel superior.' }}
+                </strong>
+                <p class="seguimiento-card__meta">
+                  {{ latestEscalamiento() ? formatDate(latestEscalamiento()!.fecha) : 'Seguimiento en curso' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /ticket-info -->
+
+        <!-- Right Column: Sidebar -->
+        <div class="ticket-sidebar">
+
+          <!-- Current user strip -->
+          <div class="current-user-strip animate-fade-in-up" style="animation-delay:0.05s">
+            <div class="current-user-avatar">{{ currentUser[0].toUpperCase() }}</div>
+            <div class="current-user-info">
+              <span class="current-user-label">Agente activo</span>
+              <span class="current-user-name">{{ currentUser }}</span>
+            </div>
+          </div>
+
+          <!-- Read-only notice -->
+          @if (isReadOnly()) {
+            <div class="readonly-notice animate-fade-in-up" style="animation-delay:0.08s">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              <div class="readonly-notice__text">
+                <strong>Solo lectura</strong>
+                <span>Este ticket está asignado a <em>{{ ticket()?.asignadoA }}</em>. Solo ese agente puede realizar acciones.</span>
+              </div>
+            </div>
+          }
+
+          <!-- Actions Card -->
+          <div class="actions-card animate-fade-in-up" style="animation-delay:0.10s">
+            <h2 class="actions-card__title">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              Acciones disponibles
+            </h2>
+            <div class="actions-grid">
+
+              @if (canAssign()) {
+                <button class="action-btn action-btn--assign"
+                  (click)="asignarme()" [disabled]="saving()">
+                  <span class="action-btn__icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                  </span>
+                  <span class="action-btn__content">
+                    <span class="action-btn__label">Asignarme</span>
+                    <span class="action-btn__sub">{{ currentUser }}</span>
+                  </span>
+                  @if (saving()) {
+                    <span class="action-btn__spinner"></span>
+                  }
+                </button>
+              }
+
+              @if (canAddDiagnostico()) {
+                <button class="action-btn action-btn--diagnose"
+                  (click)="openDiagnosticoModal()" [disabled]="saving()">
+                  <span class="action-btn__icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                  </span>
+                  <span class="action-btn__content">
+                    <span class="action-btn__label">Agregar Diagnóstico</span>
+                    <span class="action-btn__sub">Analiza el problema</span>
+                  </span>
+                </button>
+              }
+
+              @if (canEscalar()) {
+                <button class="action-btn action-btn--escalate"
+                  (click)="openEscalarModal()" [disabled]="saving()">
+                  <span class="action-btn__icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 11l5-5m0 0l5 5m-5-5v12"/>
+                    </svg>
+                  </span>
+                  <span class="action-btn__content">
+                    <span class="action-btn__label">Escalar Ticket</span>
+                    <span class="action-btn__sub">Subir a nivel superior</span>
+                  </span>
+                </button>
+              }
+
+              @if (canResolve()) {
+                <button class="action-btn action-btn--resolve"
+                  (click)="openResolverModal()" [disabled]="saving()">
+                  <span class="action-btn__icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </span>
+                  <span class="action-btn__content">
+                    <span class="action-btn__label">Resolver Ticket</span>
+                    <span class="action-btn__sub">Marcar como solucionado</span>
+                  </span>
+                </button>
+              }
+
+              @if (canClose()) {
+                <button class="action-btn action-btn--close"
+                  (click)="cerrarTicket()" [disabled]="saving()">
+                  <span class="action-btn__icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                  </span>
+                  <span class="action-btn__content">
+                    <span class="action-btn__label">Cerrar Ticket</span>
+                    <span class="action-btn__sub">Finalizar el caso</span>
+                  </span>
+                </button>
+              }
+
+              @if (canComment()) {
+                <button class="action-btn action-btn--comment"
+                  (click)="openComentarioModal()" [disabled]="saving()">
+                  <span class="action-btn__icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                  </span>
+                  <span class="action-btn__content">
+                    <span class="action-btn__label">Agregar Comentario</span>
+                    <span class="action-btn__sub">Actualización interna</span>
+                  </span>
+                </button>
+              }
+
+            </div>
+          </div>
+
+          <!-- Timeline Card -->
+          <div class="timeline-card animate-fade-in-up" style="animation-delay:0.20s">
+            <button class="timeline-card__header" (click)="toggleHistorial()" [attr.aria-expanded]="historialExpanded()">
+              <span class="timeline-card__header-left">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Historial de Acciones
+                <span class="timeline-count">{{ ticket()?.historialAcciones?.length }}</span>
+              </span>
+              <span class="timeline-toggle-icon" [class.timeline-toggle-icon--open]="historialExpanded()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </span>
+            </button>
+
+            @if (!historialExpanded()) {
+              <div class="timeline-preview">
+                @if ((ticket()?.historialAcciones?.length ?? 0) > 0) {
+                  @let last = ticket()!.historialAcciones[ticket()!.historialAcciones.length - 1];
+                  <div class="timeline-preview__last">
+                    <span class="timeline-preview__dot" [style.background]="getAccionColor(last.accion)"></span>
+                    <span class="timeline-preview__text">
+                      <strong>Última acción:</strong> {{ getTimelineActionLabel(last.accion) }}
+                      · {{ last.usuario }} · {{ formatDate(last.fecha) }}
+                    </span>
+                  </div>
+                  @if ((ticket()?.historialAcciones?.length ?? 0) > 1) {
+                    <span class="timeline-preview__more">
+                      +{{ (ticket()!.historialAcciones.length - 1) }} registros anteriores
+                    </span>
+                  }
+                } @else {
+                  <span class="timeline-preview__empty">Sin acciones registradas</span>
+                }
+              </div>
+            }
+
+            @if (historialExpanded()) {
+              <div class="timeline">
+                @for (accion of getHistorialVisible(); track accion.fecha; let i = $index; let last = $last) {
+                  <div class="timeline-item"
+                    [style.animation-delay]="(i * 0.05) + 's'"
+                    [class.timeline-item--creation]="accion.accion === 'CREACION'"
+                    [class.timeline-item--escalation]="accion.accion === 'ESCALAMIENTO'"
+                    [class.timeline-item--resolution]="accion.accion === 'RESOLUCION'"
+                    [class.timeline-item--close]="accion.accion === 'CIERRE'"
+                    [class.timeline-item--assign]="accion.accion === 'ASIGNACION'"
+                    [class.timeline-item--comment]="accion.accion === 'COMENTARIO'"
+                    [class.timeline-item--diag]="accion.accion === 'DIAGNOSTICO'"
+                    [class.timeline-item--last]="last"
+                  >
+                    <!-- Icono + línea vertical -->
+                    <div class="timeline-track">
+                      <div class="timeline-icon" [style.border-color]="getAccionColor(accion.accion)">
+                        {{ getActionIcon(accion.accion) }}
+                      </div>
+                      @if (!last) {
+                        <div class="timeline-connector" [style.background]="getAccionColor(accion.accion) + '33'"></div>
+                      }
+                    </div>
+
+                    <!-- Contenido -->
+                    <div class="timeline-content" [style.border-left-color]="getAccionColor(accion.accion)">
+                      <div class="timeline-header">
+                        <div class="timeline-header__left">
+                          <span class="timeline-action-badge"
+                            [style.background]="getAccionColor(accion.accion) + '18'"
+                            [style.color]="getAccionColor(accion.accion)"
+                            [style.border-color]="getAccionColor(accion.accion) + '44'">
+                            {{ getTimelineActionLabel(accion.accion) }}
+                          </span>
+                          @if (accion.nivel) {
+                            <span class="timeline-nivel" [style.background]="getAccionColor(accion.accion) + '14'" [style.color]="getAccionColor(accion.accion)">
+                              Nivel {{ accion.nivel }}
+                            </span>
+                          }
+                        </div>
+                        <span class="timeline-seq">#{{ accion.id }}</span>
+                      </div>
+
+                      <p class="timeline-subtitle">{{ getAccionSubtitle(accion) }}</p>
+                      <p class="timeline-description">{{ accion.descripcion }}</p>
+
+                      <div class="timeline-footer">
+                        <span class="timeline-user">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                          </svg>
+                          {{ accion.usuario }}
+                        </span>
+                        <span class="timeline-date">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                          </svg>
+                          {{ formatDate(accion.fecha) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+        </div><!-- /ticket-sidebar -->
+
+      </div><!-- /ticket-layout -->
+
+    </div><!-- /ticket-content -->
+  }
+
+
+  <!-- ═══ MODALS ═══ -->
+
+  <!-- Modal Diagnostico -->
+  @if (showDiagnosticoModal()) {
+    <div class="modal-backdrop modal-backdrop-enter" (click)="closeAllModals()">
+      <div class="modal modal-enter" (click)="$event.stopPropagation()">
+        <div class="modal__header modal__header--info">
+          <div class="modal__header-left">
+            <div class="modal__header-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="modal__eyebrow">{{ ticket()?.numeroTicket }}</p>
+              <h2 class="modal__title">Agregar Diagnostico</h2>
+            </div>
+          </div>
+          <button class="modal__close" (click)="closeAllModals()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form [formGroup]="diagnosticoForm" (ngSubmit)="submitDiagnostico()">
+          <div class="modal__body">
+            <div class="form-group">
+              <label>Diagnostico del problema</label>
+              <textarea formControlName="diagnostico"
+                placeholder="Describa el analisis y diagnostico detallado del problema..." rows="6"></textarea>
+              <span class="form-hint">Minimo 20 caracteres</span>
+              @if (diagnosticoForm.get('diagnostico')?.invalid && diagnosticoForm.get('diagnostico')?.touched) {
+                <span class="form-error">Ingrese un diagnóstico claro con al menos 20 caracteres.</span>
+              }
+            </div>
+          </div>
+          <div class="modal__footer">
+            <button type="button" class="btn-cancel" (click)="closeAllModals()">Cancelar</button>
+            <button type="submit" class="btn-submit btn-submit--primary"
+              [disabled]="diagnosticoForm.invalid || saving()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ saving() ? 'Guardando...' : 'Guardar Diagnostico' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Escalar -->
+  @if (showEscalarModal()) {
+    <div class="modal-backdrop modal-backdrop-enter" (click)="closeAllModals()">
+      <div class="modal modal-enter" (click)="$event.stopPropagation()">
+        <div class="modal__header modal__header--warning">
+          <div class="modal__header-left">
+            <div class="modal__header-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 11l5-5m0 0l5 5m-5-5v12"/>
+              </svg>
+            </div>
+            <div>
+              <p class="modal__eyebrow">{{ ticket()?.numeroTicket }}</p>
+              <h2 class="modal__title">Escalar Ticket</h2>
+            </div>
+          </div>
+          <button class="modal__close" (click)="closeAllModals()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form [formGroup]="escalarForm" (ngSubmit)="submitEscalar()">
+          <div class="modal__body">
+            <div class="form-group">
+              <label>Nivel de destino</label>
+              <select formControlName="nivelDestino">
+                <option value="">Seleccione nivel</option>
+                @if (ticket()?.nivel === 1 || ticket()?.nivel === 2) {
+                  <option value="2">Nivel 2 — Soporte Tecnico Especializado</option>
+                }
+                @if (ticket()?.nivel === 1 || ticket()?.nivel === 2) {
+                  <option value="3">Nivel 3 — Especialistas e Infraestructura</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Motivo del escalamiento</label>
+              <textarea formControlName="motivo"
+                placeholder="Explique por que es necesario escalar este ticket..." rows="5"></textarea>
+              <span class="form-hint">Minimo 20 caracteres</span>
+              @if (escalarForm.get('motivo')?.invalid && escalarForm.get('motivo')?.touched) {
+                <span class="form-error">Debe registrar un motivo detallado antes de escalar el ticket.</span>
+              }
+            </div>
+          </div>
+          <div class="modal__footer">
+            <button type="button" class="btn-cancel" (click)="closeAllModals()">Cancelar</button>
+            <button type="submit" class="btn-submit btn-submit--warning"
+              [disabled]="escalarForm.invalid || saving()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 11l5-5m0 0l5 5m-5-5v12"/>
+              </svg>
+              {{ saving() ? 'Escalando...' : 'Escalar Ticket' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Resolver -->
+  @if (showResolverModal()) {
+    <div class="modal-backdrop modal-backdrop-enter" (click)="closeAllModals()">
+      <div class="modal modal-enter" (click)="$event.stopPropagation()">
+        <div class="modal__header modal__header--success">
+          <div class="modal__header-left">
+            <div class="modal__header-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="modal__eyebrow">{{ ticket()?.numeroTicket }}</p>
+              <h2 class="modal__title">Resolver Ticket</h2>
+            </div>
+          </div>
+          <button class="modal__close" (click)="closeAllModals()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form [formGroup]="resolverForm" (ngSubmit)="submitResolver()">
+          <div class="modal__body">
+            <div class="form-group">
+              <label>Solucion aplicada</label>
+              <textarea formControlName="solucion"
+                placeholder="Describa detalladamente la solucion aplicada para resolver el problema..." rows="6"></textarea>
+              <span class="form-hint">Minimo 20 caracteres</span>
+              @if (resolverForm.get('solucion')?.invalid && resolverForm.get('solucion')?.touched) {
+                <span class="form-error">La solución debe explicar lo realizado con al menos 20 caracteres.</span>
+              }
+            </div>
+          </div>
+          <div class="modal__footer">
+            <button type="button" class="btn-cancel" (click)="closeAllModals()">Cancelar</button>
+            <button type="submit" class="btn-submit btn-submit--success"
+              [disabled]="resolverForm.invalid || saving()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ saving() ? 'Guardando...' : 'Marcar como Resuelto' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Comentario -->
+  @if (showComentarioModal()) {
+    <div class="modal-backdrop modal-backdrop-enter" (click)="closeAllModals()">
+      <div class="modal modal-enter" (click)="$event.stopPropagation()">
+        <div class="modal__header modal__header--comment">
+          <div class="modal__header-left">
+            <div class="modal__header-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="modal__eyebrow">{{ ticket()?.numeroTicket }}</p>
+              <h2 class="modal__title">Agregar Comentario</h2>
+            </div>
+          </div>
+          <button class="modal__close" (click)="closeAllModals()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <form [formGroup]="comentarioForm" (ngSubmit)="submitComentario()">
+          <div class="modal__body">
+            <div class="form-group">
+              <label>Comentario</label>
+              <textarea formControlName="comentario"
+                placeholder="Escriba su comentario o actualizacion sobre el estado del ticket..." rows="4"></textarea>
+              <span class="form-hint">Minimo 10 caracteres</span>
+              @if (comentarioForm.get('comentario')?.invalid && comentarioForm.get('comentario')?.touched) {
+                <span class="form-error">Agregue una actualización breve de al menos 10 caracteres.</span>
+              }
+            </div>
+          </div>
+          <div class="modal__footer">
+            <button type="button" class="btn-cancel" (click)="closeAllModals()">Cancelar</button>
+            <button type="submit" class="btn-submit btn-submit--primary"
+              [disabled]="comentarioForm.invalid || saving()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+              {{ saving() ? 'Enviando...' : 'Enviar Comentario' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+</div>

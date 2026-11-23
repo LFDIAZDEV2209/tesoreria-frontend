@@ -1,0 +1,198 @@
+<div class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3">
+  <div class="space-y-6" @gpStagger>
+
+  <!-- Header -->
+  <app-gp-page-header class="gp-item" icono="chart" color="#045C94" titulo="Gestor Presupuestal"
+                      [descripcion]="mensual()?.contrato?.nombreEmpresa ?? 'Panorama financiero'"
+                      [chip]="ultimoMes() ? 'Corte: ' + ultimoMes() : ''">
+    <div acciones class="flex items-center gap-2">
+      <app-gp-empresa-selector></app-gp-empresa-selector>
+      <app-gp-estado-badge [estado]="estadoAprobacion()"></app-gp-estado-badge>
+    </div>
+  </app-gp-page-header>
+
+  <div *ngIf="error()">
+    <app-gp-error-state class="gp-item" [mensaje]="error()!" (reintentar)="cargar()"></app-gp-error-state>
+  </div>
+
+  <div *ngIf="loading()">
+    <app-gp-skeleton tipo="kpis" class="gp-item"></app-gp-skeleton>
+    <div class="grid md:grid-cols-2 gap-4 mt-4">
+      <app-gp-skeleton tipo="chart" class="gp-item"></app-gp-skeleton>
+      <app-gp-skeleton tipo="chart" class="gp-item"></app-gp-skeleton>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!loading() && !error()">
+
+    <div *ngIf="!mensual()?.meses?.length" class="gp-item">
+      <app-gp-empty-state icono="chart" titulo="Presupuesto sin configurar"
+        descripcion="Registra el contrato y sus fechas en el módulo Presupuesto para ver el panorama completo.">
+      </app-gp-empty-state>
+    </div>
+
+    <!-- KPIs -->
+    <div class="gp-item grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
+      <app-gp-kpi label="Presupuesto contrato" [value]="totalContrato()" icon="file" variante="default"></app-gp-kpi>
+      <app-gp-kpi label="Facturado (acum.)" [value]="facturado()" icon="receipt" variante="default"></app-gp-kpi>
+      <app-gp-kpi label="Cobrado (acum.)" [value]="pctCobrado()" tipo="porcentaje" icon="coins" variante="success"
+                  sub="% del facturado"></app-gp-kpi>
+      <app-gp-kpi label="Pendiente por cobrar" [value]="pendiente()" icon="clock" variante="warning"></app-gp-kpi>
+      <app-gp-kpi label="Total por pagar" [value]="totalPorPagar()" icon="credit-card" variante="danger"></app-gp-kpi>
+      <app-gp-kpi label="Nómina del período" [value]="totalNomina()" icon="users" variante="default"></app-gp-kpi>
+      <app-gp-kpi label="Pagos proyectados" [value]="resumenPagos()?.totalProyectado" icon="calendar" variante="success"></app-gp-kpi>
+      <app-gp-kpi label="Flujo disponible" [value]="flujoDisponible()" icon="waves" variante="warning" [destacado]="true"></app-gp-kpi>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="gp-item grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div class="card !p-5" @gpPop>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-primary-600 flex items-center gap-2.5">
+            <span class="gp-chart-icon" style="background: linear-gradient(135deg,#045C94,#213053);">
+              <app-gp-icon name="trending" [size]="15"></app-gp-icon>
+            </span>
+            Facturado vs cobrado
+          </h3>
+          <span class="gp-chart-tag">acumulado mensual</span>
+        </div>
+        <apx-chart *ngIf="facturadoData()" [series]="facturadoData()!.series"
+                   [chart]="optFacturado.chart" [xaxis]="facturadoData()!.xaxis"
+                   [yaxis]="facturadoData()!.yaxis" [colors]="optFacturado.colors"
+                   [plotOptions]="optFacturado.plotOptions" [dataLabels]="optFacturado.dataLabels"
+                   [legend]="optFacturado.legend" [grid]="optFacturado.grid"
+                   [tooltip]="facturadoData()!.tooltip"></apx-chart>
+        <div *ngIf="!facturadoData()" class="h-60 flex items-center justify-center text-sm text-gray-300">Sin datos suficientes</div>
+      </div>
+
+      <div class="card !p-5" @gpPop>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-primary-600 flex items-center gap-2.5">
+            <span class="gp-chart-icon" style="background: linear-gradient(135deg,#059669,#10b981);">
+              <app-gp-icon name="waves" [size]="15"></app-gp-icon>
+            </span>
+            Flujo de caja
+          </h3>
+          <span class="gp-chart-tag">total disponible por mes</span>
+        </div>
+        <apx-chart *ngIf="flujoData()" [series]="flujoData()!.series"
+                   [chart]="optFlujo.chart" [xaxis]="flujoData()!.xaxis"
+                   [yaxis]="flujoData()!.yaxis" [colors]="optFlujo.colors"
+                   [stroke]="optFlujo.stroke" [fill]="optFlujo.fill" [dataLabels]="optFlujo.dataLabels"
+                   [legend]="optFlujo.legend" [grid]="optFlujo.grid"
+                   [tooltip]="flujoData()!.tooltip"></apx-chart>
+        <div *ngIf="!flujoData()" class="h-60 flex items-center justify-center text-sm text-gray-300">Sin datos suficientes</div>
+      </div>
+
+      <div class="card !p-5" @gpPop>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-primary-600 flex items-center gap-2.5">
+            <span class="gp-chart-icon" style="background: linear-gradient(135deg,#6B46C1,#9333EA);">
+              <app-gp-icon name="calendar" [size]="15"></app-gp-icon>
+            </span>
+            Pagos por estado
+          </h3>
+          <span class="gp-chart-tag">calendario de pagos</span>
+        </div>
+        <apx-chart *ngIf="pagosData()" [series]="pagosData()!.series" [labels]="pagosData()!.labels"
+                   [chart]="optPagos.chart" [colors]="optPagos.colors"
+                   [legend]="optPagos.legend" [dataLabels]="optPagos.dataLabels"
+                   [plotOptions]="pagosData()!.plotOptions" [tooltip]="pagosData()!.tooltip"></apx-chart>
+        <div *ngIf="!pagosData()" class="h-60 flex items-center justify-center text-sm text-gray-300">Sin pagos registrados</div>
+      </div>
+
+      <div class="card !p-5" @gpPop>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-primary-600 flex items-center gap-2.5">
+            <span class="gp-chart-icon" style="background: linear-gradient(135deg,#D97706,#f59e0b);">
+              <app-gp-icon name="layers" [size]="15"></app-gp-icon>
+            </span>
+            Gastos por categoría
+          </h3>
+          <span class="gp-chart-tag">proveedores + cuentas por pagar</span>
+        </div>
+        <apx-chart *ngIf="gastosData()" [series]="gastosData()!.series"
+                   [chart]="optGastos.chart" [plotOptions]="optGastos.plotOptions"
+                   [colors]="optGastos.colors" [dataLabels]="optGastos.dataLabels" [legend]="optGastos.legend"
+                   [grid]="optGastos.grid" [xaxis]="gastosData()!.xaxis"
+                   [yaxis]="{ labels: { style: { colors: '#94a3b8', fontSize: '11px' } } }"
+                   [tooltip]="gastosData()!.tooltip"></apx-chart>
+        <div *ngIf="!gastosData()" class="h-60 flex items-center justify-center text-sm text-gray-300">Sin gastos por categoría</div>
+      </div>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="gp-item grid grid-cols-2 md:grid-cols-5 gap-3">
+      <a *ngFor="let mod of modulos" routerLink="/presupuesto/{{ rutaModulo(mod.modulo) }}"
+         class="card !p-4 !rounded-xl flex items-center gap-3 gp-acceso group"
+         [style.border-left-color]="mod.color">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-3"
+             [style.background]="'linear-gradient(135deg,' + mod.color + ',' + mod.color + 'CC)'" style="color:#fff;">
+          <app-gp-icon [name]="mod.icono" [size]="19"></app-gp-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-semibold text-primary-600 truncate">{{ mod.titulo }}</p>
+          <p class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Saldo</p>
+          <p class="text-sm font-bold tabular-nums" [style.color]="mod.color">{{ cpShort(saldoModuloTxt(mod.modulo)) }}</p>
+        </div>
+        <span class="gp-acceso__arrow text-gray-300 transition-all duration-200 group-hover:text-accent-600">
+          <app-gp-icon name="arrow-right" [size]="15"></app-gp-icon>
+        </span>
+      </a>
+    </div>
+
+    <!-- Top alertas -->
+    <div *ngIf="topAlertas().length" class="gp-item grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div class="card !p-0 overflow-hidden" @gpPop>
+        <div class="gp-panel-head">
+          <span class="gp-panel-head__icon" style="background: linear-gradient(135deg,#D97706,#f59e0b);">
+            <app-gp-icon name="alert" [size]="15"></app-gp-icon>
+          </span>
+          <h3 class="font-bold text-white text-sm">Mayores saldos por tercero</h3>
+          <span class="ml-auto text-[11px] text-white/70">{{ topAlertas().length }} terceros</span>
+        </div>
+        <table class="w-full text-sm">
+          <tbody>
+            <tr *ngFor="let d of topAlertas()" class="border-t border-gray-50 hover:bg-accent-500/[0.03] transition-colors">
+              <td class="px-5 py-2.5">
+                <p class="font-medium text-primary-600 truncate max-w-[180px]">{{ d.nombre }}</p>
+                <p class="font-mono text-[11px] text-gray-400">{{ d.nit }}</p>
+              </td>
+              <td class="px-3 py-2.5"><app-gp-badge-categoria [categoria]="d.categoria"></app-gp-badge-categoria></td>
+              <td class="px-3 py-2.5 text-right font-bold tabular-nums" [class]="cl(d.total)">{{ cp(d.total) }}</td>
+              <td class="px-5 py-2.5 text-right w-6">
+                <app-gp-estado-badge *ngIf="d.alertaCruce" estado="alerta"></app-gp-estado-badge>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card !p-0 overflow-hidden" @gpPop>
+        <div class="gp-panel-head">
+          <span class="gp-panel-head__icon" style="background: linear-gradient(135deg,#045C94,#213053);">
+            <app-gp-icon name="shield" [size]="15"></app-gp-icon>
+          </span>
+          <h3 class="font-bold text-white text-sm">Flujo de caja reciente</h3>
+          <span class="ml-auto text-[11px] text-white/70">ejecución de cobros {{ pctCobradoTxt() }}</span>
+        </div>
+        <div class="p-5 space-y-3">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-500">Dinero disponible al inicio (último mes)</span>
+            <span class="font-semibold tabular-nums text-primary-600">{{ cp(valorConcepto(mensual()?.filasFlujoCaja ?? [], 'Dinero líquido disponible al inicio')) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-500">Total disponible</span>
+            <span class="font-bold tabular-nums text-accent-600">{{ cp(flujoDisponible()) }}</span>
+          </div>
+          <div class="h-2.5 rounded-full overflow-hidden" style="background: rgba(4,92,148,.08);">
+            <div class="h-full rounded-full gp-barra" style="background: linear-gradient(90deg,#045C94,#213053);"
+                 [style.width.%]="pctBar()"></div>
+          </div>
+          <p class="text-[11px] text-gray-400">Ejecución de cobros: {{ pctCobradoTxt() }} del facturado</p>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+</div>

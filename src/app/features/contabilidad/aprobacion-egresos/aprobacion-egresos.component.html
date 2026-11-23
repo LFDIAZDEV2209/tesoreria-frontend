@@ -1,0 +1,165 @@
+<div class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3">
+
+  <!-- === TOAST === -->
+  @if (showToast()) {
+    <div class="ae-toast"
+      [class.ae-toast--success]="toastType() === 'success'"
+      [class.ae-toast--error]="toastType() === 'error'"
+      [class.ae-toast--warning]="toastType() === 'warning'"
+      [class.ae-toast--info]="toastType() === 'info'">
+      <span class="ae-toast__text">{{ toastMessage() }}</span>
+      <button class="ae-toast__close" (click)="showToast.set(false)">✕</button>
+    </div>
+  }
+
+  <!-- === HEADER === -->
+  <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white shadow-2xl rounded-2xl mb-4 ae-animate">
+    <div class="px-6 py-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg ae-icon-pulse">
+          <svg class="w-7 h-7 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-semibold mb-0.5">Editor Contable</p>
+          <h1 class="text-xl font-bold tracking-tight">Eliminaciones de Egresos</h1>
+          <p class="text-white/80 text-xs">Egresos que un contador pidió eliminar: apruebe o rechace</p>
+        </div>
+        <div class="ml-auto">
+          <button (click)="load()"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-xl transition-all border border-white/20 shadow-lg">
+            <svg class="w-4 h-4" [class.animate-spin]="isLoading()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE SECTION -->
+  @if (!puedeResolver()) {
+    <div class="bg-amber-50 border border-amber-200 rounded-xl px-6 py-4 mb-4 text-sm text-amber-800">
+      Tu rol ({{ ctx.rolGp() }}) puede ver la bandeja, pero <b>aprobar o rechazar eliminaciones</b>
+      requiere el permiso <b>“Aprobación de eliminaciones”</b> (rol editor contable). Un superadministrador
+      puede otorgarlo en Configuración → Roles y permisos.
+    </div>
+  }
+  <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] px-6 py-3 rounded-t-xl ae-animate" style="animation-delay: 0.1s">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-bold text-white">Solicitudes pendientes ({{ filtered().length }})</h2>
+        <p class="text-white/80 mt-0.5 text-xs">Aprobar elimina el egreso · Rechazar lo devuelve a registrados</p>
+      </div>
+      <input
+        type="text"
+        placeholder="🔍 Buscar egreso, NIT, solicitante..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)"
+        class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white/40 text-sm flex-1 lg:w-64"
+      />
+    </div>
+  </div>
+
+  <div class="bg-white rounded-b-xl shadow-lg border border-gray-100">
+    @if (isLoading()) {
+      <div class="py-16 text-center">
+        <div class="inline-flex items-center gap-3 text-gray-400">
+          <svg class="w-6 h-6 animate-spin text-[#045C94]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span class="text-sm font-medium text-gray-500">Cargando solicitudes...</span>
+        </div>
+      </div>
+    } @else if (filtered().length === 0) {
+      <div class="py-16 text-center">
+        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-gray-700 mb-1">Sin solicitudes pendientes</h3>
+        <p class="text-sm text-gray-500">No hay egresos esperando aprobación de eliminación.</p>
+      </div>
+    } @else {
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-[#f4f4f4] border-b-2 border-[#213053]/10 sticky top-0">
+            <tr>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">N° Egreso</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Proveedor</th>
+              <th class="px-4 py-3 text-right text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Neto</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Solicitado por</th>
+              <th class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Decisión</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let e of filtered(); let i = index" class="ae-table-row" [style.animation-delay]="i * 0.04 + 's'">
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#045C94]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+                  {{ e.numeroFactura }}
+                </span>
+                <div class="text-[10px] text-gray-400 mt-0.5">NIT {{ e.nitProveedor }} · {{ e.valor | currency:'COP':'symbol':'1.0-0' }}</div>
+                <div class="text-[10px] font-semibold text-orange-700 mt-0.5">Causal: {{ e.causalEliminacion || '—' }}</div>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="text-[11px] font-semibold text-gray-800">{{ e.proveedorNombre || '—' }}</span>
+              </td>
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <span class="text-sm font-bold text-[#213053]">{{ formatCurrency(e.valorNetoPagar ?? e.valor) }}</span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-orange-100 text-orange-700 border border-orange-300">
+                  {{ e.solicitadoPor || e.creadoPor || '—' }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                @if (puedeResolver()) {
+                <div class="flex items-center justify-center gap-1.5">
+                  <button *appGpPermiso="'egresos.deletion.approve'" (click)="aprobar(e)" [disabled]="procesandoId() === e.id"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#213053] text-white text-[10px] font-bold rounded-lg hover:bg-[#1b2844] transition-all shadow-sm disabled:opacity-60">
+                    Aprobar
+                  </button>
+                  <button *appGpPermiso="'egresos.deletion.reject'" (click)="rechazar(e)" [disabled]="procesandoId() === e.id"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white text-gray-600 border border-gray-300 text-[10px] font-bold rounded-lg hover:bg-gray-50 transition-all shadow-sm disabled:opacity-60">
+                    Rechazar
+                  </button>
+                </div>
+                } @else {
+                  <span class="text-[11px] text-gray-400">Sin permiso</span>
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile cards -->
+      <div class="md:hidden divide-y divide-gray-100">
+        <div *ngFor="let e of filtered()" class="p-4 hover:bg-gray-50 transition-colors">
+          <div class="flex items-start justify-between mb-2">
+            <span class="text-xs font-bold text-[#045C94]">{{ e.numeroFactura }}</span>
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-orange-100 text-orange-700 border border-orange-300">{{ e.solicitadoPor || '—' }}</span>
+          </div>
+          <p class="text-sm font-semibold text-gray-800 mb-1">{{ e.proveedorNombre || e.nitProveedor }}</p>
+          <p class="text-[11px] text-orange-700 font-medium mb-1">Causal: {{ e.causalEliminacion || '—' }}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-[#213053]">{{ formatCurrency(e.valorNetoPagar ?? e.valor) }}</span>
+            @if (puedeResolver()) {
+            <div class="flex items-center gap-1.5">
+              <button *appGpPermiso="'egresos.deletion.approve'" (click)="aprobar(e)" class="px-2.5 py-1.5 bg-[#213053] text-white text-[10px] font-bold rounded-lg">Aprobar</button>
+              <button *appGpPermiso="'egresos.deletion.reject'" (click)="rechazar(e)" class="px-2.5 py-1.5 bg-white text-gray-600 border border-gray-300 text-[10px] font-bold rounded-lg">Rechazar</button>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

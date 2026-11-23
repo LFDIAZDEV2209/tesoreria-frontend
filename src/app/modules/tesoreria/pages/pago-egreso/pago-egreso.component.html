@@ -1,0 +1,327 @@
+<section class="ef-page">
+  <button class="ef-back" type="button" (click)="volver.emit()">← Volver a Tesorería</button>
+
+  <!-- === HERO === -->
+  <header class="ef-hero">
+    <div>
+      <span class="ef-eyebrow">Módulo Tesorería · Pago de egreso</span>
+      <h1>Egreso {{ egreso.numeroEgreso || egreso.numeroFactura }}</h1>
+      <p>{{ egreso.proveedorNombre || egreso.conceptoPresupuestal || 'Egreso de nómina' }}</p>
+      <small>
+        {{ egreso.empresaNombre || '' }}
+        <span *ngIf="egreso.nitProveedor"> · NIT {{ egreso.nitProveedor }}</span>
+        <span *ngIf="egreso.fecha"> · {{ egreso.fecha }}</span>
+      </small>
+    </div>
+    <div class="ef-hero__amount">
+      <span>Neto a pagar</span>
+      <strong>{{ formatear(neto) }}</strong>
+      <span class="ef-status">
+        {{ conciliado ? 'Conciliado' : (conciliacionPendiente ? 'Pagado · falta conciliar' : (soporteAprobado ? 'Comprobante aprobado' : 'Pendiente de pago')) }}
+      </span>
+    </div>
+  </header>
+
+  <!-- === PASOS === -->
+  <ol class="ef-steps" aria-label="Avance del pago">
+    <li class="is-complete">
+      <b>✓</b>
+      <span>Documento de egreso<small>Aprobado por Gerencia Financiera</small></span>
+    </li>
+    <li [class.is-complete]="soporteAprobado || conciliado || conciliacionPendiente"
+        [class.is-current]="pendiente && !soporteAprobado">
+      <b>{{ soporteAprobado || conciliado || conciliacionPendiente ? '✓' : '2' }}</b>
+      <span>Comprobante de pago<small>Se compara con el documento de egreso</small></span>
+    </li>
+    <li [class.is-complete]="conciliado" [class.is-current]="conciliacionPendiente">
+      <b>{{ conciliado ? '✓' : '3' }}</b>
+      <span>Conciliado<small>Fin del proceso</small></span>
+    </li>
+  </ol>
+
+  <!-- === FEEDBACK === -->
+  @if (error()) {
+    <p role="alert" class="ef-feedback ef-feedback--error">{{ error() }}</p>
+  }
+  @if (mensaje()) {
+    <p role="status" class="ef-feedback ef-feedback--success">✓ {{ mensaje() }}</p>
+  }
+
+  <!-- === CARDS: DATOS DEL EGRESO vs DATOS DEL COMPROBANTE (OCR) === -->
+  <div class="ef-cards ef-cards--duo">
+
+    <!-- Card 1: Datos del egreso -->
+    <article class="ef-card">
+      <div class="ef-card__head">
+        <h3>Datos del egreso</h3>
+        @if (tieneDocumentoEgreso) {
+          <button type="button" class="ef-secondary" (click)="abrirDocumentoEgreso()">Ver documento</button>
+        }
+      </div>
+      <div class="ef-compare-row">
+        <span>Proveedor</span>
+        <strong>{{ egreso.proveedorNombre || egreso.conceptoPresupuestal || '—' }}</strong>
+      </div>
+      <div class="ef-compare-row">
+        <span>NIT</span>
+        <strong class="ef-mono">{{ egreso.nitProveedor || '—' }}</strong>
+      </div>
+      <div class="ef-compare-row">
+        <span>Valor neto a pagar</span>
+        <strong>{{ valorEsperadoUI }}</strong>
+      </div>
+      <div class="ef-compare-row">
+        <span>Cuenta destino</span>
+        <strong class="ef-mono">{{ egreso.cuenta || '—' }}</strong>
+      </div>
+      <div class="ef-compare-row">
+        <span>Fecha</span>
+        <strong>{{ egreso.fecha || '—' }}</strong>
+      </div>
+      <div class="ef-compare-row">
+        <span>Documento de egreso</span>
+        <strong>{{ tieneDocumentoEgreso ? nombreDocumentoEgreso : 'Sin documento' }}</strong>
+      </div>
+    </article>
+
+    <!-- Card 2: Datos leídos del comprobante de pago (OCR) -->
+    <article class="ef-card">
+      <div class="ef-card__head">
+        <h3>Datos del comprobante de pago</h3>
+        @if (soporte) {
+          <span class="ef-badge" [ngClass]="claseComprobante(soporte.estado)">{{ etiquetaComprobante(soporte.estado) }}</span>
+        } @else {
+          <span class="ef-badge">Pendiente</span>
+        }
+      </div>
+
+      @if (cargandoEstado) {
+        <p class="ef-processing" role="status"><span></span> Consultando el estado del egreso…</p>
+      } @else {
+        @if (soporte; as s) {
+          <p class="ef-card__hint">
+            {{ s.nombre }} · leído con OCR (Textract). Se comparan el valor pagado y el beneficiario contra el egreso.
+          </p>
+
+          <div class="ef-compare-row">
+            <span>Beneficiario</span>
+            <span class="ef-compare-row__value">
+              <strong>{{ s.beneficiarioExtraido || '—' }}</strong>
+              <b class="ef-check" [ngClass]="estadoCheck(s.beneficiarioOk)"
+                [attr.aria-label]="s.beneficiarioOk === true ? 'Beneficiario coincide' : (s.beneficiarioOk === false ? 'Beneficiario no coincide' : 'Beneficiario sin verificar')">
+                {{ s.beneficiarioOk === true ? '✓' : (s.beneficiarioOk === false ? '✗' : '—') }}
+              </b>
+            </span>
+          </div>
+
+          <div class="ef-compare-row">
+            <span>Valor pagado</span>
+            <span class="ef-compare-row__value">
+              <strong>{{ formatear(s.valorExtraido) }}</strong>
+              <b class="ef-check" [ngClass]="estadoCheck(s.montoOk)"
+                [attr.aria-label]="s.montoOk === true ? 'Monto coincide' : (s.montoOk === false ? 'Monto no coincide' : 'Monto sin verificar')">
+                {{ s.montoOk === true ? '✓' : (s.montoOk === false ? '✗' : '—') }}
+              </b>
+            </span>
+          </div>
+          @if (s.montoOk === false && diferenciaValorUI) {
+            <p class="ef-compare__diff">Diferencia: {{ diferenciaValorUI }}</p>
+          }
+
+          <div class="ef-compare-row">
+            <span>Fecha</span>
+            <strong>{{ s.fechaExtraida || s.fecha || '—' }}</strong>
+          </div>
+
+          <div class="ef-compare-row">
+            <span>Referencia</span>
+            <strong>{{ s.referenciaExtraida || s.referencia || '—' }}</strong>
+          </div>
+
+          @if (s.estado === 'RECHAZADO') {
+            <div class="ef-compare__issues">
+              @for (d of diferencias(s); track $index) {
+                <p>• {{ d }}</p>
+              }
+            </div>
+            @if (puedeAdjuntar) {
+              @if (anulandoId() !== s.id) {
+                <button type="button" class="ef-danger" (click)="abrirAnulacion(s)">Anular y subir otro comprobante</button>
+              } @else {
+                <div class="ef-annul">
+                  <label class="ef-field">Motivo de anulación
+                    <input [(ngModel)]="motivo" maxlength="300" placeholder="Explica por qué anulas este comprobante">
+                  </label>
+                  <div class="ef-doc-row__actions">
+                    <button type="button" class="ef-danger" (click)="anular(s)" [disabled]="ocupado() || !motivo.trim()">Confirmar anulación</button>
+                    <button type="button" class="ef-secondary" (click)="cancelarAnulacion()">Cancelar</button>
+                  </div>
+                </div>
+              }
+            }
+          }
+
+          <div class="ef-doc-row__actions" style="margin-top: 12px">
+            <button type="button" class="ef-secondary" (click)="descargar(s)">Ver comprobante</button>
+          </div>
+        } @else {
+          <p class="ef-card__hint">
+            Al subir el comprobante de pago, el sistema lee con OCR (Textract) el valor
+            pagado, la fecha, la referencia y el beneficiario, y compara el valor pagado
+            y el beneficiario contra el egreso.
+          </p>
+          <div class="ef-compare-row ef-compare-row--muted"><span>Beneficiario</span><em>Pendiente de lectura</em></div>
+          <div class="ef-compare-row ef-compare-row--muted"><span>Valor pagado</span><em>Pendiente de lectura</em></div>
+          <div class="ef-compare-row ef-compare-row--muted"><span>Fecha</span><em>Pendiente de lectura</em></div>
+          <div class="ef-compare-row ef-compare-row--muted"><span>Referencia</span><em>Pendiente de lectura</em></div>
+        }
+      }
+    </article>
+  </div>
+
+  <!-- === SUBIR COMPROBANTE (sin comprobante vigente) === -->
+  @if (!soporte && pendiente) {
+    @if (puedeAdjuntar) {
+      <article class="ef-card ef-card--action" style="margin-top: 16px">
+        <div class="ef-card__head">
+          <h3>Subir comprobante de pago</h3>
+        </div>
+        @if (!cargandoArchivo()) {
+          <p class="ef-card__hint">
+            Selecciona el comprobante de pago: el sistema lo lee con OCR (Textract) y extrae
+            valor pagado, fecha, referencia y beneficiario. La validación compara el valor
+            pagado y el beneficiario contra el egreso.
+          </p>
+          <label class="ef-upload" [class.is-disabled]="ocupado()">
+            <span class="ef-upload__icon" aria-hidden="true">↑</span>
+            <strong>{{ archivo ? archivo.name : 'Selecciona el comprobante de pago' }}</strong>
+            <span>PDF, PNG o JPG · Hasta 50 MB</span>
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="seleccionarArchivo($event)" [disabled]="ocupado()">
+            <small>El comprobante debe mostrar el valor pagado y el beneficiario (NIT o cédula).</small>
+          </label>
+          <div class="ef-panel__footer">
+            <span>La subida no requiere datos manuales: todo se lee del comprobante.</span>
+            <button type="button" class="ef-primary" [disabled]="ocupado() || !archivo" (click)="adjuntar()">
+              {{ ocupado() ? 'Leyendo y validando…' : 'Subir y leer comprobante' }} <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        }
+
+        @if (cargandoArchivo()) {
+          <div class="ef-upload-progress" role="status">
+            <p>{{ progresoArchivo() === 100 ? 'Leyendo y validando comprobante…' : 'Subiendo comprobante…' }}
+              <strong>{{ progresoArchivo() === null || progresoArchivo() === 100 ? '' : progresoArchivo() + '%' }}</strong>
+            </p>
+            <div role="progressbar" aria-label="Carga del comprobante de pago" aria-valuemin="0" aria-valuemax="100"
+              [attr.aria-valuenow]="progresoArchivo()">
+              <i [style.width.%]="progresoArchivo() ?? 10"></i>
+            </div>
+          </div>
+        }
+      </article>
+    } @else {
+      <p class="ef-feedback">Tu rol no tiene permiso para adjuntar el comprobante de pago.</p>
+    }
+  }
+
+  <!-- === REGISTRAR PAGO === -->
+  @if (puedePagar) {
+    <article class="ef-card ef-card--action" style="margin-top: 16px">
+      <h3>Registrar pago y conciliar</h3>
+      @if (requiereCuentaSalida) {
+        <p class="ef-card__hint">
+          El comprobante no identifica la cuenta bancaria de salida: selecciónala para registrar el movimiento bancario.
+        </p>
+        <label class="ef-field">Cuenta bancaria de salida
+          <select [(ngModel)]="bancoSeleccionado" [disabled]="ocupado()">
+            <option [ngValue]="null" disabled>Selecciona la cuenta</option>
+            @for (c of cuentas(); track c.id) {
+              <option [ngValue]="c.id">{{ c.banco }} · {{ c.numeroCuenta }} — {{ c.titular }}</option>
+            }
+          </select>
+        </label>
+        @if (!cuentas().length) {
+          <p class="ef-feedback ef-feedback--error" role="alert">
+            La empresa no tiene cuentas bancarias activas. Regístralas en Control de Bancos para registrar el pago.
+          </p>
+        }
+      }
+      <label class="ef-confirm">
+        <input type="checkbox" [(ngModel)]="confirmarPago" [disabled]="ocupado()">
+        <span>Confirmo que el comprobante de pago corresponde al egreso y coincide con el documento de egreso.</span>
+      </label>
+      <p class="ef-card__hint">Al registrar, el egreso queda PAGADO y conciliado automáticamente.</p>
+      <button type="button" class="ef-primary" [disabled]="!confirmarPago || ocupado() || (requiereCuentaSalida && !bancoSeleccionado)" (click)="pagar()">
+        Registrar pago y conciliar <span aria-hidden="true">→</span>
+      </button>
+    </article>
+  }
+
+  <!-- === CONCILIADO === -->
+  @if (conciliado) {
+    <section class="ef-panel ef-next ef-next--success">
+      <span class="ef-next__icon" aria-hidden="true">✓</span>
+      <div>
+        <strong>Pago registrado y conciliado</strong>
+        <p>
+          El comprobante de pago coincidió con el documento de egreso.
+          @if (estado()?.movimientoId) { Movimiento #{{ estado()?.movimientoId }} · }
+          @if (estado()?.conciliacionId) { Conciliación #{{ estado()?.conciliacionId }}. }
+        </p>
+      </div>
+    </section>
+  } @else if (puedeConciliar) {
+    <section class="ef-panel">
+      <div class="ef-panel__heading">
+        <span class="ef-step-number">3</span>
+        <div>
+          <h2>Conciliar la operación bancaria</h2>
+          <p>Pago registrado con el movimiento bancario. Verifica en el extracto y confirma la conciliación.</p>
+        </div>
+      </div>
+      <div class="ef-fields">
+        <label class="ef-field">Fecha
+          <input type="date" [(ngModel)]="fechaConciliacion">
+        </label>
+        <label class="ef-field">Referencia
+          <input [(ngModel)]="referenciaConciliacion">
+        </label>
+        <label class="ef-field ef-field--wide">Importe
+          <input type="number" min="0.01" step="0.01" [(ngModel)]="importeConciliacion">
+        </label>
+      </div>
+      <button type="button" class="ef-primary" [disabled]="ocupado() || !fechaConciliacion || !referenciaConciliacion || !importeConciliacion" (click)="conciliar()">
+        Confirmar conciliación <span aria-hidden="true">→</span>
+      </button>
+    </section>
+  }
+
+  <!-- === HISTORIAL (solo si hay comprobantes anteriores) === -->
+  @if (historial.length) {
+    <section class="ef-panel">
+      <div class="ef-panel__heading">
+        <div>
+          <h2>Comprobantes anteriores</h2>
+          <p>Registros previos de este egreso (referencia).</p>
+        </div>
+      </div>
+      @for (s of historial; track s.id) {
+        <div class="ef-doc-row">
+          <div class="ef-doc-row__info">
+            <strong>#{{ s.id }} · {{ s.nombre }}</strong>
+            <span>{{ s.fecha }} · Referencia {{ s.referencia }}</span>
+          </div>
+          <div class="ef-doc-row__actions">
+            <span class="ef-badge" [ngClass]="claseComprobante(s.estado)">{{ etiquetaComprobante(s.estado) }}</span>
+            <button type="button" class="ef-secondary" (click)="descargar(s)">Abrir</button>
+          </div>
+        </div>
+        @if (s.estado === 'RECHAZADO') {
+          @for (d of diferencias(s); track $index) {
+            <p class="ef-feedback ef-feedback--error" style="margin-top:0.35rem">{{ d }}</p>
+          }
+        }
+      }
+    </section>
+  }
+</section>

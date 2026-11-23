@@ -1,0 +1,524 @@
+<div class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3">
+  <div class="space-y-6" @gpStagger>
+
+    <app-gp-page-header class="gp-item" icono="upload" color="#045C94" titulo="Subir Archivos"
+                        descripcion="Importa el Excel maestro del contrato y llena todos los módulos del Gestor Presupuestal"
+                        chip="Excel maestro">
+      <div acciones class="flex items-center gap-2">
+        <app-gp-empresa-selector></app-gp-empresa-selector>
+        <button (click)="descargarPlantilla()" [disabled]="generandoPlantilla()" class="gp-head-btn"
+                title="Descargar la plantilla del Excel maestro">
+          <app-gp-icon [name]="generandoPlantilla() ? 'refresh' : 'download'" [size]="14" [class.gp-spin]="generandoPlantilla()"></app-gp-icon>
+          Plantilla
+        </button>
+      </div>
+    </app-gp-page-header>
+
+    <app-gp-import-json></app-gp-import-json>
+
+    <div *ngIf="error()" class="gp-item" @gpPop>
+      <div class="flex items-center gap-3 rounded-xl p-4 text-sm border"
+           style="background: rgba(244,63,94,.06); border-color: rgba(244,63,94,.22); color: #be123c;">
+        <app-gp-icon name="alert" [size]="16" class="flex-shrink-0 gp-shake"></app-gp-icon>
+        <span class="flex-1">{{ error() }}</span>
+        <button (click)="error.set(null)" class="text-xs underline">Cerrar</button>
+      </div>
+    </div>
+
+    <!-- ══════════ ASISTENTE PASO A PASO ══════════ -->
+    <div class="gp-item gp-wizard" @gpExpander>
+      <span class="gp-wizard__glow gp-wizard__glow--a" aria-hidden="true"></span>
+      <span class="gp-wizard__glow gp-wizard__glow--b" aria-hidden="true"></span>
+      <span class="gp-wizard__grid" aria-hidden="true"></span>
+
+      <div class="gp-wizard__head">
+        <span class="gp-wizard__badge"><app-gp-icon name="sparkles" [size]="16"></app-gp-icon></span>
+        <div class="min-w-0 flex-1">
+          <p class="gp-wizard__title">Asistente de importación</p>
+          <p class="gp-wizard__sub">Sigue los pasos y el Excel maestro quedará cargado en el Gestor Presupuestal</p>
+        </div>
+        <div class="gp-wizard__meter">
+          <div class="gp-wizard__meter-top">
+            <span class="gp-wizard__meter-ico"><app-gp-icon name="activity" [size]="11"></app-gp-icon></span>
+            <span class="gp-wizard__meter-label">Avance</span>
+            <span class="gp-wizard__meter-pct">Paso {{ paso() }} / {{ pasos.length }}</span>
+          </div>
+          <div class="gp-wizard__bar"><span class="gp-wizard__fill" [style.width.%]="pctWizard()"></span></div>
+        </div>
+      </div>
+
+      <ol class="gp-steps">
+        <li *ngFor="let p of pasos; let i = index; let ultimo = last"
+            class="gp-step"
+            [class.gp-step--done]="i + 1 < paso()"
+            [class.gp-step--active]="i + 1 === paso()"
+            [class.gp-step--clickable]="puedeIr(i + 1)"
+            [attr.aria-current]="i + 1 === paso() ? 'step' : null"
+            (click)="irAPaso(i + 1)">
+          <span *ngIf="!ultimo" class="gp-step__line" [class.gp-step__line--done]="i + 2 <= paso()" aria-hidden="true"></span>
+          <span class="gp-step__dot">
+            <span class="gp-step__halo" aria-hidden="true"></span>
+            <app-gp-icon class="gp-step__icon" [name]="p.icono" [size]="17"></app-gp-icon>
+            <svg class="gp-step__check" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span class="gp-step__text">
+            <span class="gp-step__num">Paso {{ i + 1 }}</span>
+            <span class="gp-step__name">{{ p.titulo }}</span>
+          </span>
+        </li>
+      </ol>
+    </div>
+
+    <!-- ══════════ PASO 1 · DESCARGAR PLANTILLA ══════════ -->
+    <div *ngIf="!resultado() && paso() === 1" class="gp-item" @gpSwap>
+      <div class="gp-panel-card gp-panel-card--1 gp-tpl">
+
+        <div class="gp-tpl__hero">
+          <div class="gp-tpl__icon">
+            <app-gp-icon name="download" [size]="26"></app-gp-icon>
+            <span class="gp-tpl__ring" aria-hidden="true"></span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="gp-tpl__eyebrow">
+              <app-gp-icon name="sparkles" [size]="12"></app-gp-icon>
+              Paso 1 · Prepara la información
+            </p>
+            <h2 class="gp-tpl__title">Descarga la plantilla del Excel maestro</h2>
+            <p class="gp-tpl__desc">
+              Es el formato oficial del contrato con los datos vacíos: conserva las hojas, los encabezados,
+              las fórmulas y el diseño. Solo la diligencias y la subes.
+            </p>
+          </div>
+          <span class="gp-tpl__seal">
+            <app-gp-icon name="layers" [size]="15"></app-gp-icon>
+            <span><strong>6</strong> hojas listas</span>
+          </span>
+        </div>
+
+        <div class="p-6 space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            <div *ngFor="let h of hojasPlantilla" class="gp-hoja" [style.--gp-tone]="h.color">
+              <div class="gp-hoja__icon">
+                <app-gp-icon [name]="h.icono" [size]="17"></app-gp-icon>
+              </div>
+              <div class="min-w-0">
+                <p class="gp-hoja__name" [title]="h.nombre">{{ h.nombre }}</p>
+                <p class="gp-hoja__desc">{{ h.detalle }}</p>
+              </div>
+              <app-gp-icon name="check" [size]="12" class="gp-hoja__ok"></app-gp-icon>
+            </div>
+          </div>
+
+          <div class="gp-tpl__cta">
+            <button (click)="descargarPlantilla()" [disabled]="generandoPlantilla()"
+                    class="btn-primary !py-3 !px-6 !text-sm gp-dl"
+                    [class.gp-dl--busy]="generandoPlantilla()" [class.gp-dl--ok]="plantillaDescargada()">
+              <span class="flex items-center gap-2">
+                <app-gp-icon [name]="generandoPlantilla() ? 'refresh' : (plantillaDescargada() ? 'check' : 'download')"
+                             [size]="17" [class.gp-spin]="generandoPlantilla()"></app-gp-icon>
+                {{ generandoPlantilla() ? 'Generando plantilla…' : (plantillaDescargada() ? 'Plantilla descargada' : 'Descargar plantilla') }}
+              </span>
+            </button>
+            <button (click)="irAPaso(2)" class="btn-secondary !py-3 !px-6 !text-sm" [class.gp-cta-next]="plantillaDescargada()">
+              <span class="flex items-center gap-2">Ya tengo la plantilla <app-gp-icon name="arrow-right" [size]="15"></app-gp-icon></span>
+            </button>
+            <span class="gp-tpl__cta-note">
+              <app-gp-icon name="shield" [size]="13"></app-gp-icon>
+              Nada se importa todavía
+            </span>
+          </div>
+
+          <div class="gp-tpl__notes">
+            <p class="gp-tpl__note gp-tpl__note--amber">
+              <span class="gp-tpl__note-ico"><app-gp-icon name="edit" [size]="13"></app-gp-icon></span>
+              <span>Reemplaza los textos entre <code>&lt; &gt;</code> por los datos del contrato: fechas, valor, dinero inicial y movimientos por mes.</span>
+            </p>
+            <p class="gp-tpl__note gp-tpl__note--blue">
+              <span class="gp-tpl__note-ico"><app-gp-icon name="file" [size]="13"></app-gp-icon></span>
+              <span>Pega los exports de SIIGO desde la celda <strong>A9</strong> y ajusta los meses <strong>MARZO · ABRIL · MAYO</strong> a los del contrato.</span>
+            </p>
+            <p class="gp-tpl__note gp-tpl__note--green">
+              <span class="gp-tpl__note-ico"><app-gp-icon name="check" [size]="13"></app-gp-icon></span>
+              <span>No cambies los nombres de las hojas ni los encabezados: el Gestor los usa para leer la información.</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PASO 2 · SUBIR ARCHIVO ══════════ -->
+    <div *ngIf="!resultado() && paso() === 2" class="gp-item gp-panel-card gp-panel-card--2 !p-6" @gpSwap>
+      <input #fileInput type="file" accept=".xlsx,.xls" class="hidden" (change)="onArchivo($event)">
+
+      <div class="gp-step-hint mb-5">
+        <span class="gp-step-hint__ico">
+          <app-gp-icon name="upload" [size]="16"></app-gp-icon>
+          <span class="gp-step-hint__n">2</span>
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="gp-step-hint__title">Adjunta el Excel maestro diligenciado</p>
+          <p class="gp-step-hint__sub">Arrástralo o selecciónalo desde tu equipo</p>
+        </div>
+        <button class="btn-ghost !text-xs" (click)="irAPaso(1)">
+          <app-gp-icon name="arrow-left" [size]="13"></app-gp-icon> Volver
+        </button>
+      </div>
+
+      <!-- Archivo ya adjunto (cuando se regresa al paso) -->
+      <div *ngIf="archivo()" @gpExpander>
+        <div class="flex flex-wrap items-center gap-4 p-4 rounded-2xl gp-file-card">
+          <div class="gp-file-card__icon w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+            <app-gp-icon name="file" [size]="20" class="text-white"></app-gp-icon>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-primary-600 truncate">{{ archivo()!.name }}</p>
+            <p class="text-[11px] text-gray-500">{{ tamanio(archivo()!.size) }} · listo para importar</p>
+          </div>
+          <button (click)="quitarArchivo()" class="btn-ghost !py-1.5 !px-3 !text-xs">Quitar</button>
+          <button (click)="fileInput.click()" class="btn-secondary !py-2.5 !px-5 !text-sm">Cambiar archivo</button>
+          <button (click)="irAPaso(3)" class="btn-primary !py-2.5 !px-6 !text-sm">
+            <span class="flex items-center gap-2">Continuar <app-gp-icon name="arrow-right" [size]="15"></app-gp-icon></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dropzone -->
+      <div *ngIf="!archivo()" @gpExpander>
+        <div
+             class="gp-dropzone flex flex-col items-center justify-center py-14 px-6 text-center rounded-2xl cursor-pointer transition-all duration-300"
+             [class.gp-dropzone--drag]="dragActivo()"
+             (drop)="onDrop($event)" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+             (click)="fileInput.click()">
+          <div class="gp-dropzone__icon w-20 h-20 rounded-3xl flex items-center justify-center mb-5">
+            <app-gp-icon name="upload" [size]="34" class="text-white"></app-gp-icon>
+            <span class="gp-ring"></span>
+          </div>
+          <p class="gp-dropzone__title">{{ dragActivo() ? '¡Suéltalo aquí!' : 'Arrastra aquí el Excel maestro del contrato' }}</p>
+          <p class="gp-dropzone__sub">El archivo debe conservar las hojas y los encabezados de la plantilla</p>
+          <div class="gp-fmt-chips">
+            <span class="gp-fmt-chip"><app-gp-icon name="file" [size]="12"></app-gp-icon> .xlsx · .xls</span>
+            <span class="gp-fmt-chip"><app-gp-icon name="layers" [size]="12"></app-gp-icon> 4 hojas SIIGO</span>
+            <span class="gp-fmt-chip"><app-gp-icon name="calendar" [size]="12"></app-gp-icon> Presupuesto 2026</span>
+            <span class="gp-fmt-chip"><app-gp-icon name="shield" [size]="12"></app-gp-icon> Máx. 50 MB</span>
+          </div>
+          <button class="btn-primary !py-3 !px-7 !text-base shadow-glow-sm" (click)="$event.stopPropagation(); fileInput.click()">
+            <span class="flex items-center gap-2"><app-gp-icon name="file" [size]="16"></app-gp-icon> Seleccionar archivo</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ PASO 3 · IMPORTAR ══════════ -->
+    <div *ngIf="!resultado() && paso() === 3" class="gp-item gp-panel-card gp-panel-card--3 !p-6" @gpSwap [class.gp-card-active]="importando()">
+
+      <div *ngIf="!importando() && archivo()" @gpExpander>
+        <div class="gp-step-hint mb-5">
+          <span class="gp-step-hint__ico">
+            <app-gp-icon name="layers" [size]="16"></app-gp-icon>
+            <span class="gp-step-hint__n">3</span>
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="gp-step-hint__title">Revisa y confirma la importación</p>
+            <p class="gp-step-hint__sub">Estos bloques de información se cargarán en el Gestor Presupuestal</p>
+          </div>
+          <button class="btn-ghost !text-xs" (click)="irAPaso(2)">
+            <app-gp-icon name="arrow-left" [size]="13"></app-gp-icon> Cambiar archivo
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 p-4 rounded-2xl gp-file-card">
+          <div class="gp-file-card__icon w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0">
+            <app-gp-icon name="file" [size]="20" class="text-white"></app-gp-icon>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-primary-600 truncate">{{ archivo()!.name }}</p>
+            <p class="text-[11px] text-gray-500">{{ tamanio(archivo()!.size) }} · listo para importar</p>
+          </div>
+          <button (click)="quitarArchivo()" class="btn-ghost !py-1.5 !px-3 !text-xs">Quitar</button>
+          <button *ngIf="ctx.tienePermiso('modulos.importar')" (click)="importar()" class="btn-primary !py-2.5 !px-6 !text-sm shadow-glow-sm">
+            <span class="flex items-center gap-2"><app-gp-icon name="upload" [size]="15"></app-gp-icon> Importar ahora</span>
+          </button>
+        </div>
+
+        <!-- Acordeón: qué se importará -->
+        <div class="mt-3 rounded-2xl overflow-hidden gp-accordion">
+          <button (click)="detalleAbierto.set(!detalleAbierto())"
+                  class="gp-accordion__head w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold text-primary-600 transition-colors">
+            <span class="gp-accordion__head-ico">
+              <app-gp-icon name="layers" [size]="13"></app-gp-icon>
+            </span>
+            ¿Qué se importará con este archivo?
+            <span class="ml-auto gp-chevron" [class.gp-chevron--open]="detalleAbierto()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </button>
+          <div @gpExpander *ngIf="detalleAbierto()">
+            <div class="px-3 pb-3 space-y-2">
+              <div *ngFor="let d of desglose" class="gp-accordion__item" [style.--gp-tone]="d.color">
+                <div class="gp-accordion__item-ico">
+                  <app-gp-icon [name]="d.icono" [size]="16"></app-gp-icon>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-[13px] font-semibold text-primary-600">{{ d.titulo }}</p>
+                  <p class="text-[11px] text-gray-500">{{ d.detalle }}</p>
+                </div>
+                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider flex-shrink-0"
+                      [style.background]="d.etiquetaColor + '12'" [style.color]="d.etiquetaColor"
+                      [style.border]="'1px solid ' + d.etiquetaColor + '30'">
+                  {{ d.etiqueta }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progreso -->
+      <div *ngIf="importando()" @gpPop class="py-6 px-2">
+        <div class="flex items-center gap-4 mb-5">
+          <div class="gp-progress-icon w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <app-gp-icon name="upload" [size]="24" class="text-white"></app-gp-icon>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-primary-600 truncate">{{ archivo()?.name }}</p>
+            <p class="text-[12px] text-gray-500 mt-0.5">{{ etapa() }}</p>
+          </div>
+          <div class="gp-progress-pct text-2xl font-extrabold tabular-nums">{{ progreso() }}<span class="text-base">%</span></div>
+        </div>
+        <div class="progress-bar !h-3 gp-progress-track">
+          <div class="progress-fill gp-progress-fill" [style.width.%]="progreso()"></div>
+        </div>
+        <p class="text-[11px] text-gray-500 mt-2">Se cargarán movimientos, maestro, contrato, periodos, impuestos y pagos proyectados.</p>
+      </div>
+    </div>
+
+    <!-- ══════════ PASO 4 · RESULTADO ══════════ -->
+    <div *ngIf="resultado()" class="gp-item" @gpPop>
+      <div class="card !p-0 relative overflow-hidden gp-success-card">
+
+        <!-- ═══ Hero: check animado (fondo claro con glows) ═══ -->
+        <div class="relative gp-hero py-10 px-6 text-center overflow-hidden">
+          <div class="gp-hero__glow gp-hero__glow--a" aria-hidden="true"></div>
+          <div class="gp-hero__glow gp-hero__glow--b" aria-hidden="true"></div>
+          <div class="flex flex-col items-center relative">
+            <div class="gp-check-wrap relative mb-5">
+              <span class="gp-check-ring"></span>
+              <span class="gp-check-ring gp-check-ring--2"></span>
+              <svg class="gp-check-svg" viewBox="0 0 96 96" fill="none">
+                <circle class="gp-check-bg" cx="48" cy="48" r="42" fill="url(#gpcgf)" />
+                <circle class="gp-check-circle" cx="48" cy="48" r="42" stroke="#ffffff" stroke-width="3"
+                        stroke-opacity="0.55" />
+                <path class="gp-check-tick" d="M30 50 L43 63 L67 36" stroke="#ffffff" stroke-width="7.5"
+                      stroke-linecap="round" stroke-linejoin="round" />
+                <defs>
+                  <linearGradient id="gpcgf" x1="6" y1="6" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#10b981" />
+                    <stop offset="1" stop-color="#047857" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <h2 class="text-2xl font-bold text-primary-600 tracking-tight">¡Importación completada!</h2>
+            <p class="text-[13px] text-gray-500 mt-1.5">
+              <span class="font-semibold text-primary-600">{{ resultado()!.nombreEmpresa }}</span>
+              <span class="mx-1.5 text-gray-300">·</span>
+              <span class="font-mono text-gray-400">{{ resultado()!.nombreArchivo }}</span>
+            </p>
+
+            <!-- Conteos animados (estilo kpi de la bandeja) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-7 w-full max-w-2xl">
+              <div class="gp-stat">
+                <div class="gp-stat__icon" style="background: linear-gradient(135deg,#045C94,#213053);">
+                  <app-gp-icon name="layers" [size]="17"></app-gp-icon>
+                </div>
+                <div class="min-w-0">
+                  <p class="gp-stat__value" style="color:#045C94;">{{ fm(totalMovimientos()) }}</p>
+                  <p class="gp-stat__label">Movimientos</p>
+                </div>
+              </div>
+              <div class="gp-stat">
+                <div class="gp-stat__icon" style="background: linear-gradient(135deg,#0F766E,#14B8A6);">
+                  <app-gp-icon name="users" [size]="17"></app-gp-icon>
+                </div>
+                <div class="min-w-0">
+                  <p class="gp-stat__value" style="color:#0F766E;">{{ fm(totalTerceros()) }}</p>
+                  <p class="gp-stat__label">Terceros</p>
+                </div>
+              </div>
+              <div class="gp-stat">
+                <div class="gp-stat__icon" style="background: linear-gradient(135deg,#6B46C1,#9333EA);">
+                  <app-gp-icon name="coins" [size]="17"></app-gp-icon>
+                </div>
+                <div class="min-w-0">
+                  <p class="gp-stat__value" style="color:#7C3AED;">{{ fm(totalPagos()) }}</p>
+                  <p class="gp-stat__label">Pagos proyectados</p>
+                </div>
+              </div>
+              <div class="gp-stat">
+                <div class="gp-stat__icon" style="background: linear-gradient(135deg,#D97706,#F59E0B);">
+                  <app-gp-icon name="alert" [size]="17"></app-gp-icon>
+                </div>
+                <div class="min-w-0">
+                  <p class="gp-stat__value" style="color:#D97706;">{{ fm(totalImpuestos()) }}</p>
+                  <p class="gp-stat__label">Impuestos</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Cuerpo: chips por módulo + contrato + periodos ═══ -->
+        <div class="p-6 xl:p-8 space-y-5">
+          @if (resultado()!.advertencias?.length) {
+            <section class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900" role="status" aria-label="Advertencias de importación">
+              <h3 class="font-semibold">Advertencias de importación</h3>
+              <ul class="mt-2 list-disc pl-5 text-sm">
+                @for (advertencia of resultado()!.advertencias; track $index) {
+                  <li>{{ advertencia }}</li>
+                }
+              </ul>
+            </section>
+          }
+
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div *ngFor="let m of resultado()!.modulos"
+                 class="gp-mod-chip gp-res-item"
+                 [style.border-left-color]="metaModulo(m.modulo).color">
+              <div class="gp-mod-chip__icon"
+                   [style.background]="'linear-gradient(135deg,' + metaModulo(m.modulo).color + ',' + metaModulo(m.modulo).color + 'CC)'">
+                <app-gp-icon [name]="metaModulo(m.modulo).icono" [size]="15"></app-gp-icon>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-[10px] uppercase tracking-wider font-semibold text-gray-400">{{ m.modulo }}</p>
+                <p class="text-lg font-extrabold text-primary-600 tabular-nums leading-none mt-0.5">{{ fm(m.movimientos) }}</p>
+                <p class="text-[10px] text-gray-400 mt-1">{{ fm(m.proveedores) }} terceros</p>
+              </div>
+              <span *ngIf="m.sinCategoria.length" class="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200 self-start">{{ m.sinCategoria.length }} s/cat</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="gp-res-item gp-panel">
+              <div class="gp-panel__head">
+                <div class="gp-panel__icon" style="background: linear-gradient(135deg,#045C94,#213053);">
+                  <app-gp-icon name="bank" [size]="15"></app-gp-icon>
+                </div>
+                <h3 class="text-sm font-semibold text-primary-600">Contrato</h3>
+                <span *ngIf="resultado()!.contrato?.numeroContrato" class="ml-auto text-[10px] font-mono font-bold px-2 py-0.5 rounded-md"
+                      style="background: rgba(255,183,27,.12); color: #b45309; border: 1px solid rgba(255,183,27,.3);">
+                  {{ resultado()!.contrato?.numeroContrato }}
+                </span>
+              </div>
+              <div class="space-y-2 text-[13px]">
+                <div class="gp-panel__row">
+                  <span class="text-gray-500">Vigencia</span>
+                  <span class="font-semibold text-primary-600">{{ resultado()!.contrato?.fechaInicial }} → {{ resultado()!.contrato?.fechaFinal }}</span>
+                </div>
+                <div class="gp-panel__row">
+                  <span class="text-gray-500">Valor inicial</span>
+                  <span class="font-bold tabular-nums text-accent-600">{{ cp(resultado()!.contrato?.valorInicialContrato) }}</span>
+                </div>
+                <div class="gp-panel__row">
+                  <span class="text-gray-500">Dinero inicial</span>
+                  <span class="font-semibold tabular-nums text-primary-600">{{ cp(resultado()!.contrato?.dineroInicialDisponible) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="gp-res-item gp-panel">
+              <div class="gp-panel__head">
+                <div class="gp-panel__icon" style="background: linear-gradient(135deg,#059669,#10b981);">
+                  <app-gp-icon name="calendar" [size]="15"></app-gp-icon>
+                </div>
+                <h3 class="text-sm font-semibold text-primary-600">Periodos creados <span class="text-emerald-600 font-bold">· {{ fm(totalPeriodos()) }}</span></h3>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <span *ngFor="let p of resultado()!.periodos"
+                      class="gp-period-chip inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 6L9 17l-5-5" />
+                  </svg>
+                  {{ etiquetaMes(p) }}
+                </span>
+              </div>
+              <p class="text-[11px] text-gray-400 mt-3 flex items-center gap-1.5">
+                <app-gp-icon name="check" [size]="12" class="text-emerald-500"></app-gp-icon>
+                Disponibles en el módulo Presupuesto y en el Dashboard.
+              </p>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="flex flex-wrap items-center gap-3 pt-5 border-t border-gray-100">
+            <a routerLink="/presupuesto/dashboard" class="btn-primary !py-2.5 !px-6 !text-sm shadow-glow-sm">
+              <span class="flex items-center gap-2"><app-gp-icon name="chart" [size]="15"></app-gp-icon> Ver Dashboard</span>
+            </a>
+            <a routerLink="/presupuesto/proveedores" class="btn-secondary !py-2.5 !px-6 !text-sm">Ver módulos</a>
+            <button (click)="limpiar()" class="btn-ghost !py-2.5 !px-5 !text-sm">Importar otro archivo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════ MODAL DE CONFIRMACIÓN ══════════ -->
+<div *ngIf="confirmarAbierto()" class="gp-modal-overlay" @gpBackdrop (click)="confirmarAbierto.set(false)">
+  <div class="gp-modal" @gpPop (click)="$event.stopPropagation()">
+    <span class="gp-modal__accent" aria-hidden="true"></span>
+
+    <div class="gp-modal__hero">
+      <div class="gp-modal__icon">
+        <app-gp-icon name="upload" [size]="22" class="text-white"></app-gp-icon>
+      </div>
+      <div class="min-w-0">
+        <h3 class="text-lg font-bold text-white tracking-tight">Importar Excel maestro</h3>
+        <p class="text-[11px] text-white/75 mt-0.5 truncate">
+          <span class="font-mono">{{ archivo()?.name }}</span>
+          <span class="mx-1 opacity-50">·</span>{{ ctx.nombreEmpresa() ?? 'Empresa seleccionada' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="px-6 py-5 space-y-4">
+      <p class="text-sm text-gray-600 leading-relaxed">
+        Se procesará el archivo completo y se cargará la información en el
+        <strong class="text-primary-600">Gestor Presupuestal</strong> de la empresa seleccionada.
+      </p>
+
+      <div class="gp-warn">
+        <div class="gp-warn__icon">
+          <app-gp-icon name="alert" [size]="15"></app-gp-icon>
+        </div>
+        <div class="min-w-0">
+          <p class="text-[13px] font-bold" style="color:#b45309;">Los datos actuales de los módulos se reemplazarán</p>
+          <p class="text-[12px] text-gray-500 mt-0.5 leading-relaxed">
+            Movimientos, maestro de terceros y pagos proyectados se vuelven a cargar desde el archivo.
+            El contrato y los periodos se actualizan con los valores del Excel.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between text-[11px] text-gray-400 px-1">
+        <span class="inline-flex items-center gap-1.5">
+          <app-gp-icon name="layers" [size]="12" class="text-accent-600"></app-gp-icon>
+          {{ desglose.length }} bloques de información
+        </span>
+        <span>Empresa: <strong class="text-primary-600">{{ ctx.nombreEmpresa() ?? '—' }}</strong></span>
+      </div>
+    </div>
+
+    <div class="gp-modal__foot">
+      <button (click)="confirmarAbierto.set(false)" class="btn-secondary !py-2.5 !px-6 !text-sm">Cancelar</button>
+      <button *ngIf="ctx.tienePermiso('modulos.importar')" (click)="confirmarImportacion()" class="btn-primary !py-2.5 !px-6 !text-sm shadow-glow-sm">
+        <span class="flex items-center gap-2"><app-gp-icon name="check" [size]="15"></app-gp-icon> Confirmar importación</span>
+      </button>
+    </div>
+  </div>
+</div>

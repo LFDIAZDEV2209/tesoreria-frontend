@@ -1,0 +1,348 @@
+<div class="gf-page">
+
+  <!-- === TOAST === -->
+  @if (showToast()) {
+    <div class="fixed right-4 top-4 z-50 max-w-sm rounded-xl border px-4 py-3 text-sm shadow-card"
+      [ngClass]="{
+        'border-emerald-200 bg-emerald-50 text-emerald-800': toastType() === 'success',
+        'border-red-200 bg-red-50 text-red-800': toastType() === 'error',
+        'border-amber-200 bg-amber-50 text-amber-800': toastType() === 'warning',
+        'border-accent-200 bg-accent-50 text-accent-800': toastType() === 'info'
+      }">
+      {{ toastMessage() }}
+    </div>
+  }
+
+  <!-- === KPIs COMPACTOS === -->
+  <section class="kpi-section-compact">
+    <div class="kpi-card-compact kpi-teal">
+      <div class="kpi-icon-wrapper-compact kpi-icon-teal">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Pendientes por aprobar</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ pendientes().length }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Egresos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-purple">
+      <div class="kpi-icon-wrapper-compact kpi-icon-purple">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Monto neto por aprobar</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact" style="font-size: 1.15rem">{{ formatear(montoPendiente()) }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Neto</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-indigo">
+      <div class="kpi-icon-wrapper-compact kpi-icon-indigo">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Desde Pagos Proyectados</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ dePagosProyectados() }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Del gestor</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-success">
+      <div class="kpi-icon-wrapper-compact kpi-icon-success">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Seleccionados</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ seleccionadosCount() }}</span>
+          <span class="kpi-trend-compact kpi-trend-up">En lote</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- === TABLA === -->
+  <div class="table-panel">
+    <div class="table-toolbar">
+      <div class="toolbar-top">
+        <div class="toolbar-left">
+          <h2 class="toolbar-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            Aprobación de egresos — Gerencia Financiera
+          </h2>
+          <span class="toolbar-count">{{ filtrados().length }} de {{ pendientes().length }} pendiente(s)</span>
+        </div>
+
+        <div class="toolbar-actions">
+          <div class="search-box">
+            <svg class="search-box__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input class="search-box__input" type="text"
+              placeholder="Buscar por factura, proveedor, NIT, N° egreso..."
+              [value]="busqueda()" (input)="onBuscar($event)" />
+            @if (busqueda()) {
+              <button class="search-box__clear" type="button" (click)="busqueda.set('')" aria-label="Limpiar búsqueda">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:0.875rem;height:0.875rem">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+          <select class="filter-select" [ngModel]="filtroOrigen()" (ngModelChange)="filtroOrigen.set($event)">
+            <option value="todos">Todos los orígenes</option>
+            <option value="gp">Pagos Proyectados</option>
+            <option value="contabilidad">Contabilidad</option>
+          </select>
+
+          <button class="btn-refresh" type="button" (click)="cargar()" [disabled]="cargando()" title="Actualizar">
+            <svg [class.animate-spin]="cargando()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    @if (pendientes().length) {
+      <div class="emp-tabs" role="tablist" aria-label="Empresas">
+        <button type="button" class="emp-tab" role="tab"
+          [class.emp-tab--active]="empresaFiltro() === 'todas'"
+          [attr.aria-selected]="empresaFiltro() === 'todas'"
+          (click)="empresaFiltro.set('todas')">
+          Todas<span class="emp-tab__count">{{ pendientes().length }}</span>
+        </button>
+        @for (emp of empresasPendientes(); track emp.clave) {
+          <button type="button" class="emp-tab" role="tab"
+            [class.emp-tab--active]="empresaFiltro() === emp.id"
+            [attr.aria-selected]="empresaFiltro() === emp.id"
+            (click)="empresaFiltro.set(emp.id)">
+            {{ emp.nombre }}<span class="emp-tab__count">{{ emp.total }}</span>
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Barra de acción masiva -->
+    @if (seleccionadosCount() > 0) {
+      <div class="bulk-bar">
+        <p class="bulk-bar__info">
+          <strong>{{ seleccionadosCount() }}</strong> egreso(s) seleccionado(s) ·
+          <strong>{{ formatear(montoSeleccionado()) }}</strong>
+        </p>
+        <div class="bulk-bar__actions">
+          <button class="link-clear" type="button" (click)="limpiarSeleccion()" [disabled]="aprobandoLote()">
+            Limpiar selección
+          </button>
+          <button class="btn-row btn-row--aprobar btn-row--lote" type="button"
+            (click)="aprobarSeleccionados()" [disabled]="aprobandoLote()">
+            @if (aprobandoLote()) {
+              <span class="btn-spinner"></span> Aprobando…
+            } @else {
+              Aprobar seleccionados ({{ seleccionadosCount() }})
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (cargando() && !egresos().length) {
+      <div class="loading-state"><span class="spinner-ring"></span> Cargando egresos…</div>
+    } @else if (!filtrados().length) {
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <p class="empty-state__title">No hay egresos pendientes de aprobación</p>
+        <p class="empty-state__text">Cuando Tesorería o Contabilidad envíen un egreso, aparecerá aquí para tu revisión.</p>
+      </div>
+    } @else {
+      <div class="table-container">
+        <table class="data-table gf-table">
+          <thead>
+            <tr>
+              <th class="th-cell th-check">
+                <input type="checkbox" class="row-check" [checked]="todosSeleccionados()"
+                  (change)="toggleTodos()" aria-label="Seleccionar todos los egresos pendientes">
+              </th>
+              <th class="th-cell th-left">#</th>
+              <th class="th-cell th-left">Egreso</th>
+              <th class="th-cell th-left">Proveedor</th>
+              <th class="th-cell th-left">Empresa</th>
+              <th class="th-cell th-left">Fecha</th>
+              <th class="th-cell th-right">Bruto</th>
+              <th class="th-cell th-right">Retenciones</th>
+              <th class="th-cell th-right">Neto</th>
+              <th class="th-cell th-center">Origen</th>
+              <th class="th-cell th-center">Estado</th>
+              <th class="th-cell th-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of filtrados(); track e.id; let i = $index) {
+              <tr class="data-row" [ngClass]="estaSeleccionado(e) ? 'data-row--sel' : ''" [style.animation-delay]="i * 0.03 + 's'">
+                <td class="td-cell td-center">
+                  <input type="checkbox" class="row-check" [checked]="estaSeleccionado(e)"
+                    (change)="toggleUno(e)" [attr.aria-label]="'Seleccionar egreso ' + identificador(e)">
+                </td>
+                <td class="td-cell"><span class="row-number">{{ i + 1 }}</span></td>
+                <td class="td-cell">
+                  <span class="egreso-num" [title]="e.observaciones || ''">{{ identificador(e) }}</span>
+                  <p class="egreso-sub">Factura {{ e.numeroFactura }}</p>
+                  @if (e.motivoRevision) {
+                    <p class="obs-chip" [title]="e.motivoRevision">Obs: {{ e.motivoRevision }}</p>
+                  }
+                </td>
+                <td class="td-cell">
+                  <div class="proveedor-cell">
+                    <div class="proveedor-avatar proveedor-avatar--sm">{{ (e.proveedorNombre || e.conceptoPresupuestal || 'E').charAt(0).toUpperCase() }}</div>
+                    <div>
+                      <span class="proveedor-name">{{ e.proveedorNombre || e.conceptoPresupuestal || 'Egreso de nómina' }}</span>
+                      <p class="proveedor-email">NIT {{ e.nitProveedor || '—' }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="td-cell"><span class="empresa-text">{{ e.empresaNombre || '—' }}</span></td>
+                <td class="td-cell"><span class="fecha-text">{{ e.fecha || '—' }}</span></td>
+                <td class="td-cell td-right"><span class="monto-text">{{ formatear(e.valor) }}</span></td>
+                <td class="td-cell td-right"><span class="monto-text monto-text--muted">{{ formatear(egresoRetenciones(e)) }}</span></td>
+                <td class="td-cell td-right"><span class="monto-text monto-text--neto">{{ formatear(egresoNeto(e)) }}</span></td>
+                <td class="td-cell td-center">
+                  <span class="origen-chip" [class.origen-chip--gp]="e.pagoProyectadoId != null">{{ egresoOrigen(e) }}</span>
+                </td>
+                <td class="td-cell td-center">
+                  <span class="estado-badge"><span class="estado-dot"></span>Enviado para aprobación</span>
+                  @if (e.creadoPor) {
+                    <p class="estado-sub">Registró {{ e.creadoPor }}</p>
+                  }
+                </td>
+                <td class="td-cell td-center">
+                  <button type="button" class="btn-row row-menu-toggle" title="Acciones"
+                    cdkOverlayOrigin #menuOrigen="cdkOverlayOrigin"
+                    aria-haspopup="menu" [attr.aria-expanded]="e.id != null && menuAbiertoId() === e.id"
+                    (click)="toggleMenu(e, $event)"
+                    [disabled]="procesandoId() === e.id || aprobandoLote()">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <circle cx="12" cy="5" r="1.9"/>
+                      <circle cx="12" cy="12" r="1.9"/>
+                      <circle cx="12" cy="19" r="1.9"/>
+                    </svg>
+                  </button>
+                  <ng-template cdkConnectedOverlay
+                    [cdkConnectedOverlayOrigin]="menuOrigen"
+                    [cdkConnectedOverlayOpen]="e.id != null && menuAbiertoId() === e.id"
+                    [cdkConnectedOverlayPositions]="menuPositions"
+                    [cdkConnectedOverlayHasBackdrop]="true"
+                    cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+                    [cdkConnectedOverlayViewportMargin]="8"
+                    (backdropClick)="cerrarMenu()"
+                    (detach)="cerrarMenu()">
+                    <div class="row-menu" role="menu" (click)="$event.stopPropagation()">
+                      <button type="button" class="row-menu__item row-menu__item--ver" role="menuitem"
+                        [class.is-disabled]="!e.soporteEgresoKey" (click)="verterDocumento(e)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Ver documento del egreso
+                      </button>
+                      <button type="button" class="row-menu__item row-menu__item--aprobar" role="menuitem"
+                        [disabled]="procesandoId() === e.id" (click)="aprobar(e)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Aprobar
+                      </button>
+                      <button type="button" class="row-menu__item row-menu__item--devolver" role="menuitem"
+                        [disabled]="procesandoId() === e.id" (click)="abrirRechazo(e, 'devolucion')">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h10a6 6 0 016 6v1M3 10l4-4M3 10l4 4"/>
+                        </svg>
+                        Devolver
+                      </button>
+                      <button type="button" class="row-menu__item row-menu__item--rechazar" role="menuitem"
+                        [disabled]="procesandoId() === e.id" (click)="abrirRechazo(e, 'negacion')">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Negar
+                      </button>
+                    </div>
+                  </ng-template>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- === MODAL DEVOLUCIÓN / NEGACIÓN === -->
+@if (rechazando(); as e) {
+  <div class="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4" (click)="cerrarRechazo()">
+    <div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-card" (click)="$event.stopPropagation()">
+      <h3 class="text-lg font-bold text-slate-800">{{ tituloModal() }} {{ identificador(e) }}</h3>
+      <p class="mt-1 text-sm text-slate-500">{{ detalleModal() }}</p>
+      <label class="mt-4 block text-sm font-semibold text-slate-700" for="causalRechazo">
+        Causal de {{ modoRechazo() === 'negacion' ? 'negación' : 'devolución' }}
+      </label>
+      <select id="causalRechazo" name="causalRechazo" [ngModel]="causalRechazo()"
+        (ngModelChange)="causalRechazo.set($event)"
+        class="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-100">
+        <option value="">Selecciona una causal…</option>
+        @for (causal of causalesModal(); track causal) {
+          <option [value]="causal">{{ causal }}</option>
+        }
+        <option value="OTRA">Otra causal (escribir)</option>
+      </select>
+
+      @if (esOtraCausal()) {
+        <textarea [ngModel]="causalOtra()" (ngModelChange)="causalOtra.set($event)" maxlength="300" rows="3"
+          placeholder="Escribe la causal (obligatoria, máx. 300 caracteres)"
+          class="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-100"></textarea>
+      }
+
+      <p class="mt-1 text-right text-xs text-slate-400">{{ motivoRechazo().length }}/300</p>
+      <div class="mt-4 flex justify-end gap-3">
+        <button type="button" (click)="cerrarRechazo()"
+          class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50">
+          Cancelar
+        </button>
+        <button type="button" (click)="confirmarRechazo()" [disabled]="!motivoValido() || procesandoId() === e.id"
+          class="rounded-lg px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+          [ngClass]="modoRechazo() === 'negacion' ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-500 hover:bg-amber-600'">
+          {{ modoRechazo() === 'negacion' ? 'Negar egreso' : 'Devolver egreso' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

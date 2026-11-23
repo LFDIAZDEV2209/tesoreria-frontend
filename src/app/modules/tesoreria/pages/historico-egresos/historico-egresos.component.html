@@ -1,0 +1,177 @@
+<div class="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/10 text-[#FFB71B] border border-white/10 backdrop-blur-sm">
+            <span>📤</span>
+            <span>Cargue de Comprobantes de Egreso</span>
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight text-white">Histórico de Egresos por Proveedor</h1>
+          <p class="text-slate-300 text-sm">Trazabilidad completa, auditoría de estados y consulta histórica de egresos</p>
+        </div>
+
+        <!-- Quick counters & Back button -->
+        <div class="flex items-center gap-3 flex-wrap">
+          <a routerLink="/tesoreria/bandeja"
+             class="inline-flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/20 transition-all">
+            <span>←</span>
+            <span>Bandeja de Pagos</span>
+          </a>
+          <div class="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10 text-right">
+            <span class="block text-[10px] uppercase tracking-wider text-slate-300 font-semibold">Total registros</span>
+            <span class="text-lg font-bold text-[#FFB71B] tabular-nums">{{ totalRegistros() | number }}</span>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/10 text-right">
+            <span class="block text-[10px] uppercase tracking-wider text-slate-300 font-semibold">Monto filtrado</span>
+            <span class="text-lg font-bold text-white tabular-nums">{{ formatear(sumaMontoFiltrado()) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros Section -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+          <span>🔍</span> Filtros avanzados de búsqueda
+        </h2>
+        <button *ngIf="hayFiltrosActivos()"
+                (click)="limpiarFiltros()"
+                class="text-xs text-rose-600 hover:text-rose-700 font-semibold underline transition-colors">
+          Limpiar todos los filtros
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
+        <!-- Búsqueda texto -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Buscar (Tercero, NIT, Factura)</label>
+          <input type="text"
+                 placeholder="Ej. NIT, proveedor o factura…"
+                 [value]="filtroTexto()"
+                 (input)="onInputTexto($any($event.target).value)"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+
+        <!-- Origen -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Origen</label>
+          <select [ngModel]="filtroOrigen()"
+                  (ngModelChange)="filtroOrigen.set($event); onFiltroChange()"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all bg-white">
+            <option *ngFor="let o of origenesDisponibles" [value]="o.id">{{ o.label }}</option>
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Estado</label>
+          <select [ngModel]="filtroEstado()"
+                  (ngModelChange)="filtroEstado.set($event); onFiltroChange()"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all bg-white">
+            <option *ngFor="let e of estadosDisponibles" [value]="e.id">{{ e.label }}</option>
+          </select>
+        </div>
+
+        <!-- Orden -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Orden</label>
+          <select [ngModel]="filtroOrden()"
+                  (ngModelChange)="filtroOrden.set($event); onFiltroChange()"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all bg-white">
+            <option value="desc">Más reciente primero</option>
+            <option value="asc">Más antiguo primero</option>
+          </select>
+        </div>
+
+        <!-- Fecha Desde -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Desde</label>
+          <input type="date"
+                 [ngModel]="filtroDesde()"
+                 (ngModelChange)="filtroDesde.set($event); onFiltroChange()"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+
+        <!-- Fecha Hasta -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Hasta</label>
+          <input type="date"
+                 [ngModel]="filtroHasta()"
+                 (ngModelChange)="filtroHasta.set($event); onFiltroChange()"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+
+        <!-- Monto Mín -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Monto mínimo</label>
+          <input type="number"
+                 placeholder="$ 0"
+                 [ngModel]="filtroMontoMin()"
+                 (ngModelChange)="filtroMontoMin.set($event); onFiltroChange()"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+
+        <!-- Monto Máx -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Monto máximo</label>
+          <input type="number"
+                 placeholder="Sin límite"
+                 [ngModel]="filtroMontoMax()"
+                 (ngModelChange)="filtroMontoMax.set($event); onFiltroChange()"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+      </div>
+    </div>
+
+
+    <p *ngIf="error()" role="alert" class="bg-rose-50 text-rose-700 p-4 rounded-xl">{{ error() }}</p>
+    <p *ngIf="cargando()" role="status">Cargando consolidados…</p>
+    <div *ngIf="!cargando()" class="space-y-4">
+      <p>{{ proveedores().length }} proveedores · {{ totalRegistros() }} egresos</p>
+      <p *ngIf="!proveedores().length">No se encontraron egresos.</p>
+      <section *ngFor="let proveedor of proveedoresPagina()" class="bg-white border rounded-xl overflow-hidden">
+        <button type="button" (click)="seleccionarProveedor(proveedor.clave)" [attr.aria-expanded]="proveedorSeleccionado() === proveedor.clave" class="w-full p-5 flex flex-wrap justify-between items-center gap-4 text-left hover:bg-slate-50">
+          <span><strong class="block">{{ proveedor.nombre }}</strong><small>NIT {{ proveedor.nit || 'Sin NIT' }}</small></span>
+          <span>{{ proveedor.egresos.length }} egresos · {{ proveedor.pagados }} pagados</span>
+          <strong>{{ formatear(proveedor.monto) }}</strong><span>{{ proveedorSeleccionado() === proveedor.clave ? 'Cerrar −' : 'Ver egresos +' }}</span>
+        </button>
+        <div *ngIf="proveedorSeleccionado() === proveedor.clave" class="p-4 border-t space-y-3">
+          <article *ngFor="let row of proveedor.egresos" class="border rounded-xl overflow-hidden">
+            <button type="button" (click)="cargarDetalle(row)" [attr.aria-expanded]="filaExpandidaId() === row.id" class="w-full p-4 bg-slate-50 flex flex-wrap justify-between gap-3 text-left">
+              <span><strong>Egreso {{ row.numeroEgreso || row.comprobante || row.id }}</strong><small class="block">{{ formatearFecha(row.fecha) }}</small></span>
+              <strong>{{ formatear(row.monto) }}</strong>
+              <span [ngClass]="estadoColorClass(row.estado)" class="px-3 py-1 rounded-full text-xs">{{ row.estado === 'PAGADO' ? 'Pagado' : 'Pendiente de pago · ' + row.estado }}</span>
+              <span class="text-sky-700">Ver facturas y comprobantes</span>
+            </button>
+            <div *ngIf="filaExpandidaId() === row.id" class="p-4 space-y-4">
+              <p *ngIf="cargandoHistorial()[row.id]" role="status">Cargando detalle…</p>
+              <ng-container *ngIf="detalles()[row.id] as detalle">
+                <h3 class="font-bold">Facturas del egreso</h3>
+                <div class="overflow-x-auto"><table class="w-full text-sm text-left">
+                  <thead><tr><th class="p-2">Factura / Concepto</th><th class="p-2">Fecha</th><th class="p-2">Valor</th><th class="p-2">Estado</th></tr></thead>
+                  <tbody><tr *ngFor="let f of detalle.facturas" class="border-t"><td class="p-2">{{ f.concepto || 'Factura #' + f.pagoId }}</td><td class="p-2">{{ formatearFecha(f.fecha) }}</td><td class="p-2">{{ formatear(f.monto) }}</td><td class="p-2">{{ f.estado === 'pagado' ? 'Pagada' : f.estado === 'cancelado' ? 'Cancelada' : 'Pendiente de pago' }}</td></tr>
+                  <tr *ngIf="!detalle.facturas?.length"><td colspan="4" class="p-2">{{ detalle.numeroFactura || 'Sin facturas asociadas' }} · {{ formatear(detalle.valor) }}</td></tr></tbody>
+                </table></div>
+                <button *ngIf="detalle.soporteEgresoKey" type="button" (click)="abrirComprobante(row.id)" class="text-sky-800 underline">Comprobante de egreso · {{ detalle.soporteEgresoNombre || 'Ver documento' }}</button>
+                <p *ngIf="!detalle.soporteEgresoKey" class="text-slate-500 text-sm">Comprobante de egreso pendiente de adjuntar.</p>
+                <div *ngIf="financieros()[row.id] as financiero" class="space-y-2">
+                  <h3 class="font-bold">Comprobantes de pago</h3>
+                  <p *ngIf="!financiero.comprobantes.length" class="text-slate-500 text-sm">Sin comprobantes de pago adjuntos.</p>
+                  <div *ngFor="let c of financiero.comprobantes" class="flex flex-wrap gap-3 text-sm"><button type="button" (click)="abrirComprobante(row.id, c.id)" class="text-sky-800 underline">{{ c.nombre || 'Ver comprobante de pago' }}</button><span>{{ c.estado }}</span><span>{{ formatearFecha(c.fecha) }}</span></div>
+                </div>
+              </ng-container>
+            </div>
+          </article>
+        </div>
+      </section>
+      <div class="p-4 flex flex-wrap justify-between gap-4 text-sm">
+        <label>Proveedores por página: <select [ngModel]="size" (ngModelChange)="cambiarSize($event)"><option [value]="10">10</option><option [value]="20">20</option><option [value]="50">50</option></select></label>
+        <div class="flex gap-4"><button (click)="cambiarPagina(-1)" [disabled]="pagina() === 0">← Anterior</button><span>Página {{ pagina() + 1 }} de {{ totalPaginas() }}</span><button (click)="cambiarPagina(1)" [disabled]="pagina() + 1 >= totalPaginas()">Siguiente →</button></div>
+      </div>
+    </div>
+  </div>
+</div>

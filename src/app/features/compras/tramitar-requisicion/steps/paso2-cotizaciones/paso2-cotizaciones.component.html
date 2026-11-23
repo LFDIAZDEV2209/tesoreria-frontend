@@ -1,0 +1,412 @@
+<!-- PASO 2: Cotizaciones -->
+<div class="paso2-wrapper animate-in">
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="paso2-header">
+    <div class="header-left">
+      <div class="header-icon-wrapper">
+        <div class="header-icon">
+          <svg class="w-6 h-6 text-[#213053]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="header-icon-ring"></div>
+      </div>
+      <div>
+        <div class="flex items-center gap-2.5">
+          <h2 class="header-title">Cotizaciones</h2>
+          @if (tramite.cotizaciones.length > 0) {
+            <span class="count-badge">{{ tramite.cotizaciones.length }}</span>
+          }
+        </div>
+        <p class="header-subtitle">
+          Registra las cotizaciones  recibidas de proveedores
+          <span class="header-req-tag">Req. {{ tramite.requisicion.numeroRequisicion }}</span>
+        </p>
+      </div>
+    </div>
+    <button (click)="abrirFormulario()" class="add-btn">
+      <span class="add-btn-icon">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+        </svg>
+      </span>
+      <span class="add-btn-text">Agregar Cotización</span>
+    </button>
+  </div>
+
+  <!-- ═══ SUMMARY STATS ═══ -->
+  @if (tramite.cotizaciones.length > 0) {
+    <div class="summary-bar">
+      <div class="summary-item">
+        <div class="summary-icon bg-[#045C94]/10">
+          <svg class="w-4 h-4 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div>
+          <span class="summary-label">Cotizaciones</span>
+          <span class="summary-value">{{ tramite.cotizaciones.length }}</span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <div class="summary-icon bg-[#FFB71B]/10">
+          <svg class="w-4 h-4 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+          <span class="summary-label">Valor más bajo</span>
+          <span class="summary-value text-[#045C94]">$ {{ getValorMenor() | number:'1.0-0' }}</span>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-item">
+        <div class="summary-icon bg-emerald-50">
+          <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+          <span class="summary-label">Promedio Total</span>
+          <span class="summary-value">$ {{ getPromedioTotal() | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ COTIZACIONES LIST ═══ -->
+  @if (tramite.cotizaciones.length > 0) {
+    <div class="cotizaciones-grid">
+      @for (cot of tramite.cotizaciones; track cot.id; let i = $index) {
+        <div class="cot-card" [class.cot-card-best]="isMejorOferta(i)" [style.animation-delay]="(i * 0.07) + 's'">
+
+          <!-- Card Header -->
+          <div class="cot-card-header">
+            <div class="cot-card-avatar" [class.avatar-best]="isMejorOferta(i)">
+              <span>{{ cot.proveedor.charAt(0) }}</span>
+              @if (isMejorOferta(i)) {
+                <div class="avatar-crown">
+                  <svg class="w-3 h-3 text-[#FFB71B]" fill="currentColor" viewBox="0 0 24 24"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5z"/></svg>
+                </div>
+              }
+            </div>
+            <div class="cot-card-info">
+              <div class="flex items-center gap-2">
+                <h4 class="cot-card-name">{{ cot.proveedor }}</h4>
+                @if (isMejorOferta(i)) {
+                  <span class="best-badge">Mejor oferta</span>
+                }
+              </div>
+              <p class="cot-card-meta">
+                <svg class="w-3 h-3 inline-block mr-0.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                {{ cot.fechaCotizacion }}
+                <span class="mx-1.5 opacity-30">•</span>
+                {{ cot.moneda }}
+              </p>
+            </div>
+            <div class="cot-card-actions">
+              <span class="estado-badge"
+                    [class.estado-seleccionado]="cot.estadoProveedor === 'SELECCIONADO'"
+                    [class.estado-no-seleccionado]="cot.estadoProveedor === 'NO_SELECCIONADO'"
+                    [class.estado-pendiente]="cot.estadoProveedor === 'PENDIENTE'">
+                @if (cot.estadoProveedor === 'SELECCIONADO') {
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                } @else if (cot.estadoProveedor === 'PENDIENTE') {
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                }
+                {{ getEstadoProveedorLabel(cot.estadoProveedor) }}
+              </span>
+              <div class="action-btns">
+                <button (click)="editarCotizacion(i)" class="action-icon-btn action-edit" title="Editar">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </button>
+                <button (click)="eliminarCotizacion(i)" class="action-icon-btn action-delete" title="Eliminar">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Body — Values -->
+          <div class="cot-card-body">
+            <div class="value-chip">
+              <span class="value-chip-label">Sin IVA</span>
+              <span class="value-chip-amount">$ {{ cot.valorCotizadoSinIva | number:'1.0-0' }}</span>
+            </div>
+            <div class="value-chip">
+              <span class="value-chip-label">IVA {{ cot.ivaPorcentaje }}%</span>
+              <span class="value-chip-amount">$ {{ (cot.valorCotizadoSinIva * cot.ivaPorcentaje / 100) | number:'1.0-0' }}</span>
+            </div>
+            <div class="value-chip value-chip-total" [class.value-chip-best]="isMejorOferta(i)">
+              <span class="value-chip-label">Total</span>
+              <span class="value-chip-amount">$ {{ cot.valorTotalCotizado | number:'1.0-0' }}</span>
+            </div>
+          </div>
+
+          <!-- Card Footer — File -->
+          @if (cot.archivoCotizacion) {
+            <div class="cot-card-footer">
+              <button type="button" (click)="verArchivo(cot)" class="file-tag" style="cursor:pointer; border:none; background:none;">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                Ver cotización
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- ═══ EMPTY STATE ═══ -->
+    <div class="empty-state">
+      <div class="empty-state-illustration">
+        <div class="empty-circle empty-circle-1"></div>
+        <div class="empty-circle empty-circle-2"></div>
+        <div class="empty-icon">
+          <svg class="w-10 h-10 text-[#045C94]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+      </div>
+      <h3 class="empty-title">Sin cotizaciones</h3>
+      <p class="empty-text">Agrega al menos una cotización de proveedor para continuar con el trámite</p>
+      <button (click)="abrirFormulario()" class="empty-cta">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Agregar primera cotización
+      </button>
+    </div>
+  }
+
+  <!-- ═══ ADD/EDIT FORM ═══ -->
+  @if (showFormCotizacion()) {
+    <div class="form-backdrop" (click)="cancelarForm()"></div>
+    <div class="form-panel">
+      <!-- Form Header -->
+      <div class="form-panel-header">
+        <div class="flex items-center gap-3">
+          <div class="form-panel-icon">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="form-panel-title">{{ editingIndex() !== null ? 'Editar' : 'Nueva' }} Cotización</h3>
+            <p class="form-panel-subtitle">{{ editingIndex() !== null ? 'Modifica los datos de la cotización' : 'Completa los datos y adjunta el documento' }}</p>
+          </div>
+        </div>
+        <button (click)="cancelarForm()" class="form-close-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Form Body -->
+      <div class="form-panel-body">
+
+        <!-- ═══ ARCHIVO COTIZACIÓN ═══ -->
+        <div class="form-section">
+          <div class="form-section-label">
+            <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+            Documento de Cotización
+            <span class="form-section-optional">(opcional)</span>
+          </div>
+
+          @if (!archivoNombre) {
+            <!-- Upload zone -->
+            <label class="file-upload-zone">
+              <input type="file" (change)="onFileSelected($event)" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
+              <div class="file-upload-idle">
+                <div class="file-idle-icon">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                </div>
+                <p class="file-idle-label">Arrastra o haz clic para adjuntar cotización</p>
+                <p class="file-idle-hint">PDF, JPG, PNG — Máximo 10MB</p>
+              </div>
+            </label>
+          } @else {
+            <!-- File uploaded -->
+            <div class="ocr-file-badge">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+              <span>{{ archivoNombre }}</span>
+              <button type="button" (click)="quitarArchivo()" class="ml-auto text-gray-400 hover:text-red-400 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- ═══ FORMULARIO ═══ -->
+
+        <!-- Section: Proveedor -->
+        <div class="form-section">
+          <div class="form-section-label">
+            <svg class="w-4 h-4 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            Proveedor
+          </div>
+          <div class="relative">
+            <div class="proveedor-search-wrapper">
+              <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text"
+                     [ngModel]="searchProveedor()"
+                     (ngModelChange)="onSearchProveedor($event)"
+                     (focus)="onProveedorInputFocus()"
+                     (blur)="onProveedorInputBlur()"
+                     class="proveedor-search-input"
+                     placeholder="Buscar proveedor por nombre o NIT..."
+                     autocomplete="off">
+              @if (proveedorSeleccionado()) {
+                <span class="search-check">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </span>
+              } @else {
+                <span class="search-hint">
+                  <svg class="w-3.5 h-3.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </span>
+              }
+            </div>
+
+            <!-- Proveedor Dropdown -->
+            @if (showProveedorDropdown()) {
+              <div class="proveedor-dropdown">
+                @if (loadingProveedores()) {
+                  <div class="dropdown-loading">
+                    <div class="loading-spinner"></div>
+                    <span>Cargando proveedores del sistema...</span>
+                  </div>
+                } @else if (proveedoresFiltrados().length === 0) {
+                  <div class="dropdown-empty">
+                    <svg class="w-10 h-10 text-gray-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <p class="text-xs text-gray-400 font-semibold">No se encontraron proveedores</p>
+                    <p class="text-[10px] text-gray-300 mt-0.5">Verifica el nombre o NIT ingresado</p>
+                  </div>
+                } @else {
+                  <div class="dropdown-header">
+                    <span>{{ proveedoresFiltrados().length }} proveedor{{ proveedoresFiltrados().length !== 1 ? 'es' : '' }} encontrado{{ proveedoresFiltrados().length !== 1 ? 's' : '' }}</span>
+                  </div>
+                  @for (prov of proveedoresFiltrados(); track prov.id) {
+                    <button type="button"
+                            (mousedown)="seleccionarProveedor(prov)"
+                            class="dropdown-item"
+                            [class.dropdown-item-selected]="proveedorSeleccionado()?.id === prov.id">
+                      <div class="dropdown-item-avatar"
+                           [style.background]="proveedorSeleccionado()?.id === prov.id ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #213053, #045C94)'">
+                        {{ prov.nombreProveedor.charAt(0) }}
+                      </div>
+                      <div class="dropdown-item-info">
+                        <span class="dropdown-item-name">{{ prov.nombreProveedor }}</span>
+                        <span class="dropdown-item-meta">NIT: {{ prov.nit }} · {{ prov.banco || 'Sin banco' }}</span>
+                      </div>
+                      @if (proveedorSeleccionado()?.id === prov.id) {
+                        <svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      }
+                    </button>
+                  }
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Proveedor Selected Chip -->
+          @if (proveedorSeleccionado()) {
+            <div class="proveedor-chip">
+              <div class="proveedor-chip-avatar">
+                {{ proveedorSeleccionado()!.nombreProveedor.charAt(0) }}
+              </div>
+              <div class="proveedor-chip-info">
+                <span class="proveedor-chip-name">{{ proveedorSeleccionado()!.nombreProveedor }}</span>
+                <span class="proveedor-chip-meta">NIT: {{ proveedorSeleccionado()!.nit }} · {{ proveedorSeleccionado()!.correoElectronico || 'Sin correo' }}</span>
+              </div>
+              <button type="button" (click)="proveedorSeleccionado.set(null); proveedor = ''; searchProveedor.set('')" class="proveedor-chip-remove">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Section: Valores -->
+        <div class="form-section">
+          <div class="form-section-label">
+            <svg class="w-4 h-4 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Valores de la Cotización
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="form-field">
+              <label class="form-field-label">Valor cotizado (sin IVA) *</label>
+              <div class="input-with-prefix">
+                <span class="input-prefix">$</span>
+                <input type="number" [(ngModel)]="valorCotizadoSinIva" class="form-field-input input-prefixed" placeholder="0">
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-field-label">IVA</label>
+              <div class="input-with-suffix">
+                <input type="number" [(ngModel)]="ivaPorcentaje" class="form-field-input input-suffixed" placeholder="19">
+                <span class="input-suffix">%</span>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-field-label">Moneda</label>
+              <select [(ngModel)]="moneda" class="form-field-select">
+                @for (m of monedas; track m) {
+                  <option [value]="m">{{ m }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-field-label">Fecha cotización *</label>
+              <input type="date" [(ngModel)]="fechaCotizacion" class="form-field-input">
+            </div>
+          </div>
+
+          <!-- IVA Calculation Card -->
+          <div class="calc-panel">
+            <div class="calc-panel-row">
+              <span class="calc-panel-label">Valor sin IVA</span>
+              <span class="calc-panel-value">$ {{ valorCotizadoSinIva | number:'1.0-0' }}</span>
+            </div>
+            <div class="calc-panel-row">
+              <span class="calc-panel-label">
+                IVA ({{ ivaPorcentaje }}%)
+              </span>
+              <span class="calc-panel-value">$ {{ valorIva | number:'1.0-0' }}</span>
+            </div>
+            <div class="calc-panel-divider"></div>
+            <div class="calc-panel-row calc-panel-total">
+              <span class="calc-panel-label">
+                <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                Valor Total
+              </span>
+              <span class="calc-panel-total-value">$ {{ valorTotalCotizado | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+
+
+
+      </div>
+
+      <!-- Form Footer -->
+      <div class="form-panel-footer">
+        <button (click)="cancelarForm()" class="btn-cancel">
+          Cancelar
+        </button>
+        <button (click)="guardarCotizacion()" class="btn-save"
+                [disabled]="!proveedor || !valorCotizadoSinIva || !fechaCotizacion"
+                [class.btn-save-disabled]="!proveedor || !valorCotizadoSinIva || !fechaCotizacion">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          {{ editingIndex() !== null ? 'Actualizar Cotización' : 'Guardar Cotización' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ═══ CONTINUE BUTTON ═══ -->
+  @if (tramite.cotizaciones.length > 0) {
+    <div class="continue-section">
+      <div class="continue-info">
+        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>{{ tramite.cotizaciones.length }} cotización{{ tramite.cotizaciones.length !== 1 ? 'es' : '' }} registrada{{ tramite.cotizaciones.length !== 1 ? 's' : '' }} — Puedes continuar al siguiente paso</span>
+      </div>
+      <button (click)="confirmar()" class="btn-continue">
+        Continuar al Comparativo
+        <svg class="w-4 h-4 continue-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  }
+</div>

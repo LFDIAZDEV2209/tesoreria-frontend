@@ -1,0 +1,963 @@
+<div class="configuracion-retencion-page">
+  <!-- ═══ HEADER ═══ -->
+  <header class="page-header">
+    <div class="header-selector-area">
+      <div class="year-selector-card">
+        <div class="year-selector-header">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span>Selecciona un año para ver histórico</span>
+        </div>
+        <div class="year-buttons-container">
+          <button
+            *ngFor="let year of availableYears()"
+            (click)="onYearChange(year)"
+            [class.active]="selectedYear() === year"
+            class="year-btn"
+            [title]="'Ver datos de ' + year"
+          >
+            {{ year }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg
+            class="w-7 h-7 text-[#FFB71B]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div>
+          <p class="header-subtitle">Configuración Tributaria</p>
+          <h1 class="header-title">
+            Retención en la Fuente ({{ selectedYear() }})
+          </h1>
+          <p class="header-desc">
+            Tasas y bases mínimas vigentes para el año {{ selectedYear() }}
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Descargar plantilla -->
+        <button
+          (click)="downloadTemplate()"
+          class="btn-action btn-outline"
+          title="Descargar plantilla Excel"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <span class="btn-label">Plantilla</span>
+        </button>
+
+        <!-- Importar Excel -->
+        <button
+          (click)="openImportModal()"
+          class="btn-action btn-secondary"
+          title="Importar desde Excel"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+            />
+          </svg>
+          <span class="btn-label">Importar</span>
+        </button>
+
+        <!-- Nuevo año -->
+        <button
+          (click)="openNewYearModal()"
+          class="btn-action btn-info"
+          title="Crear configuración para año nuevo"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span class="btn-label">Nuevo año</span>
+        </button>
+
+        <!-- Agregar registro -->
+        <button
+          (click)="openAddModal()"
+          class="btn-action btn-primary"
+          title="Agregar registro de retefuente"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <span class="btn-label">Agregar</span>
+        </button>
+
+        <!-- Refrescar -->
+        <button
+          (click)="refreshData()"
+          class="btn-refresh"
+          title="Actualizar datos"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ FILTER PANEL ═══ -->
+  <div class="filter-panel">
+    <div class="filter-bar">
+      <!-- Búsqueda de texto -->
+      <div class="filter-search-wrapper">
+        <svg
+          class="filter-search-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"
+          />
+        </svg>
+        <input
+          type="text"
+          class="filter-search-input"
+          placeholder="Buscar por concepto o tipo de operación..."
+          [value]="searchText()"
+          (input)="searchText.set($any($event.target).value)"
+        />
+        <button
+          *ngIf="searchText()"
+          (click)="searchText.set('')"
+          class="filter-clear-input"
+          title="Limpiar"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Filtro: Tipo de Operación -->
+      <div class="filter-select-wrapper">
+        <svg
+          class="filter-select-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+          />
+        </svg>
+        <select
+          class="filter-select"
+          [value]="filterTipoOperacion()"
+          (change)="filterTipoOperacion.set($any($event.target).value)"
+        >
+          <option value="">Todas las operaciones</option>
+          <option *ngFor="let op of operaciones()" [value]="op">
+            {{ getTipoOperacionLabel(op) }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Filtro: Tipo de Persona -->
+      <div class="filter-select-wrapper">
+        <svg
+          class="filter-select-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+        <select
+          class="filter-select"
+          [value]="filterTipoPersona()"
+          (change)="filterTipoPersona.set($any($event.target).value)"
+        >
+          <option value="">Todos los tipos de persona</option>
+          <option value="PERSONA_JURIDICA">Persona Jurídica</option>
+          <option value="PERSONA_NATURAL_DECLARANTE">
+            Persona Natural Declarante
+          </option>
+          <option value="PERSONA_NATURAL_NO_DECLARANTE">
+            Persona Natural No Declarante
+          </option>
+        </select>
+      </div>
+
+      <!-- Limpiar filtros -->
+      <button
+        *ngIf="hayFiltrosActivos()"
+        (click)="clearFilters()"
+        class="btn-clear-filters"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+        Limpiar filtros
+      </button>
+    </div>
+
+    <!-- Contador resultados -->
+    <div
+      *ngIf="!loadingConfiguraciones() && configuraciones().length > 0"
+      class="results-info"
+    >
+      <span class="results-count">
+        {{ configuracionesFiltradas().length }}
+        <ng-container *ngIf="hayFiltrosActivos()">
+          de {{ configuraciones().length }}</ng-container
+        >
+        resultado{{ configuracionesFiltradas().length !== 1 ? "s" : "" }}
+      </span>
+      <span *ngIf="hayFiltrosActivos()" class="results-filtered-label"
+        >— filtrado</span
+      >
+    </div>
+  </div>
+
+  <!-- ═══ TABLE PANEL ═══ -->
+  <div class="table-panel">
+    <!-- Cargando -->
+    <div *ngIf="loadingConfiguraciones()" class="loading-container">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+      </div>
+      <p class="loading-text">
+        Cargando configuraciones de {{ selectedYear() }}...
+      </p>
+    </div>
+
+    <!-- Sin datos del año -->
+    <div
+      *ngIf="!loadingConfiguraciones() && configuraciones().length === 0"
+      class="empty-state"
+    >
+      <div class="empty-state__icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
+        </svg>
+      </div>
+      <p class="empty-state__title">
+        No hay configuraciones para {{ selectedYear() }}
+      </p>
+      <p class="empty-state__desc">
+        Intenta con otro año usando el selector de arriba
+      </p>
+    </div>
+
+    <!-- Sin resultados de filtro -->
+    <div
+      *ngIf="
+        !loadingConfiguraciones() &&
+        configuraciones().length > 0 &&
+        configuracionesFiltradas().length === 0
+      "
+      class="empty-state"
+    >
+      <div class="empty-state__icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"
+          />
+        </svg>
+      </div>
+      <p class="empty-state__title">Sin resultados</p>
+      <p class="empty-state__desc">
+        No hay configuraciones que coincidan con los filtros aplicados
+      </p>
+      <button
+        (click)="clearFilters()"
+        class="btn-clear-filters"
+        style="margin-top: 1rem"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+
+    <!-- Tabla única -->
+    <div
+      *ngIf="!loadingConfiguraciones() && configuracionesFiltradas().length > 0"
+      class="table-container"
+    >
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="th-num">#</th>
+            <th>Concepto de Retención</th>
+            <th>Tipo de Operación</th>
+            <th>Tipo de Persona</th>
+            <th class="th-right">Base Mín. (UVT)</th>
+            <th class="th-right">Base Mín. ($)</th>
+            <th class="th-right">Tarifa (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let config of configuracionesFiltradas(); let i = index"
+            class="data-row"
+          >
+            <td>
+              <span class="row-number">{{ i + 1 }}</span>
+            </td>
+            <td>
+              <span class="concepto-badge">{{
+                getConceptoRetencionLabel(config.conceptoRetencion)
+              }}</span>
+            </td>
+            <td>
+              <span class="operacion-text">{{
+                getTipoOperacionLabel(config.tipoOperacion)
+              }}</span>
+            </td>
+            <td>
+              <span
+                class="persona-badge"
+                [ngClass]="{
+                  'persona-juridica': config.tipoPersona === 'PERSONA_JURIDICA',
+                  'persona-declarante':
+                    config.tipoPersona === 'PERSONA_NATURAL_DECLARANTE',
+                  'persona-no-declarante':
+                    config.tipoPersona === 'PERSONA_NATURAL_NO_DECLARANTE',
+                }"
+              >
+                {{ getTipoPersonaRetencionLabel(config.tipoPersona) }}
+              </span>
+            </td>
+            <td class="td-right mono">
+              {{ config.baseMinimaUvt | number: "1.2-2" }}
+            </td>
+            <td class="td-right money">
+              ${{ config.baseMinimaPesos | number: "1.0-0" }}
+            </td>
+            <td class="td-right tarifa">{{ config.tarifaRetencion }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MODAL: AGREGAR REGISTRO                             -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="showAddModal()" class="modal-overlay" (click)="closeAddModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-icon modal-icon-primary">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        </div>
+        <div>
+          <h2 class="modal-title">Agregar Registro de Retefuente</h2>
+          <p class="modal-subtitle">
+            Complete los campos para crear un nuevo registro
+          </p>
+        </div>
+        <button (click)="closeAddModal()" class="modal-close">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Año vigencia -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"
+              >Año Vigencia <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="newConfig.anioVigencia"
+              min="2000"
+              max="2100"
+              placeholder="2026"
+            />
+          </div>
+        </div>
+
+        <!-- Concepto -->
+        <div class="form-group">
+          <label class="form-label"
+            >Concepto de Retención <span class="required">*</span></label
+          >
+          <select class="form-select" [(ngModel)]="newConfig.conceptoRetencion">
+            <option value="">Seleccione un concepto...</option>
+            <option value="COMPRAS_GENERALES">Compras Generales</option>
+            <option value="COMPRAS_TARJETA">Compras Tarjeta Déb/Créd</option>
+            <option value="SERVICIOS_GENERALES">Servicios Generales</option>
+            <option value="HONORARIOS">Honorarios</option>
+            <option value="COMISIONES">Comisiones</option>
+            <option value="CONSULTORIA">Consultoría</option>
+            <option value="ARRENDAMIENTO_INMUEBLES">Arrend. Inmuebles</option>
+            <option value="ARRENDAMIENTO_MUEBLES">Arrend. Muebles</option>
+            <option value="TRANSPORTE_CARGA">Transporte Carga</option>
+            <option value="TRANSPORTE_PASAJEROS">Transporte Pasajeros</option>
+            <option value="OTROS_INGRESOS">Otros Ingresos</option>
+            <option value="CONTRATOS_CONSTRUCCION">
+              Contratos Construcción
+            </option>
+            <option value="HOTELES_RESTAURANTES">Hoteles y Restaurantes</option>
+            <option value="LICENCIAMIENTO_SOFTWARE">
+              Licenciamiento Software
+            </option>
+            <option value="SERVICIOS_TEMPORALES">
+              Servicios Temporales (AIU)
+            </option>
+            <option value="VIGILANCIA_ASEO">Vigilancia y Aseo (AIU)</option>
+          </select>
+        </div>
+
+        <!-- Tipo operación y tipo persona -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"
+              >Tipo de Operación <span class="required">*</span></label
+            >
+            <select class="form-select" [(ngModel)]="newConfig.tipoOperacion">
+              <option value="">Seleccione...</option>
+              <option value="COMPRAS">Compras</option>
+              <option value="SERVICIOS">Servicios</option>
+              <option value="HONORARIOS">Honorarios</option>
+              <option value="ARRENDAMIENTOS">Arrendamientos</option>
+              <option value="COMISIONES">Comisiones</option>
+              <option value="TRANSPORTE">Transporte</option>
+              <option value="OTROS">Otros</option>
+              <option value="BIENES">Bienes</option>
+              <option value="IVA">IVA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label"
+              >Tipo de Persona <span class="required">*</span></label
+            >
+            <select class="form-select" [(ngModel)]="newConfig.tipoPersona">
+              <option value="">Seleccione...</option>
+              <option value="PERSONA_JURIDICA">Persona Jurídica</option>
+              <option value="PERSONA_NATURAL_DECLARANTE">
+                Natural Declarante
+              </option>
+              <option value="PERSONA_NATURAL_NO_DECLARANTE">
+                Natural No Declarante
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Base mínima y tarifa -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Base Mínima (UVT)</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="newConfig.baseMinimaUvt"
+              min="0"
+              step="0.01"
+              placeholder="0"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tarifa de Retención (%)</label>
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="newConfig.tarifaRetencion"
+              min="0"
+              max="100"
+              step="0.01"
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="saveError()" class="alert-error">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          {{ saveError() }}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          (click)="closeAddModal()"
+          class="btn-modal-cancel"
+          [disabled]="savingConfig()"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="saveConfig()"
+          class="btn-modal-primary"
+          [disabled]="savingConfig()"
+        >
+          <span *ngIf="savingConfig()" class="btn-spinner"></span>
+          {{ savingConfig() ? "Guardando..." : "Guardar registro" }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MODAL: NUEVO AÑO                                    -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div
+    *ngIf="showNewYearModal()"
+    class="modal-overlay"
+    (click)="closeNewYearModal()"
+  >
+    <div class="modal-card modal-card--sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-icon modal-icon-info">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+        <div>
+          <h2 class="modal-title">Crear Configuración de Año Nuevo</h2>
+          <p class="modal-subtitle">
+            Define el año destino y opcionalmente copia desde un año existente
+          </p>
+        </div>
+        <button (click)="closeNewYearModal()" class="modal-close">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label"
+            >Año a crear <span class="required">*</span></label
+          >
+          <input
+            type="number"
+            class="form-control"
+            [ngModel]="newYearTarget()"
+            (ngModelChange)="newYearTarget.set($event)"
+            min="2000"
+            max="2100"
+          />
+          <p class="form-hint">
+            Se creará la configuración de retefuente para este año fiscal.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Copiar registros desde año</label>
+          <select
+            class="form-select"
+            [ngModel]="copyFromYear()"
+            (ngModelChange)="copyFromYear.set($event)"
+          >
+            <option value="">— Iniciar en blanco —</option>
+            <option *ngFor="let y of allYears()" [value]="y">{{ y }}</option>
+          </select>
+          <p class="form-hint">
+            Si seleccionas un año origen, se copiarán todos sus registros al
+            nuevo año. Si lo dejas en blanco, se abrirá el año vacío para que lo
+            completes manualmente.
+          </p>
+        </div>
+
+        <!-- Info box -->
+        <div class="info-callout">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p>
+            Recuerda actualizar el valor de la UVT para el nuevo año en la
+            configuración del sistema.
+          </p>
+        </div>
+
+        <div *ngIf="createYearError()" class="alert-error">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          {{ createYearError() }}
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          (click)="closeNewYearModal()"
+          class="btn-modal-cancel"
+          [disabled]="creatingYear()"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="createNewYear()"
+          class="btn-modal-info"
+          [disabled]="creatingYear()"
+        >
+          <span *ngIf="creatingYear()" class="btn-spinner"></span>
+          {{
+            creatingYear()
+              ? "Creando..."
+              : copyFromYear()
+                ? "Copiar y crear año"
+                : "Crear año en blanco"
+          }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MODAL: IMPORTAR EXCEL                               -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div
+    *ngIf="showImportModal()"
+    class="modal-overlay"
+    (click)="closeImportModal()"
+  >
+    <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-icon modal-icon-secondary">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+            />
+          </svg>
+        </div>
+        <div>
+          <h2 class="modal-title">Importar desde Excel</h2>
+          <p class="modal-subtitle">
+            Sube un archivo .xlsx con la estructura de la plantilla
+          </p>
+        </div>
+        <button (click)="closeImportModal()" class="modal-close">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Drop zone o archivo seleccionado -->
+        <div
+          *ngIf="!importFile()"
+          class="drop-zone"
+          (dragover)="onDragOver($event)"
+          (drop)="onFileDrop($event)"
+          (click)="fileInput.click()"
+        >
+          <input
+            #fileInput
+            type="file"
+            accept=".xlsx,.xls"
+            style="display: none"
+            (change)="onFileSelected($event)"
+          />
+          <div class="drop-zone__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              />
+            </svg>
+          </div>
+          <p class="drop-zone__title">Arrastra tu archivo aquí</p>
+          <p class="drop-zone__sub">o haz clic para seleccionar</p>
+          <p class="drop-zone__formats">Formatos aceptados: .xlsx, .xls</p>
+          <button
+            type="button"
+            class="drop-zone__btn"
+            (click)="$event.stopPropagation(); fileInput.click()"
+          >
+            Seleccionar archivo
+          </button>
+        </div>
+
+        <!-- Archivo cargado: info + preview -->
+        <div *ngIf="importFile()">
+          <div class="file-info">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <span class="file-info__name">{{ importFile()!.name }}</span>
+            <span class="file-info__count"
+              >{{ importPreview().length }} registro(s) encontrado(s)</span
+            >
+            <button (click)="openImportModal()" class="file-info__change">
+              Cambiar archivo
+            </button>
+          </div>
+
+          <!-- Errores de parseo -->
+          <div *ngIf="importErrors().length > 0" class="import-errors">
+            <p class="import-errors__title">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {{ importErrors().length }} advertencia(s)
+            </p>
+            <ul class="import-errors__list">
+              <li *ngFor="let err of importErrors()">{{ err }}</li>
+            </ul>
+          </div>
+
+          <!-- Mensaje de éxito -->
+          <div *ngIf="importDone()" class="alert-success">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            {{ importPreview().length }} registros importados correctamente.
+          </div>
+
+          <!-- Preview table -->
+          <div
+            *ngIf="importPreview().length > 0 && !importDone()"
+            class="import-preview"
+          >
+            <p class="import-preview__title">
+              Vista previa de los datos a importar
+            </p>
+            <div class="import-preview__scroll">
+              <table class="import-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Año</th>
+                    <th>Concepto</th>
+                    <th>Operación</th>
+                    <th>Persona</th>
+                    <th class="th-right">Base UVT</th>
+                    <th class="th-right">Tarifa %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of importPreview(); let i = index">
+                    <td class="row-number">{{ i + 1 }}</td>
+                    <td>
+                      <span class="mono">{{ row.anioVigencia }}</span>
+                    </td>
+                    <td>
+                      <span class="concepto-badge">{{
+                        getConceptoRetencionLabel(row.conceptoRetencion)
+                      }}</span>
+                    </td>
+                    <td>
+                      <span class="operacion-text">{{
+                        getTipoOperacionLabel(row.tipoOperacion)
+                      }}</span>
+                    </td>
+                    <td>
+                      <span
+                        class="persona-badge"
+                        [ngClass]="{
+                          'persona-juridica':
+                            row.tipoPersona === 'PERSONA_JURIDICA',
+                          'persona-declarante':
+                            row.tipoPersona === 'PERSONA_NATURAL_DECLARANTE',
+                          'persona-no-declarante':
+                            row.tipoPersona === 'PERSONA_NATURAL_NO_DECLARANTE',
+                        }"
+                      >
+                        {{ getTipoPersonaRetencionLabel(row.tipoPersona) }}
+                      </span>
+                    </td>
+                    <td class="td-right mono">{{ row.baseMinimaUvt }}</td>
+                    <td class="td-right tarifa">{{ row.tarifaRetencion }}%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip de plantilla -->
+        <div class="info-callout" style="margin-top: 1rem">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <p>
+            ¿No tienes la plantilla?
+            <button type="button" (click)="downloadTemplate()" class="link-btn">
+              Descarga aquí la plantilla Excel oficial
+            </button>
+            con los valores de referencia.
+          </p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          (click)="closeImportModal()"
+          class="btn-modal-cancel"
+          [disabled]="importing()"
+        >
+          {{ importDone() ? "Cerrar" : "Cancelar" }}
+        </button>
+        <button
+          *ngIf="importPreview().length > 0 && !importDone()"
+          (click)="confirmImport()"
+          class="btn-modal-secondary"
+          [disabled]="importing()"
+        >
+          <span *ngIf="importing()" class="btn-spinner"></span>
+          {{
+            importing()
+              ? "Importando..."
+              : "Confirmar e importar " + importPreview().length + " registros"
+          }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

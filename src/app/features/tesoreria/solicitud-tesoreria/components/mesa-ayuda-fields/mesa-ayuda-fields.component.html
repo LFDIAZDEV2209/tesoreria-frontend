@@ -1,0 +1,228 @@
+<!-- ═══════════ MESA DE AYUDA FIELDS ═══════════ -->
+<div class="dynamic-section" [formGroup]="formGroup">
+  <!-- Header -->
+  <div class="dynamic-section__header">
+    <div class="dynamic-section__header-icon" style="background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.04)); color: #ef4444;">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+      </svg>
+    </div>
+    <div class="dynamic-section__header-text">
+      <p class="dynamic-section__header-title">Mesa de Ayuda</p>
+      <p class="dynamic-section__header-subtitle">Registro de tickets e incidentes de soporte técnico</p>
+    </div>
+  </div>
+
+  <!-- ═══ DATOS GENERALES DEL TICKET ═══ -->
+  <div class="sub-section" style="margin-top: 4px; border-top: none; padding-top: 0;">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📋</span> Datos del Ticket</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">N.° de Ticket</label>
+        <input type="text" formControlName="numeroTicket" placeholder="Auto-generado" readonly class="form-input" style="background: #e5e7eb; cursor: default;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha y Hora de Creación</label>
+        <input type="datetime-local" formControlName="fechaHoraCreacion" readonly class="form-input" style="background: #e5e7eb; cursor: default;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INFORMACIÓN ORGANIZACIONAL ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏢</span> Información Organizacional</p>
+
+    <div class="info-note" style="margin-bottom: 14px;">
+      <div class="info-note__icon">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <p class="info-note__text">
+        <strong>Origen de datos:</strong> Esta información se toma automáticamente del perfil del usuario autenticado y no se puede editar.
+      </p>
+    </div>
+
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Empresa / Centro de Costos</label>
+        <input type="text" formControlName="nombreEmpresa" [value]="orgNombreEmpresa()" class="form-input" readonly style="background: #e5e7eb; cursor: default;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">NIT</label>
+        <input type="text" formControlName="nit" class="form-input" readonly style="background: #e5e7eb; cursor: default;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INFORMACIÓN DEL SOLICITANTE ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">👤</span> Información del Solicitante</p>
+
+    <div class="info-note" style="margin-bottom: 14px;">
+      <div class="info-note__icon">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <p class="info-note__text">
+        <strong>Datos del solicitante:</strong> Estos campos se rellenan automáticamente con la información del <strong>Paso 1</strong> y no son editables.
+      </p>
+    </div>
+
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Nombre Completo <span class="required">*</span></label>
+        <input type="text" formControlName="nombreCompleto" [value]="solicitanteNombre()" 
+               class="form-input" readonly style="background: #e5e7eb; cursor: default;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cargo <span class="required">*</span></label>
+        <input type="text" formControlName="cargo" [value]="solicitanteCargo()" 
+               class="form-input" readonly style="background: #e5e7eb; cursor: default;" />
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Correo Electrónico <span class="required">*</span></label>
+        <input type="email" formControlName="correoElectronico" [value]="solicitanteCorreo()" 
+               class="form-input" readonly style="background: #e5e7eb; cursor: default;" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono <span class="required">*</span></label>
+        <input type="tel" formControlName="telefono" [value]="solicitanteTelefono()" 
+               class="form-input" readonly style="background: #e5e7eb; cursor: default;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CLASIFICACIÓN DEL REQUERIMIENTO ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏷️</span> Clasificación del Requerimiento</p>
+
+    <label class="form-label" style="margin-bottom: 10px;">Tipo de Solicitud <span class="required">*</span></label>
+    <div class="option-chips" style="margin-bottom: 20px;">
+      <div *ngFor="let tipo of tiposSolicitud"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('tipoSolicitud')?.value === tipo.value"
+           (click)="selectOption('tipoSolicitud', tipo.value)">
+        <span class="option-chip__dot">{{ tipo.icon }}</span>
+        {{ tipo.label }}
+      </div>
+    </div>
+
+    <!-- Sub-clasificación dinámica -->
+    <div *ngIf="subClasificacionesFiltradas().length > 0" class="form-row form-row--1" style="margin-bottom: 16px;">
+      <div class="form-group">
+        <label class="form-label">Sub-clasificación <span class="required">*</span></label>
+        <select formControlName="subClasificacion" class="form-input">
+          <option value="">Seleccione una sub-clasificación...</option>
+          <option *ngFor="let sub of subClasificacionesFiltradas()" [value]="sub.value">{{ sub.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Descripción Completa del Incidente <span class="required">*</span></label>
+        <textarea formControlName="descripcionIncidente" rows="4"
+                  placeholder="Describa detalladamente el problema: ¿Qué ocurre? ¿Cuándo comenzó? ¿Qué ha intentado? ¿Hay algún mensaje de error?"
+                  class="form-textarea"></textarea>
+      </div>
+    </div>
+
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Fecha del Incidente</label>
+        <input type="date" formControlName="fechaIncidente" class="form-input" />
+      </div>
+    </div>
+
+    <!-- Adjuntar archivo -->
+    <div class="form-row form-row--1" style="margin-top: 16px;">
+      <div class="form-group">
+        <label class="form-label">Adjuntar Archivo</label>
+        <div class="file-upload-area"
+             (dragover)="onDragOver($event)"
+             (drop)="onDropArchivo($event)"
+             (click)="fileInput.click()">
+          <input #fileInput type="file" hidden (change)="onArchivoChange($event)" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" />
+          
+          <div *ngIf="!archivoAdjunto()" class="file-upload-placeholder">
+            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p class="file-upload-text">Arrastra un archivo o haz clic para seleccionar</p>
+            <p class="file-upload-hint">Imágenes, PDF, Word, Excel (máx. 10MB)</p>
+          </div>
+
+          <div *ngIf="archivoAdjunto()" class="file-upload-selected">
+            <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="file-info">
+              <p class="file-name">{{ archivoAdjunto()?.name }}</p>
+              <p class="file-size">{{ (archivoAdjunto()?.size || 0) / 1024 | number:'1.0-0' }} KB</p>
+            </div>
+            <button type="button" class="file-remove-btn" (click)="removeArchivo($event)">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PRIORIZACIÓN ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">⚡</span> Priorización</p>
+
+    <label class="form-label" style="margin-bottom: 10px;">Urgencia <span class="required">*</span></label>
+    <div class="criticidad-options" style="margin-bottom: 20px;">
+      <div *ngFor="let urg of urgencias"
+           class="criticidad-badge"
+           [class.criticidad-badge--selected]="formGroup.get('urgencia')?.value === urg.value"
+           [ngClass]="{
+             'criticidad-badge--baja': urg.value === 'BAJA',
+             'criticidad-badge--media': urg.value === 'MEDIA',
+             'criticidad-badge--alta': urg.value === 'ALTA',
+             'criticidad-badge--critica': urg.value === 'CRITICA'
+           }"
+           (click)="selectOption('urgencia', urg.value)">
+        <div class="criticidad-badge__indicator"
+             [ngClass]="{
+               'criticidad-badge__indicator--baja': urg.value === 'BAJA',
+               'criticidad-badge__indicator--media': urg.value === 'MEDIA',
+               'criticidad-badge__indicator--alta': urg.value === 'ALTA',
+               'criticidad-badge__indicator--critica': urg.value === 'CRITICA'
+             }"></div>
+        {{ urg.label }}
+      </div>
+    </div>
+
+    <label class="form-label" style="margin-bottom: 10px;">Impacto <span class="required">*</span></label>
+    <div class="option-chips">
+      <div *ngFor="let imp of impactos"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('impacto')?.value === imp.value"
+           (click)="selectOption('impacto', imp.value)">
+        <span class="option-chip__dot">{{ imp.icon }}</span>
+        {{ imp.label }}
+      </div>
+    </div>
+
+    <div class="info-note" style="margin-top: 16px;">
+      <div class="info-note__icon">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <p class="info-note__text">
+        <strong>Prioridad automática:</strong> La prioridad final del ticket se calculará automáticamente 
+        basada en la combinación de urgencia e impacto según las políticas de SLA.
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,106 @@
+<app-gp-page-header
+  [icono]="'layers'"
+  [color]="'#0D6FB0'"
+  [eyebrow]="'PRESUPUESTO'"
+  [titulo]="'Aprobación Consolidada'"
+  [descripcion]="'Estado del presupuesto por empresa: aprueba o rechaza con Gerencia'">
+</app-gp-page-header>
+
+<div class="gp-item" *ngIf="error()">
+  <app-gp-error-state [mensaje]="error()!" (reintentar)="cargar()"></app-gp-error-state>
+</div>
+
+<p *ngIf="aviso()" class="gp-aviso-ok">{{ aviso() }}</p>
+
+<div *ngIf="cargando()" class="space-y-4">
+  <div class="gp-skeleton" style="height: 92px"></div>
+  <div class="gp-skeleton" style="height: 320px"></div>
+</div>
+
+<ng-container *ngIf="!cargando() && !error()">
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+    <app-gp-kpi label="Empresas" [value]="filas().length" tipo="conteo" icon="layers" variante="default"></app-gp-kpi>
+    <app-gp-kpi label="Aprobadas" [value]="aprobadas()" tipo="conteo" icon="check" variante="success"></app-gp-kpi>
+    <app-gp-kpi label="Pendientes" [value]="pendientes()" tipo="conteo" icon="clock" variante="warning"></app-gp-kpi>
+    <app-gp-kpi label="Disponible total" [value]="totalDisponible()" icon="sigma" variante="default"></app-gp-kpi>
+  </div>
+
+  <!-- Sin empresas -->
+  <div *ngIf="filas().length === 0" class="gp-item">
+    <p class="gp-vacio">No hay empresas visibles para esta cuenta.</p>
+  </div>
+
+  <!-- Filas por empresa -->
+  <div class="space-y-3">
+    <div class="gp-empresa-card" *ngFor="let f of filasOrdenadas()">
+      <div class="gp-empresa-cabecera" (click)="seleccionar(f.empresaId)">
+        <div class="gp-empresa-id">
+          <app-gp-icon [name]="'building'" [size]="18"></app-gp-icon>
+          <div>
+            <p class="gp-empresa-nombre">{{ f.nombreEmpresa }}</p>
+            <p class="gp-empresa-resp">Responsable: {{ f.responsable || '—' }}</p>
+          </div>
+        </div>
+        <span class="gp-chip" [ngClass]="chipEstado(f.empresaId).clase">{{ chipEstado(f.empresaId).texto }}</span>
+        <div class="gp-empresa-montos">
+          <div class="gp-monto">
+            <span class="gp-monto-lbl">Aprobado</span>
+            <span class="gp-monto-val">{{ cp(f.totalAprobado) }}</span>
+          </div>
+          <div class="gp-monto">
+            <span class="gp-monto-lbl">Pendiente pago</span>
+            <span class="gp-monto-val">{{ cp(f.totalPendientePago) }}</span>
+          </div>
+          <div class="gp-monto">
+            <span class="gp-monto-lbl">Pagado</span>
+            <span class="gp-monto-val">{{ cp(f.totalPagado) }}</span>
+          </div>
+          <div class="gp-monto">
+            <span class="gp-monto-lbl">Disponible</span>
+            <span class="gp-monto-val gp-monto-destacado">{{ cp(f.totalDisponible) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalle desplegable -->
+      <div class="gp-empresa-detalle" *ngIf="seleccionada() === f.empresaId">
+        <div class="gp-grid-datos" *ngIf="estadoDe(f.empresaId) as c">
+          <div class="gp-dato"><span class="gp-dato-lbl">Contrato</span><span class="gp-dato-val">{{ c.numeroContrato || '—' }}</span></div>
+          <div class="gp-dato"><span class="gp-dato-lbl">Vigencia</span><span class="gp-dato-val">{{ c.fechaInicial || '—' }} → {{ c.fechaFinal || '—' }}</span></div>
+          <div class="gp-dato"><span class="gp-dato-lbl">Valor inicial</span><span class="gp-dato-val">{{ cp(c.valorInicialContrato) }}</span></div>
+          <div class="gp-dato"><span class="gp-dato-lbl">Aprobado por</span><span class="gp-dato-val">{{ c.aprobadoPor || '—' }}</span></div>
+          <div class="gp-dato" *ngIf="c.fechaAprobacion"><span class="gp-dato-lbl">Fecha aprobación</span><span class="gp-dato-val">{{ c.fechaAprobacion }}</span></div>
+          <div class="gp-dato gp-dato-ancho" *ngIf="c.motivoRechazo"><span class="gp-dato-lbl">Motivo del rechazo</span><span class="gp-dato-val gp-text-danger">{{ c.motivoRechazo }}</span></div>
+        </div>
+
+        <p class="gp-empresa-resp" *ngIf="!estadoDe(f.empresaId)">Cargando datos del contrato…</p>
+
+        <div class="gp-acciones" *ngIf="puedeAprobar()">
+          <button class="gp-btn gp-btn-ok" (click)="aprobar(f.empresaId)" [disabled]="aprobando()">
+            {{ aprobando() ? 'Guardando…' : 'Aprobar presupuesto' }}
+          </button>
+          <button class="gp-btn gp-btn-danger" (click)="prepararRechazo(f.empresaId, $event)"
+                  *ngIf="rechazando() !== f.empresaId">Rechazar…</button>
+        </div>
+
+        <div class="gp-rechazo" *ngIf="rechazando() === f.empresaId">
+          <label class="gp-lbl" for="motivo-{{ f.empresaId }}">Motivo del rechazo</label>
+          <textarea id="motivo-{{ f.empresaId }}" class="gp-textarea" rows="2"
+                    [(ngModel)]="motivo" placeholder="Explica por qué se rechaza el presupuesto"></textarea>
+          <div class="gp-acciones">
+            <button class="gp-btn gp-btn-danger" (click)="confirmarRechazo(f.empresaId)" [disabled]="aprobando()">
+              Confirmar rechazo
+            </button>
+            <button class="gp-btn gp-btn-ghost" (click)="cancelarRechazo()">Cancelar</button>
+          </div>
+        </div>
+
+        <p class="gp-empresa-resp" *ngIf="!puedeAprobar()">
+          Solo Gerencia con permiso de aprobación puede cambiar el estado.
+        </p>
+      </div>
+    </div>
+  </div>
+</ng-container>

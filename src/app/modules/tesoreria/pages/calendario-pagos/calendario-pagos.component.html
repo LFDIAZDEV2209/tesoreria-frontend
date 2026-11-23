@@ -1,0 +1,740 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     CALENDARIO DE PAGOS — Dos vistas: Programados y Realizados
+     ═══════════════════════════════════════════════════════════════ -->
+
+<div class="calendario-page">
+  <!-- ═══ HEADER ═══ -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <button (click)="volverABandeja()" class="btn-back" title="Volver a Bandeja">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+        </button>
+        <div class="header-icon">
+          <svg class="w-7 h-7 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="header-subtitle">Módulo Tesorería</p>
+          <h1 class="header-title">Calendario de Pagos</h1>
+          <p class="header-desc">{{ tipoCalendario() === 'PROGRAMADOS' ? 'Visualización y programación de pagos pendientes' : 'Historial de pagos realizados y ejecutados' }}</p>
+        </div>
+      </div>
+
+      <!-- Tipo de Calendario Toggle -->
+      <div class="calendar-type-toggle">
+        <button
+          (click)="tipoCalendario.set('PROGRAMADOS')"
+          class="toggle-btn"
+          [class.toggle-btn--active]="tipoCalendario() === 'PROGRAMADOS'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Pagos Programados
+        </button>
+        <button
+          (click)="tipoCalendario.set('VISTO_BUENO')"
+          class="toggle-btn"
+          [class.toggle-btn--active]="tipoCalendario() === 'VISTO_BUENO'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Pagos Realizados
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ FILTROS AVANZADOS ═══ -->
+  <section class="filters-section" *ngIf="tipoCalendario() === 'VISTO_BUENO'">
+    <div class="filters-header" (click)="toggleFiltros()">
+      <div class="filters-header-left">
+        <svg class="w-5 h-5 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+        </svg>
+        <span class="filters-title">Filtros</span>
+        <span class="filters-badge" *ngIf="filtroBanco() || filtroProveedor() || filtroFechaDesde() || filtroFechaHasta()">
+          Activos
+        </span>
+      </div>
+      <svg class="filters-chevron" [class.filters-chevron--open]="showFiltros()" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+
+    <div class="filters-body" *ngIf="showFiltros()">
+      <!-- Rango de tiempo -->
+      <div class="filter-group">
+        <label class="filter-label">Periodo</label>
+        <div class="filter-range-btns">
+          <button class="range-btn" [class.range-btn--active]="filtroRango() === 'mes'" (click)="cambiarRango('mes')">Mes</button>
+          <button class="range-btn" [class.range-btn--active]="filtroRango() === 'semana'" (click)="cambiarRango('semana')">Semana</button>
+          <button class="range-btn" [class.range-btn--active]="filtroRango() === 'dia'" (click)="cambiarRango('dia')">Hoy</button>
+          <button class="range-btn" [class.range-btn--active]="filtroRango() === 'rango'" (click)="cambiarRango('rango')">Rango</button>
+        </div>
+      </div>
+
+      <!-- Fechas personalizadas -->
+      <div class="filter-group filter-dates" *ngIf="filtroRango() === 'rango'">
+        <div class="filter-date">
+          <label class="filter-label">Desde</label>
+          <input type="date" class="filter-input" [ngModel]="filtroFechaDesde()" (ngModelChange)="filtroFechaDesde.set($event)"/>
+        </div>
+        <div class="filter-date">
+          <label class="filter-label">Hasta</label>
+          <input type="date" class="filter-input" [ngModel]="filtroFechaHasta()" (ngModelChange)="filtroFechaHasta.set($event)"/>
+        </div>
+      </div>
+
+      <!-- Banco -->
+      <div class="filter-group">
+        <label class="filter-label">Banco</label>
+        <select class="filter-input filter-select" [ngModel]="filtroBanco()" (ngModelChange)="filtroBanco.set($event)">
+          <option value="">Todos los bancos</option>
+          <option *ngFor="let banco of bancosDisponibles()" [value]="banco">{{ banco }}</option>
+        </select>
+      </div>
+
+      <!-- Proveedor / Observaciones -->
+      <div class="filter-group">
+        <label class="filter-label">Proveedor / Descripción</label>
+        <input type="text" class="filter-input" placeholder="Buscar por proveedor, observaciones..."
+          [ngModel]="filtroProveedor()" (ngModelChange)="filtroProveedor.set($event)"/>
+      </div>
+
+      <!-- Actions -->
+      <div class="filter-actions">
+        <button class="btn-filter-apply" (click)="aplicarFiltros()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          Aplicar
+        </button>
+        <button class="btn-filter-clear" (click)="limpiarFiltros()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Limpiar
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ KPI STATS ═══ -->
+  <section class="kpi-section">
+    <div class="kpi-card kpi-total">
+      <div class="kpi-icon-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Total Pagos</span>
+        <span class="kpi-value">{{ currentStats().total }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-pending">
+      <div class="kpi-icon-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Pendientes</span>
+        <span class="kpi-value">{{ currentStats().pendientes }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-scheduled">
+      <div class="kpi-icon-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Programados</span>
+        <span class="kpi-value">{{ currentStats().programados }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-paid">
+      <div class="kpi-icon-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Pagados</span>
+        <span class="kpi-value">{{ currentStats().pagados }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-overdue">
+      <div class="kpi-icon-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Vencidos</span>
+        <span class="kpi-value">{{ currentStats().vencidos }}</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-amount">
+      <div class="kpi-icon-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <span class="kpi-label">Monto Total</span>
+        <span class="kpi-value kpi-value--monto">{{ formatMonto(currentStats().montoTotal) }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ LOADING ═══ -->
+  <div *ngIf="loading()" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Cargando calendario...</p>
+  </div>
+
+  <!-- ═══ CALENDAR PANEL ═══ -->
+  <div class="calendar-panel" *ngIf="!loading()">
+    <!-- ── Calendar Navigation ── -->
+    <div class="calendar-nav">
+      <div class="nav-left">
+        <button (click)="mesAnterior()" class="nav-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="month-year-picker-container">
+          <h2 class="nav-title nav-title--clickable" (click)="toggleMonthYearPicker()">
+            {{ NOMBRES_MESES[mesActual()] }} {{ anioActual() }}
+            <svg class="picker-chevron" [class.picker-chevron--open]="showMonthYearPicker()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </h2>
+
+          <!-- Month/Year Picker Dropdown -->
+          <div class="month-year-picker" *ngIf="showMonthYearPicker()" (click)="$event.stopPropagation()">
+            <div class="picker-year-nav">
+              <button (click)="pickerAnioAnterior()" class="picker-year-btn" type="button">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+              </button>
+              <span class="picker-year-label">{{ pickerAnio() }}</span>
+              <button (click)="pickerAnioSiguiente()" class="picker-year-btn" type="button">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+            <div class="picker-months-grid">
+              <button
+                *ngFor="let mes of NOMBRES_MESES; let i = index"
+                (click)="seleccionarMes(i)"
+                class="picker-month-btn"
+                [class.picker-month-btn--active]="i === mesActual() && pickerAnio() === anioActual()"
+                [class.picker-month-btn--current]="i === todayMonth && pickerAnio() === todayYear"
+                type="button"
+              >
+                {{ mes.slice(0, 3) }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <button (click)="mesSiguiente()" class="nav-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+      <div class="nav-right">
+        <button (click)="irAHoy()" class="btn-today">Hoy</button>
+        <button (click)="loadData()" class="btn-refresh-cal" title="Actualizar datos">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Calendar Grid ── -->
+    <div class="calendar-grid">
+      <!-- Day headers -->
+      <div class="day-header" *ngFor="let dia of NOMBRES_DIAS">{{ dia }}</div>
+
+      <!-- Day cells -->
+      <div
+        *ngFor="let dia of diasCalendario(); trackBy: trackByDiaFecha"
+        class="day-cell"
+        [class.day-cell--other-month]="!dia.esMesActual"
+        [class.day-cell--today]="dia.esHoy"
+        [class.day-cell--has-events]="dia.eventos.length > 0"
+        [class.day-cell--clickable]="dia.esMesActual && tipoCalendario() === 'PROGRAMADOS'"
+        (click)="tipoCalendario() === 'PROGRAMADOS' ? abrirProgramarPago(dia) : null"
+      >
+        <div class="day-cell-header">
+          <span class="day-number" [class.day-number--today]="dia.esHoy">
+            {{ dia.fecha.getDate() }}
+          </span>
+          <span *ngIf="dia.esMesActual && tipoCalendario() === 'PROGRAMADOS'" class="day-add-btn" title="Programar pago">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
+          </span>
+        </div>
+
+        <div class="day-events">
+          <div
+            *ngFor="let evento of dia.eventos.slice(0, 3); trackBy: trackByEventoId"
+            class="event-chip"
+            [style.border-left-color]="getEstadoConfig(evento.estado).color"
+            (click)="selectEvento(evento); $event.stopPropagation()"
+            [title]="evento.titulo + ' — ' + formatMonto(evento.monto)"
+          >
+            <span class="event-chip__icon">{{ getEstadoConfig(evento.estado).icon }}</span>
+            <span class="event-chip__text">{{ evento.proveedorNombre | slice:0:12 }}</span>
+            <span class="event-chip__amount">{{ formatMonto(evento.monto) }}</span>
+          </div>
+          <div *ngIf="dia.eventos.length > 3" class="event-more">
+            +{{ dia.eventos.length - 3 }} más
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ EVENT LIST (below calendar) ═══ -->
+    <div class="events-list-section">
+      <h3 class="events-list-title">
+        <svg class="w-5 h-5 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+        </svg>
+        {{ tipoCalendario() === 'PROGRAMADOS' ? 'Pagos de' : 'Pagos realizados —' }} {{ getFilterRangeLabel() }}
+        <span class="events-count">{{ eventosDelMes().length }} pago{{ eventosDelMes().length !== 1 ? 's' : '' }}</span>
+      </h3>
+
+      <div *ngIf="eventosDelMes().length === 0" class="empty-state">
+        <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p>{{ tipoCalendario() === 'PROGRAMADOS' ? 'No hay pagos programados para este periodo' : 'No hay pagos realizados para este periodo' }}</p>
+      </div>
+
+      <div class="events-table-wrap" *ngIf="eventosDelMes().length > 0">
+        <table class="events-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th *ngIf="tipoCalendario() === 'VISTO_BUENO'">Banco</th>
+              <th>Proveedor / Descripción</th>
+              <th *ngIf="tipoCalendario() === 'PROGRAMADOS'">Documento</th>
+              <th *ngIf="tipoCalendario() === 'PROGRAMADOS'">OC</th>
+              <th class="text-right">Monto</th>
+              <th>Estado</th>
+              <th *ngIf="tipoCalendario() === 'VISTO_BUENO'">Comprobantes</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let evento of eventosDelMes(); trackBy: trackByEventoId" class="event-row">
+              <td class="cell-fecha">{{ formatFecha(evento.fecha) }}</td>
+              <td *ngIf="tipoCalendario() === 'VISTO_BUENO'">
+                <span class="banco-badge" *ngIf="evento.bancoNombre">{{ evento.bancoNombre }}</span>
+                <span *ngIf="!evento.bancoNombre">—</span>
+              </td>
+              <td>
+                <div class="cell-proveedor">
+                  <span class="proveedor-nombre">{{ evento.proveedorNombre }}</span>
+                  <span *ngIf="evento.proveedorNit" class="proveedor-nit">NIT: {{ evento.proveedorNit }}</span>
+                </div>
+              </td>
+              <td *ngIf="tipoCalendario() === 'PROGRAMADOS'">{{ evento.numeroDocumento || '—' }}</td>
+              <td *ngIf="tipoCalendario() === 'PROGRAMADOS'">{{ evento.ordenCompra || '—' }}</td>
+              <td class="text-right font-semibold">{{ formatMonto(evento.monto) }}</td>
+              <td>
+                <span class="estado-badge" [ngClass]="getEstadoConfig(evento.estado).bgClass">
+                  {{ getEstadoConfig(evento.estado).icon }} {{ getEstadoConfig(evento.estado).label }}
+                </span>
+              </td>
+              <td *ngIf="tipoCalendario() === 'VISTO_BUENO'">
+                <button
+                  *ngIf="evento.comprobantesUrls && evento.comprobantesUrls.length > 0"
+                  (click)="abrirComprobantes(evento); $event.stopPropagation()"
+                  class="btn-comprobantes"
+                  [title]="evento.comprobantesUrls.length + ' comprobante(s)'"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                  </svg>
+                  {{ evento.comprobantesUrls.length }}
+                </button>
+                <span *ngIf="!evento.comprobantesUrls || evento.comprobantesUrls.length === 0" class="text-gray-400 text-xs">—</span>
+              </td>
+              <td>
+                <button
+                  *ngIf="evento.registroContableId"
+                  (click)="navegarARegistro(evento)"
+                  class="btn-ver"
+                  title="Ver registro contable"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  Ver
+                </button>
+                <button
+                  (click)="selectEvento(evento)"
+                  class="btn-detalle"
+                  title="Ver detalle"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DETALLE MODAL ═══ -->
+  <div *ngIf="showDetalle() && eventoSeleccionado()" class="modal-overlay" (click)="cerrarDetalle()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-estado" [ngClass]="getEstadoConfig(eventoSeleccionado()!.estado).bgClass">
+            {{ getEstadoConfig(eventoSeleccionado()!.estado).icon }}
+            {{ getEstadoConfig(eventoSeleccionado()!.estado).label }}
+          </span>
+          <h3 class="modal-title">{{ eventoSeleccionado()!.titulo }}</h3>
+        </div>
+        <button (click)="cerrarDetalle()" class="modal-close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Proveedor / Descripción</span>
+            <span class="detail-value">{{ eventoSeleccionado()!.proveedorNombre }}</span>
+          </div>
+          <div class="detail-item" *ngIf="eventoSeleccionado()!.proveedorNit">
+            <span class="detail-label">NIT</span>
+            <span class="detail-value">{{ eventoSeleccionado()!.proveedorNit }}</span>
+          </div>
+          <div class="detail-item" *ngIf="eventoSeleccionado()!.bancoNombre">
+            <span class="detail-label">Banco</span>
+            <span class="detail-value">{{ eventoSeleccionado()!.bancoNombre }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Fecha de Pago</span>
+            <span class="detail-value">{{ formatFecha(eventoSeleccionado()!.fecha) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Monto</span>
+            <span class="detail-value detail-value--monto">{{ formatMonto(eventoSeleccionado()!.monto) }}</span>
+          </div>
+          <div class="detail-item" *ngIf="eventoSeleccionado()!.totalIngresos">
+            <span class="detail-label">Total Ingresos</span>
+            <span class="detail-value" style="color: #10b981">{{ formatMonto(eventoSeleccionado()!.totalIngresos!) }}</span>
+          </div>
+          <div class="detail-item" *ngIf="eventoSeleccionado()!.totalEgresos">
+            <span class="detail-label">Total Egresos</span>
+            <span class="detail-value" style="color: #ef4444">{{ formatMonto(eventoSeleccionado()!.totalEgresos!) }}</span>
+          </div>
+          <div class="detail-item" *ngIf="eventoSeleccionado()!.numeroDocumento">
+            <span class="detail-label">Documento</span>
+            <span class="detail-value">{{ eventoSeleccionado()!.numeroDocumento }}</span>
+          </div>
+          <div class="detail-item" *ngIf="eventoSeleccionado()!.ordenCompra">
+            <span class="detail-label">Orden de Compra</span>
+            <span class="detail-value">{{ eventoSeleccionado()!.ordenCompra }}</span>
+          </div>
+          <div class="detail-item" *ngIf="eventoSeleccionado()!.formaPago">
+            <span class="detail-label">N° Egreso / Forma de Pago</span>
+            <span class="detail-value">{{ eventoSeleccionado()!.formaPago }}</span>
+          </div>
+          <div class="detail-item" *ngIf="eventoSeleccionado()!.creadoPor">
+            <span class="detail-label">Creado por</span>
+            <span class="detail-value">{{ eventoSeleccionado()!.creadoPor }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="eventoSeleccionado()!.observaciones" class="detail-obs">
+          <span class="detail-label">Observaciones</span>
+          <p class="detail-obs-text">{{ eventoSeleccionado()!.observaciones }}</p>
+        </div>
+
+        <!-- Comprobantes en detalle -->
+        <div *ngIf="eventoSeleccionado()!.comprobantesUrls && eventoSeleccionado()!.comprobantesUrls!.length > 0" class="detail-comprobantes">
+          <span class="detail-label">
+            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+            </svg>
+            Comprobantes ({{ eventoSeleccionado()!.comprobantesUrls!.length }})
+          </span>
+          <div class="comprobantes-list">
+            <a *ngFor="let url of eventoSeleccionado()!.comprobantesUrls"
+               [href]="url" target="_blank" class="comprobante-link">
+              <span class="comprobante-icon">{{ getComprobanteIcon(url) }}</span>
+              <span class="comprobante-name">{{ getComprobanteFileName(url) }}</span>
+              <svg class="w-3.5 h-3.5 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          *ngIf="eventoSeleccionado()!.registroContableId"
+          (click)="navegarARegistro(eventoSeleccionado()!)"
+          class="btn-primary"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
+          Ver Registro Contable
+        </button>
+        <button (click)="cerrarDetalle()" class="btn-secondary">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROGRAMAR PAGO MODAL ═══ -->
+  <div *ngIf="showProgramarPago()" class="modal-overlay" (click)="cerrarProgramarPago()">
+    <div class="modal-programar" (click)="$event.stopPropagation()">
+      <!-- Success State -->
+      <div *ngIf="pagoGuardadoExito()" class="programar-success">
+        <div class="success-icon-wrap">
+          <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h3 class="success-title">¡Pago Programado!</h3>
+        <p class="success-desc">El pago ha sido programado exitosamente para el {{ formatFechaLarga(fechaProgramar()) }}</p>
+      </div>
+
+      <!-- Form State -->
+      <ng-container *ngIf="!pagoGuardadoExito()">
+        <div class="modal-programar-header">
+          <div class="modal-programar-icon">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-programar-title">Programar Pago</h3>
+            <p class="modal-programar-fecha">{{ formatFechaLarga(fechaProgramar()) }}</p>
+          </div>
+          <button (click)="cerrarProgramarPago()" class="modal-close">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-programar-body">
+          <!-- Proveedor Field -->
+          <div class="form-group">
+            <label class="form-label">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              Proveedor
+            </label>
+            <div class="input-autocomplete-wrap">
+              <input
+                type="text"
+                class="form-input"
+                placeholder="Buscar proveedor por nombre o NIT..."
+                [value]="proveedorProgramar()"
+                (input)="filtrarProveedores($event)"
+                (focus)="showProveedoresDropdown.set(proveedoresList().length > 0)"
+              />
+              <div *ngIf="showProveedoresDropdown() && proveedoresFiltrados().length > 0" class="autocomplete-dropdown">
+                <div
+                  *ngFor="let prov of proveedoresFiltrados().slice(0, 8)"
+                  class="autocomplete-item"
+                  (click)="seleccionarProveedor(prov)"
+                >
+                  <span class="autocomplete-item-name">{{ prov.nombreProveedor }}</span>
+                  <span class="autocomplete-item-nit">NIT: {{ prov.nit }}</span>
+                </div>
+              </div>
+            </div>
+            <span *ngIf="proveedorNitProgramar()" class="form-hint form-hint--success">
+              ✓ NIT: {{ proveedorNitProgramar() }}
+            </span>
+          </div>
+
+          <!-- Monto Field -->
+          <div class="form-group">
+            <label class="form-label">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Monto
+            </label>
+            <div class="input-currency-wrap">
+              <span class="currency-prefix">$</span>
+              <input
+                type="number"
+                class="form-input form-input--currency"
+                placeholder="0"
+                [ngModel]="montoProgramar()"
+                (ngModelChange)="montoProgramar.set($event)"
+                min="1"
+              />
+            </div>
+            <span *ngIf="montoProgramar() && montoProgramar()! > 0" class="form-hint">
+              {{ formatMonto(montoProgramar()!) }}
+            </span>
+          </div>
+
+          <!-- Observaciones Field -->
+          <div class="form-group">
+            <label class="form-label">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+              </svg>
+              Observaciones <span class="form-optional">(opcional)</span>
+            </label>
+            <textarea
+              class="form-textarea"
+              placeholder="Agregar notas o detalles del pago..."
+              rows="3"
+              [ngModel]="observacionesProgramar()"
+              (ngModelChange)="observacionesProgramar.set($event)"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-programar-footer">
+          <button (click)="cerrarProgramarPago()" class="btn-secondary">Cancelar</button>
+          <button
+            (click)="guardarPagoProgramado()"
+            class="btn-programar"
+            [class.btn-programar--disabled]="!formProgramarValido"
+            [disabled]="!formProgramarValido || guardandoPago()"
+          >
+            <svg *ngIf="!guardandoPago()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <div *ngIf="guardandoPago()" class="btn-spinner"></div>
+            {{ guardandoPago() ? 'Guardando...' : 'Programar Pago' }}
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ═══ COMPROBANTES MODAL ═══ -->
+  <div *ngIf="showComprobantesModal()" class="modal-overlay" (click)="cerrarComprobantes()">
+    <div class="modal-comprobantes" (click)="$event.stopPropagation()">
+      <div class="modal-comprobantes-header">
+        <div class="modal-comprobantes-header-left">
+          <svg class="w-6 h-6 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+          </svg>
+          <div>
+            <h3 class="modal-comprobantes-title">Comprobantes</h3>
+            <p class="modal-comprobantes-sub" *ngIf="comprobantesEvento()">{{ comprobantesEvento()!.titulo }}</p>
+          </div>
+        </div>
+        <button (click)="cerrarComprobantes()" class="modal-close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-comprobantes-body">
+        <!-- Loading -->
+        <div *ngIf="loadingComprobantes()" class="comprobantes-loading">
+          <div class="loading-spinner"></div>
+          <p>Cargando comprobantes...</p>
+        </div>
+
+        <!-- Empty -->
+        <div *ngIf="!loadingComprobantes() && comprobantesUrls().length === 0" class="comprobantes-empty">
+          <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p>No hay comprobantes adjuntos</p>
+        </div>
+
+        <!-- List -->
+        <div *ngIf="!loadingComprobantes() && comprobantesUrls().length > 0" class="comprobantes-grid">
+          <div *ngFor="let url of comprobantesUrls(); let i = index" class="comprobante-card">
+            <!-- Image preview -->
+            <div *ngIf="isComprobanteImage(url)" class="comprobante-preview">
+              <img [src]="url" alt="Comprobante" class="comprobante-img"/>
+            </div>
+            <!-- File icon for non-images -->
+            <div *ngIf="!isComprobanteImage(url)" class="comprobante-preview comprobante-preview--file">
+              <span class="comprobante-file-icon">{{ getComprobanteIcon(url) }}</span>
+            </div>
+            <div class="comprobante-card-info">
+              <span class="comprobante-card-name">{{ getComprobanteFileName(url) }}</span>
+              <a [href]="url" target="_blank" class="comprobante-card-action">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                Descargar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-comprobantes-footer">
+        <button (click)="cerrarComprobantes()" class="btn-secondary">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

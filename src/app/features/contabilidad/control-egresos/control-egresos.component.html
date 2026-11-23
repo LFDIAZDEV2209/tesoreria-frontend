@@ -1,0 +1,994 @@
+<div class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3">
+
+  <!-- === TOAST === -->
+  @if (showToast()) {
+    <div class="ce-toast"
+      [class.ce-toast--success]="toastType() === 'success'"
+      [class.ce-toast--error]="toastType() === 'error'"
+      [class.ce-toast--warning]="toastType() === 'warning'"
+      [class.ce-toast--info]="toastType() === 'info'">
+      <span class="ce-toast__text">{{ toastMessage() }}</span>
+      <button class="ce-toast__close" (click)="showToast.set(false)">✕</button>
+    </div>
+  }
+
+  <!-- === HEADER === -->
+  <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white shadow-2xl rounded-2xl mb-4 ce-animate">
+    <div class="px-6 py-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg ce-icon-pulse">
+          <svg class="w-7 h-7 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-semibold mb-0.5">Contabilidad</p>
+          <h1 class="text-xl font-bold tracking-tight">Control de Egresos</h1>
+          <p class="text-white/80 text-xs">Registro del contador con verificación de duplicados y envío a Tesorería</p>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+          <app-gp-empresa-selector></app-gp-empresa-selector>
+          @if (viewMode() === 'list') {
+            <button *appGpPermiso="'egresos.registrar'" (click)="openNuevo()"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-[#FFB71B] hover:bg-[#e6a516] text-[#213053] text-sm font-bold rounded-xl transition-all shadow-lg">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Registrar Egreso
+            </button>
+            <button (click)="loadEgresos()"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-xl transition-all border border-white/20 shadow-lg">
+              <svg class="w-4 h-4" [class.animate-spin]="isLoading()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Actualizar
+            </button>
+          } @else {
+            @if (camposFaltantes().length > 0) {
+              <span class="text-[11px] font-semibold text-amber-200 mr-1">
+                Faltan: {{ camposFaltantes().join(', ') }}
+              </span>
+            }
+            <button (click)="cancelar()"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-xl transition-all border border-white/20 shadow-lg">
+              Volver al listado
+            </button>
+            <button *appGpPermiso="'egresos.registrar'" (click)="guardar()" [disabled]="isSaving() || (!esNominaAgregada() && (form.invalid || duplicadoDetectado().existe || duplicadoDetectado().facturaDuplicada))"
+              [title]="camposFaltantes().length > 0 ? 'Faltan: ' + camposFaltantes().join(', ') : 'Guardar egreso'"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-[#FFB71B] hover:bg-[#e6a516] disabled:bg-gray-400 disabled:text-gray-100 disabled:cursor-not-allowed text-[#213053] text-sm font-bold rounded-xl transition-all shadow-lg">
+              {{ isSaving() ? 'Guardando...' : 'Guardar Egreso' }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LISTA ═══ -->
+  @if (viewMode() === 'list') {
+    <!-- KPI CARDS (estilo gestión contable) -->
+    <section class="kpi-section-compact">
+      <div class="kpi-card-compact kpi-primary ce-animate" style="animation-delay: 0.05s">
+        <div class="kpi-icon-wrapper-compact kpi-icon-primary">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">Total registrados</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ totalRegistrados() }}</span>
+            <span class="kpi-trend-compact kpi-trend-neutral">Total</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card-compact kpi-warning ce-animate" style="animation-delay: 0.1s">
+        <div class="kpi-icon-wrapper-compact kpi-icon-warning">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">Pendientes de envío</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ pendientesEnvio() }}</span>
+            <span class="kpi-trend-compact kpi-trend-warning">Por enviar</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card-compact kpi-purple ce-animate" style="animation-delay: 0.15s">
+        <div class="kpi-icon-wrapper-compact kpi-icon-purple">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">En revisión — G. Financiera</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ enRevisionGerencia() }}</span>
+            <span class="kpi-trend-compact kpi-trend-warning">Por aprobar</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card-compact kpi-teal ce-animate" style="animation-delay: 0.15s">
+        <div class="kpi-icon-wrapper-compact kpi-icon-teal">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">En Tesorería</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ enviadosTesoreria() }}</span>
+            <span class="kpi-trend-compact kpi-trend-up">Enviados</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card-compact kpi-purple ce-animate" style="animation-delay: 0.2s">
+        <div class="kpi-icon-wrapper-compact kpi-icon-purple">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">Valor total</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact text-base">{{ formatCurrency(valorTotal()) }}</span>
+            <span class="kpi-trend-compact kpi-trend-neutral">Acumulado</span>
+          </div>
+        </div>
+      </div>
+      <div class="kpi-card-compact kpi-teal ce-animate" style="animation-delay: 0.25s">
+        <div class="kpi-icon-wrapper-compact kpi-icon-teal">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">Pagos por egresar</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ pagosPendientesEgreso().length }}</span>
+            <span class="kpi-trend-compact kpi-trend-neutral">Del presupuesto</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABLE SECTION -->
+    <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] px-6 py-3 rounded-t-xl ce-animate" style="animation-delay: 0.25s">
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-white">Egresos</h2>
+          <p class="text-white/80 mt-0.5 text-xs">Pendientes del presupuesto y registrados · el egreso se compara con el pago proyectado</p>
+        </div>
+        <div class="flex items-center gap-2 w-full lg:w-auto">
+          <span class="px-2.5 py-1 bg-white/10 border border-white/20 rounded-lg text-white text-xs font-bold whitespace-nowrap">
+            {{ filteredEgresos().length }} registrado(s) · {{ pagosPendientesFiltrados().length }} pendiente(s)
+          </span>
+          <input
+            type="text"
+            placeholder="🔍 Buscar egreso, NIT, proveedor..."
+            [value]="searchTerm()"
+            (input)="searchTerm.set($any($event.target).value)"
+            class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white/40 text-sm flex-1 lg:w-64"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-b-xl shadow-lg border border-gray-100">
+      @if (isLoading()) {
+        <div class="py-16 text-center">
+          <div class="inline-flex items-center gap-3 text-gray-400">
+            <svg class="w-6 h-6 animate-spin text-[#045C94]" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span class="text-sm font-medium text-gray-500">Cargando egresos...</span>
+          </div>
+        </div>
+      } @else if (filteredEgresos().length === 0 && pagosPendientesFiltrados().length === 0) {
+        <div class="py-16 text-center">
+          <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-gray-700 mb-1">{{ searchTerm() ? 'Sin resultados' : 'No hay egresos' }}</h3>
+          <p class="text-sm text-gray-500">{{ searchTerm() ? 'No hay egresos que coincidan con la búsqueda.' : 'Aprueba pagos proyectados en el Gestor Presupuestal y aparecerán aquí para registrar su egreso.' }}</p>
+        </div>
+      } @else {
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full table-fixed">
+            <colgroup>
+              <col style="width: 11%">
+              <col style="width: 7%">
+              <col style="width: 19%">
+              <col style="width: 11%">
+              <col style="width: 7%">
+              <col style="width: 7%">
+              <col style="width: 11%">
+              <col style="width: 8%">
+              <col style="width: 9%">
+              <col style="width: 10%">
+            </colgroup>
+            <thead class="bg-[#f4f4f4] border-b-2 border-[#213053]/10 sticky top-0">
+              <tr>
+                <th class="px-3 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">N° Egreso</th>
+                <th class="px-3 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">NIT</th>
+                <th class="px-3 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Proveedor</th>
+                <th class="px-3 py-3 text-right text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Valor</th>
+                <th class="px-3 py-3 text-right text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Rte. Fte</th>
+                <th class="px-3 py-3 text-right text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Rte. ICA</th>
+                <th class="px-3 py-3 text-right text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Neto</th>
+                <th class="px-3 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Fecha</th>
+                <th class="px-3 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Estado</th>
+                <th class="px-3 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Acción</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <!-- Pendientes de egreso (pagos aprobados del presupuesto) -->
+              <tr *ngFor="let p of pagosPendientesFiltrados()"
+                  class="bg-[#045C94]/[0.035] hover:bg-[#045C94]/[0.07] transition-colors">
+                <td class="px-3 py-3 whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#045C94]/10 text-[#045C94] border border-[#045C94]/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#045C94] animate-pulse"></span>
+                    Pendiente
+                  </span>
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap">
+                  <span class="font-mono text-[11px] text-gray-600">{{ p.nit }}</span>
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-6 h-6 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-[9px] shadow-sm flex-shrink-0">
+                      {{ getInitial(p.nombre) }}
+                    </div>
+                    <span class="text-[11px] font-semibold text-gray-800 min-w-0 truncate" [title]="p.nombre">{{ p.nombre }}</span>
+                  </div>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                  <span class="text-sm font-bold text-[#213053]">{{ formatCurrency(p.montoProyectado) }}</span>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                  <span class="text-[11px] text-gray-400">—</span>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                  <span class="text-[11px] text-gray-400">—</span>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                  <span class="text-sm font-bold text-[#213053]">{{ formatCurrency(p.montoProyectado) }}</span>
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">{{ formatFechaCorta(p.fechaProyectada) }}</td>
+                <td class="px-3 py-3 text-center whitespace-nowrap">
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#045C94]/10 text-[#045C94] border border-[#045C94]/20"
+                        title="Pago aprobado por gerencia, aún sin egreso registrado">
+                    Sin egreso
+                  </span>
+                </td>
+                <td class="px-3 py-3 text-center">
+                  <button *appGpPermiso="'egresos.registrar'" (click)="registrarDesdePago(p)"
+                    title="Registrar el egreso y compararlo con este pago proyectado"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#213053] text-white text-[10px] font-bold rounded-lg hover:bg-[#1b2844] transition-all shadow-sm">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Registrar
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngFor="let e of filteredEgresos(); let i = index" class="ce-table-row" [style.animation-delay]="i * 0.04 + 's'">
+                <td class="px-3 py-3 whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#045C94]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#045C94]"></span>
+                    {{ e.numeroFactura }}
+                  </span>
+                  @if (pagoDeEgreso(e); as p) {
+                    <span class="block mt-1 text-[9px] font-semibold truncate"
+                          [ngClass]="comparacion(e, p).coincide ? 'text-emerald-600' : 'text-red-600'"
+                          [title]="'Pago proyectado: ' + p.nombre">
+                      ↳ {{ comparacion(e, p).coincide ? 'Coincide con el pago proyectado' : 'Difiere del pago ' + formatCurrency(comparacion(e, p).diferencia) }}
+                    </span>
+                  }
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap">
+                  <span class="font-mono text-[11px] text-gray-600">{{ e.nitProveedor }}</span>
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-6 h-6 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-[9px] shadow-sm flex-shrink-0">
+                      {{ getInitial(nombreEgreso(e)) }}
+                    </div>
+                    <span class="text-[11px] font-semibold text-gray-800 min-w-0 truncate" [title]="nombreEgreso(e)">{{ nombreEgreso(e) }}</span>
+                  </div>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                  <span class="text-sm font-bold text-[#213053]">{{ formatCurrency(e.valor) }}</span>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                  <span class="text-[11px] text-gray-600">{{ formatCurrency(e.reteFuente) }}</span>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                  <span class="text-[11px] text-gray-600">{{ formatCurrency(e.reteIca) }}</span>
+                </td>
+                <td class="px-3 py-3 text-right whitespace-nowrap">
+                  <span class="text-sm font-bold text-[#213053]">{{ formatCurrency(e.valorNetoPagar ?? e.valor) }}</span>
+                </td>
+                <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-600">{{ formatFechaCorta(e.fecha) }}</td>
+                <td class="px-3 py-3 text-center whitespace-nowrap">
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold" [ngClass]="getEstadoClass(e.estado)">
+                    {{ getEstadoLabel(e.estado) }}
+                  </span>
+                </td>
+                <td class="px-3 py-3 text-center">
+                  <button type="button" (click)="toggleMenuEgreso(e, $event)"
+                    title="Acciones del egreso"
+                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-[#213053] hover:border-[#213053]/30 transition-all">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile cards -->
+        <div class="md:hidden divide-y divide-gray-100">
+          <div *ngFor="let p of pagosPendientesFiltrados()" class="p-4 bg-[#045C94]/[0.035]">
+            <div class="flex items-start justify-between mb-2">
+              <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#045C94]/10 text-[#045C94] border border-[#045C94]/20">
+                Pendiente
+              </span>
+              <span class="text-[10px] text-gray-500">Vence {{ p.fechaProyectada }}</span>
+            </div>
+            <p class="text-sm font-semibold text-gray-800 mb-1">{{ p.nombre }}</p>
+            <p class="text-xs text-gray-500 mb-2">{{ p.nit }}</p>
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-[#213053]">{{ formatCurrency(p.montoProyectado) }}</span>
+              <button *appGpPermiso="'egresos.registrar'" (click)="registrarDesdePago(p)"
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#213053] text-white text-[10px] font-bold rounded-lg transition-all shadow-sm">
+                Registrar egreso
+              </button>
+            </div>
+          </div>
+
+          <div *ngFor="let e of filteredEgresos()" class="p-4 hover:bg-gray-50 transition-colors">
+            <div class="flex items-start justify-between mb-2">
+              <span class="text-xs font-bold text-[#045C94]">{{ e.numeroFactura }}</span>
+              <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold" [ngClass]="getEstadoClass(e.estado)">{{ getEstadoLabel(e.estado) }}</span>
+            </div>
+            <p class="text-sm font-semibold text-gray-800 mb-1">{{ nombreEgreso(e) }}</p>
+            <p class="text-xs text-gray-500 mb-2">{{ formatFecha(e.fecha) }}</p>
+            @if (pagoDeEgreso(e); as p) {
+              <p class="text-[10px] font-semibold mb-2"
+                 [ngClass]="comparacion(e, p).coincide ? 'text-emerald-600' : 'text-red-600'">
+                ↳ {{ p.nombre }} · {{ comparacion(e, p).coincide ? 'Coincide con el pago proyectado' : 'Difiere ' + formatCurrency(comparacion(e, p).diferencia) }}
+              </p>
+            }
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-[#213053]">{{ formatCurrency(e.valorNetoPagar ?? e.valor) }}</span>
+              <div class="flex items-center gap-1.5">
+                @if (e.estado === 'REGISTRADO') {
+                  <button *appGpPermiso="'egresos.enviar_tesoreria'" (click)="enviarARevision(e)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#213053] text-white text-[10px] font-bold rounded-lg hover:bg-[#1b2844] transition-all shadow-sm">
+                    Enviar a revisión
+                  </button>
+                }
+                @if (e.estado === 'EN_REVISION_GERENCIA') {
+                  <button *appGpPermiso="'egresos.aprobar_gerencia'" (click)="aprobarRevision(e)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-700 transition-all shadow-sm">
+                    Aprobar
+                  </button>
+                  <button *appGpPermiso="'egresos.aprobar_gerencia'" (click)="abrirRechazoRevision(e)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white text-red-600 border border-red-200 text-[10px] font-bold rounded-lg transition-all shadow-sm">
+                    Rechazar
+                  </button>
+                }
+                @if (e.estado === 'REGISTRADO' || e.estado === 'ENVIADO_TESORERIA') {
+                  <button *appGpPermiso="'egresos.editar_retenciones'" (click)="abrirAjuste(e)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#045C94] text-white text-[10px] font-bold rounded-lg transition-all shadow-sm">
+                    Rete.
+                  </button>
+                  <button *appGpPermiso="'egresos.solicitar_eliminacion'" (click)="abrirSolicitudEliminacion(e)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white text-red-600 border border-red-200 text-[10px] font-bold rounded-lg transition-all shadow-sm">
+                    Eliminar
+                  </button>
+                }
+              </div>
+            </div>
+            @if (e.estado === 'REGISTRADO' && e.motivoRevision) {
+              <p class="mt-2 text-[10px] font-semibold text-red-600">↳ Rechazado por Gerencia Financiera: {{ e.motivoRevision }}</p>
+            }
+            @if (e.estado === 'EN_REVISION_GERENCIA') {
+              <p class="mt-2 text-[10px] font-semibold text-purple-600">↳ En revisión de Gerencia Financiera — al aprobar pasa a Tesorería</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ═══ FORMULARIO ═══ -->
+  @if (viewMode() === 'form') {
+    <!-- Banner duplicado -->
+    @if (duplicadoDetectado().existe) {
+      <div class="ce-alert ce-alert--error">
+        <div class="ce-alert__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="ce-alert__text">
+          <strong>Duplicado detectado</strong>
+          <span>
+            Ya existe un egreso con la factura <b>{{ duplicadoDetectado().registro?.numeroFactura }}</b>,
+            valor <b>{{ formatCurrency(duplicadoDetectado().registro?.valor) }}</b> del
+            <b>{{ formatFecha(duplicadoDetectado().registro?.fecha) }}</b>
+            (registrado por {{ duplicadoDetectado().registro?.creadoPor || '—' }}).
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- AVISO: NÚMERO DE EGRESO YA REGISTRADO (BLOQUEA) -->
+    @if (!duplicadoDetectado().existe && duplicadoDetectado().facturaDuplicada) {
+      <div class="ce-alert ce-alert--error">
+        <div class="ce-alert__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="ce-alert__text">
+          <strong>Este número de egreso ya está registrado y no se puede repetir</strong>
+          <span>Cambie el número de egreso para continuar. Registros existentes:</span>
+          <ul class="ce-alert__list">
+            <li *ngFor="let o of duplicadoDetectado().otrosRegistros">
+              <b>{{ o.numeroFactura }}</b> · NIT {{ o.nitProveedor }} · {{ o.valor | currency:'COP':'symbol':'1.0-0' }} · {{ o.fecha | date }} · {{ o.estado }}
+            </li>
+          </ul>
+        </div>
+      </div>
+    }
+
+    <!-- ALERTA PRIMERA Y ÚNICA VEZ -->
+    @if (esPrimeraVez()) {
+      <div class="ce-alert ce-alert--success">
+        <div class="ce-alert__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="ce-alert__text">
+          <strong>Egreso verificado: es su primera y única vez</strong>
+          <span>El número de egreso <b>{{ form.get('numeroFactura')?.value }}</b> no está registrado. Solo puede registrarse una vez.</span>
+        </div>
+      </div>
+    }
+
+    <form [formGroup]="form">
+      <!-- IMAGEN DEL EGRESO -->
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-4 ce-animate">
+        <div class="px-6 py-3 flex items-center justify-between" style="background: linear-gradient(to right, #1b2844, #045C94)">
+          <div>
+            <h2 class="text-base font-bold text-white">Imagen del egreso</h2>
+            <p class="text-white/70 text-xs mt-0.5">Arrastre el egreso o imagen: se pre-llenan los campos y el sistema calcula las retenciones</p>
+          </div>
+          @if (archivoNombre()) {
+            <span class="px-2.5 py-1 bg-white/10 border border-white/20 rounded-lg text-white text-xs font-semibold truncate max-w-[240px]">
+              📎 {{ archivoNombre() }}
+            </span>
+          }
+        </div>
+        <div class="p-6">
+          <div class="ce-upload-zone"
+            [class.ce-upload-zone--dragging]="draggingArchivo()"
+            (dragover)="onDragOverArchivo($event)"
+            (dragleave)="onDragLeaveArchivo($event)"
+            (drop)="onDropArchivo($event)">
+            <input #fileInputEgreso type="file" class="hidden"
+              accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif,.xls,.xlsx"
+              (change)="onFileSelectedArchivo($event)" />
+            @if (analizando()) {
+              <div class="ce-progress-wrap">
+                <div class="ce-progress-label">
+                  <span>{{ faseAnalisis() || 'Analizando imagen...' }}</span>
+                  <svg class="w-5 h-5 animate-spin text-[#045C94]" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                </div>
+                <div class="ce-progress-track">
+                  <div class="ce-progress-fill"></div>
+                </div>
+                <p class="ce-upload-help">Esto puede tardar unos segundos según el tamaño del archivo</p>
+              </div>
+            } @else {
+              <div class="ce-upload-zone__icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <button type="button" class="ce-btn-upload" (click)="fileInputEgreso.click()">
+                <span>Adjuntar imagen</span>
+              </button>
+              <p class="ce-upload-help">o arrastre el egreso aquí</p>
+              <div class="ce-upload-formats"><span>PDF</span><span>PNG</span><span>JPG</span><span>XLSX</span></div>
+            }
+          </div>
+
+          <!-- TARJETICA: lo que se cargó del documento -->
+          @if (extraido(); as ext) {
+            <div class="ce-extract-card ce-animate">
+              <div class="ce-extract-card__header">
+                <div>
+                  <h3>Datos leídos del documento</h3>
+                  <p>{{ archivoNombre() }}</p>
+                </div>
+                <span class="ce-extract-card__badge">OCR</span>
+              </div>
+              <div class="ce-extract-card__grid">
+                <div class="ce-extract-field">
+                  <span>N° Egreso</span>
+                  <strong>{{ ext.numeroFactura || '—' }}</strong>
+                </div>
+                <div class="ce-extract-field">
+                  <span>NIT</span>
+                  <strong class="ce-mono">{{ ext.nit || '—' }}</strong>
+                </div>
+                <div class="ce-extract-field">
+                  <span>Proveedor</span>
+                  <strong>{{ ext.proveedor || '—' }}</strong>
+                </div>
+                <div class="ce-extract-field">
+                  <span>Valor</span>
+                  <strong>{{ ext.valor != null ? (ext.valor | currency:'COP':'symbol':'1.0-0') : '—' }}</strong>
+                </div>
+                <div class="ce-extract-field">
+                  <span>Fecha</span>
+                  <strong>{{ ext.fecha || '—' }}</strong>
+                </div>
+                <div class="ce-extract-field">
+                  <span>ReteICA doc.</span>
+                  <strong>{{ ext.tarifaIcaPorMil != null ? ext.tarifaIcaPorMil + '‰' : (ext.reteIcaValor != null ? (ext.reteIcaValor | currency:'COP':'symbol':'1.0-0') : '—') }}</strong>
+                </div>
+              </div>
+              <div class="ce-extract-card__actions">
+                <button type="button" class="ce-btn-apply" (click)="aplicarExtraido()">Aplicar al formulario</button>
+                <button type="button" class="ce-btn-discard" (click)="descartarExtraido()">Descartar</button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] px-6 py-3">
+          <h2 class="text-base font-bold text-white">Datos del Egreso</h2>
+          <p class="text-white/70 text-xs mt-0.5">Diligenciado por el contador · se valida duplicado en línea</p>
+        </div>
+        <div class="p-6">
+          <!-- COMPARACIÓN: pago proyectado vs egreso -->
+          <div class="mb-4 rounded-xl border-2 overflow-hidden"
+               [ngClass]="pagoProyectadoSeleccionado()
+                 ? (coincideValorPago() ? 'border-emerald-300' : 'border-red-300')
+                 : 'border-gray-200'">
+            <div class="px-4 py-2.5 flex flex-col md:flex-row md:items-center justify-between gap-2"
+                 [ngClass]="pagoProyectadoSeleccionado()
+                   ? (coincideValorPago() ? 'bg-emerald-50' : 'bg-red-50')
+                   : 'bg-gray-50'">
+              <div>
+                <p class="text-sm font-bold text-[#213053]">Comparación: pago proyectado vs egreso</p>
+                <p class="text-[11px] text-gray-600">El valor del egreso debe coincidir con el monto del pago proyectado aprobado.</p>
+              </div>
+              @if (pagoProyectadoSeleccionado()) {
+                @if (coincideValorPago()) {
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-300">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Coincide
+                  </span>
+                } @else if (diferenciaValorPago() > 0) {
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 border border-red-300">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Se pasa por {{ formatCurrency(diferenciaValorPago()) }}
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 border border-red-300">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Falta {{ formatCurrency(-diferenciaValorPago()) }}
+                  </span>
+                }
+              } @else {
+                <span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-500">Sin pago proyectado</span>
+              }
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 md:divide-x divide-y md:divide-y-0 divide-gray-100 bg-white">
+              <!-- Pago proyectado (referencia) -->
+              <div class="p-3.5">
+                <p class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1.5">
+                  <svg class="w-3.5 h-3.5 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                  Pago proyectado
+                </p>
+                @if (pagoProyectadoSeleccionado(); as p) {
+                  <p class="text-lg font-bold text-[#213053] tabular-nums">{{ formatCurrency(p.montoProyectado) }}</p>
+                  <p class="text-xs font-semibold text-gray-700 truncate" [title]="p.nombre">{{ p.nombre }}</p>
+                  <p class="font-mono text-[10px] text-gray-500">{{ p.nit }} · vence {{ p.fechaProyectada }}</p>
+                } @else {
+                  <p class="text-xs text-gray-400">Sin pago proyectado vinculado</p>
+                }
+              </div>
+
+              <!-- Valor del egreso (digitado) -->
+              <div class="p-3.5">
+                <p class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1.5">
+                  <svg class="w-3.5 h-3.5 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  Valor del egreso
+                </p>
+                <p class="text-lg font-bold tabular-nums"
+                   [ngClass]="pagoProyectadoSeleccionado()
+                     ? (coincideValorPago() ? 'text-emerald-600' : 'text-red-600')
+                     : 'text-[#213053]'">
+                  {{ formatCurrency(form.get('valor')?.value) }}
+                </p>
+                @if (pagoProyectadoSeleccionado()) {
+                  @if (coincideValorPago()) {
+                    <p class="text-[10px] font-semibold text-emerald-600 mt-0.5">Igual al pago proyectado</p>
+                  } @else if (diferenciaValorPago() > 0) {
+                    <p class="text-[10px] font-semibold text-red-600 mt-0.5">Excede en {{ formatCurrency(diferenciaValorPago()) }}</p>
+                  } @else {
+                    <p class="text-[10px] font-semibold text-red-600 mt-0.5">Menor en {{ formatCurrency(-diferenciaValorPago()) }}</p>
+                  }
+                } @else {
+                  <p class="text-[10px] text-gray-400 mt-0.5">Egreso sin pago proyectado asociado — regístralo con "Registrar egreso" desde una fila pendiente del listado</p>
+                }
+              </div>
+
+              <!-- Retenciones -->
+              <div class="p-3.5">
+                <p class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-500 mb-1.5">
+                  <svg class="w-3.5 h-3.5 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 14l6-6M9.5 9.5h.01M14.5 14.5h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Retenciones y total a pagar
+                </p>
+                <div class="flex items-center justify-between text-xs text-gray-600">
+                  <span>ReteFuente</span>
+                  <strong class="text-gray-800 tabular-nums">{{ formatCurrency(rfEfectiva()) }}</strong>
+                </div>
+                <div class="flex items-center justify-between text-xs text-gray-600 mt-1">
+                  <span>ReteICA</span>
+                  <strong class="text-gray-800 tabular-nums">{{ formatCurrency(icaEfectiva()) }}</strong>
+                </div>
+                <div class="flex items-center justify-between text-xs mt-1.5 pt-1.5 border-t border-gray-100">
+                  <span class="font-semibold text-gray-700">Total a pagar</span>
+                  <strong class="text-[#213053] tabular-nums">{{ formatCurrency(netoEfectivo()) }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          @if (esNominaAgregada()) {
+            <p class="rounded-xl bg-blue-50 p-4 text-sm text-blue-900">Nómina agregada de {{ ctx.nombreEmpresa() }}: {{ pagoProyectadoSeleccionado()?.nombre }} por {{ formatCurrency(pagoProyectadoSeleccionado()?.montoProyectado) }}. El egreso conserva el importe aprobado del concepto; no requiere empleado, proveedor ni cuenta individual.</p>
+          } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="ce-field-group">
+              <label>Número de Egreso *</label>
+              <div class="relative">
+                <input type="text" formControlName="numeroFactura"
+                  [class.ce-input--invalid]="duplicadoDetectado().existe" placeholder="FAC-0001" />
+                @if (isCheckingDuplicado()) {
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[#045C94] animate-spin text-sm">↻</span>
+                }
+              </div>
+            </div>
+            <div class="ce-field-group">
+              <label>NIT Proveedor *</label>
+              <input type="text" formControlName="nitProveedor"
+                [class.ce-input--invalid]="duplicadoDetectado().existe" placeholder="900.123.456-7" />
+            </div>
+            <div class="ce-field-group">
+              <label>Nombre Proveedor</label>
+              <input type="text" formControlName="proveedorNombre" placeholder="Razón social" />
+            </div>
+            <div class="ce-field-group">
+              <label>Valor *</label>
+              <input type="number" formControlName="valor" min="0.01" step="0.01" placeholder="0" />
+              @if (form.get('valor')?.value) {
+                <small class="block mt-0.5 text-[10px] font-semibold text-gray-500 tabular-nums">{{ formatCurrency(form.get('valor')?.value) }}</small>
+              }
+            </div>
+            <div class="ce-field-group">
+              <label>Fecha *</label>
+              <input type="date" formControlName="fecha" />
+            </div>
+            <div class="ce-field-group">
+              <label>Cuenta</label>
+              <input type="text" formControlName="cuenta" placeholder="N° cuenta" />
+            </div>
+            <div class="ce-field-group">
+              <label>Tipo operación</label>
+              <select formControlName="tipoOperacion">
+                <option *ngFor="let t of tiposOperacion" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+            <div class="ce-field-group md:col-span-2">
+              <label>Observaciones</label>
+              <input type="text" formControlName="observaciones" placeholder="Concepto del egreso" />
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- TOTAL A PAGAR (apartado: por qué da ese total) -->
+      @if (!esNominaAgregada()) {
+      <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mt-4 ce-animate">
+        <div class="px-6 py-3 flex items-center justify-between" style="background: linear-gradient(to right, #065f46, #0d9488)">
+          <div>
+            <h2 class="text-base font-bold text-white">Total a pagar</h2>
+            <p class="text-white/70 text-xs mt-0.5">Desglose calculado por el sistema: bruto menos retenciones</p>
+          </div>
+          @if (cotizando()) {
+            <span class="text-[#FFB71B] text-xs font-bold">Calculando... ↻</span>
+          }
+        </div>
+        <div class="p-6">
+          <div class="ce-total-rows">
+            <div class="ce-total-row">
+              <span>Valor bruto del egreso</span>
+              <strong>{{ formatCurrency(form.get('valor')?.value) }}</strong>
+            </div>
+            <div class="ce-total-row ce-total-row--edit">
+              <div class="ce-total-row__left">
+                <span>(−) Retención en la fuente</span>
+                <small class="ce-total-row__base">
+                  @if (rfEdit() != null) {
+                    Editada manualmente
+                  } @else if (cotizacion()?.reteFuenteOrigen === 'MANUAL') {
+                    Editada manualmente
+                  } @else if (cotizacion()?.reteFuenteTarifa != null) {
+                    {{ cotizacion()?.reteFuenteTarifa }}% · base mín {{ formatCurrency(cotizacion()?.reteFuenteBaseMinima) }} · {{ cotizacion()?.tipoOperacion || form.get('tipoOperacion')?.value }}
+                  } @else {
+                    Sin base aplicable
+                  }
+                </small>
+              </div>
+              <div class="text-right">
+                <input type="number" class="ce-total-row__input" min="0" step="0.01"
+                  [value]="rfEfectiva() ?? ''" placeholder="Auto"
+                  (input)="rfEdit.set(toNumberOrNull($any($event.target).value))" />
+                <small class="block mt-0.5 text-[10px] font-semibold text-gray-500 tabular-nums">{{ formatCurrency(rfEfectiva()) }}</small>
+              </div>
+            </div>
+            <div class="ce-total-row ce-total-row--edit">
+              <div class="ce-total-row__left">
+                <span>(−) Retención ICA</span>
+                <small class="ce-total-row__base">
+                  @if (icaEdit() != null) {
+                    Editada manualmente
+                  } @else if (cotizacion()?.reteIcaOrigen === 'DOCUMENTO') {
+                    Según comprobante{{ cotizacion()?.reteIcaTarifa ? ' (' + cotizacion()?.reteIcaTarifa + '‰)' : '' }}
+                  } @else if (cotizacion()?.reteIcaOrigen === 'MANUAL') {
+                    Editada manualmente
+                  } @else if ((cotizacion()?.reteIca ?? 0) > 0) {
+                    Según tarifa proveedor{{ cotizacion()?.reteIcaTarifa ? ' (' + cotizacion()?.reteIcaTarifa + '‰)' : '' }}
+                  } @else if (tieneRespaldoDoc) {
+                    Según comprobante{{ icaDocumento().tarifaPorMil ? ' (' + icaDocumento().tarifaPorMil + '‰)' : '' }}
+                  } @else {
+                    Sin tarifa asociada
+                  }
+                </small>
+              </div>
+              <div class="text-right">
+                <input type="number" class="ce-total-row__input" min="0" step="0.01"
+                  [value]="icaEfectiva() ?? ''" placeholder="Auto"
+                  (input)="icaEdit.set(toNumberOrNull($any($event.target).value))" />
+                <small class="block mt-0.5 text-[10px] font-semibold text-gray-500 tabular-nums">{{ formatCurrency(icaEfectiva()) }}</small>
+              </div>
+            </div>
+            <div class="ce-total-row ce-total-row--total">
+              <span>(=) Total a pagar</span>
+              <strong>{{ formatCurrency(netoEfectivo()) }}</strong>
+            </div>
+          </div>
+          @if (!cotizacion() && !cotizando() && !cotizacionError()) {
+            <p class="ce-retenciones__hint">Ingrese valor y NIT para calcular automáticamente.</p>
+          } @else if (cotizacionError()) {
+            <p class="ce-retenciones__hint ce-retenciones__hint--error">⚠ {{ cotizacionError() }}</p>
+          } @else if (cotizacion() && (cotizacion()?.reteIca ?? 0) === 0) {
+            <p class="ce-retenciones__hint">⚠ ReteICA en 0: el NIT no tiene proveedor con tarifa ICA asociada. Asocie la tarifa en el módulo ReteICA.</p>
+          }
+        </div>
+      </div>
+      }
+    </form>
+
+  }
+    <!-- MENÚ DE ACCIONES (puntitos) DEL LISTADO -->
+    @if (menuEgreso(); as m) {
+      <div class="fixed inset-0 z-40" (click)="menuEgreso.set(null)"></div>
+      @if (egresoMenu(); as em) {
+        <div class="fixed z-50 w-60 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden"
+             [style.left.px]="m.x" [style.top.px]="m.y">
+          <div class="px-3.5 py-2.5 border-b border-gray-100 bg-gray-50/60">
+            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Egreso</p>
+            <p class="text-xs font-bold text-[#045C94] truncate">{{ em.numeroFactura }}</p>
+          </div>
+          @if (em.pagoProyectadoId) {
+            <a *appGpPermiso="'egresos.ver'" [routerLink]="['/tesoreria/tramitar-pago', em.id]"
+              [queryParams]="{tipo: 'egreso-contador'}" (click)="menuEgreso.set(null)"
+              class="block px-3.5 py-2.5 text-xs font-semibold text-blue-700 hover:bg-blue-50">
+              Ver trazabilidad del pago
+            </a>
+          }
+          @if (em.estado === 'REGISTRADO') {
+            <button *appGpPermiso="'egresos.enviar_tesoreria'" type="button"
+              (click)="menuEgreso.set(null); enviarARevision(em)"
+              class="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-blue-50 hover:text-[#045C94] transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              Enviar a revisión (Gerencia Financiera)
+            </button>
+          }
+          @if (em.estado === 'EN_REVISION_GERENCIA') {
+            <button *appGpPermiso="'egresos.aprobar_gerencia'" type="button"
+              (click)="menuEgreso.set(null); aprobarRevision(em)"
+              class="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Aprobar — pasa al módulo de Tesorería
+            </button>
+            <button *appGpPermiso="'egresos.aprobar_gerencia'" type="button"
+              (click)="menuEgreso.set(null); abrirRechazoRevision(em)"
+              class="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 6L6 18M6 6l12 12" />
+              </svg>
+              Rechazar con observación
+            </button>
+          }
+          @if (em.estado === 'REGISTRADO' || em.estado === 'ENVIADO_TESORERIA') {
+            <button *appGpPermiso="'egresos.editar_retenciones'" type="button"
+              (click)="menuEgreso.set(null); abrirAjuste(em)"
+              class="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-gray-700 hover:bg-blue-50 hover:text-[#045C94] transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Ajustar retenciones
+            </button>
+            <button *appGpPermiso="'egresos.solicitar_eliminacion'" type="button"
+              (click)="menuEgreso.set(null); abrirSolicitudEliminacion(em)"
+              class="w-full flex items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Solicitar eliminación
+            </button>
+          }
+          @if (em.estado === 'REGISTRADO' && em.motivoRevision) {
+            <div class="px-3.5 py-2 text-[11px] text-red-600 border-t border-gray-100">Rechazado por Gerencia Financiera: {{ em.motivoRevision }}</div>
+          }
+          @if (em.estado === 'EN_REVISION_GERENCIA') {
+            <div class="px-3.5 py-2 text-[11px] text-purple-600 border-t border-gray-100">En revisión de Gerencia Financiera — al aprobar pasa a Tesorería</div>
+          }
+          @if (em.estado === 'ENVIADO_TESORERIA') {
+            <div class="px-3.5 py-2 text-[11px] text-gray-500 border-t border-gray-100">Enviado a Tesorería — en bandeja del tesorero</div>
+          }
+          @if (em.estado === 'ELIMINAR_SOLICITADO') {
+            <div class="px-3.5 py-2 text-[11px] text-orange-600 border-t border-gray-100">Eliminación en aprobación (editor contable)</div>
+          }
+          <button type="button" (click)="menuEgreso.set(null)"
+            class="w-full text-left px-3.5 py-2 text-[11px] font-semibold text-gray-400 hover:bg-gray-50 transition-colors border-t border-gray-100">
+            Cerrar
+          </button>
+        </div>
+      }
+    }
+
+    <!-- MODAL AJUSTE MANUAL DE RETENCIONES -->
+    @if (editando(); as ed) {
+      <div class="ce-modal__overlay" (click)="cerrarAjuste()">
+        <div class="ce-modal" (click)="$event.stopPropagation()">
+          <div class="ce-modal__header">
+            <div>
+              <h3>Ajustar retenciones</h3>
+              <p>Egreso {{ ed.numeroFactura }} · Valor {{ formatCurrency(ed.valor) }}</p>
+            </div>
+            <button class="ce-modal__close" (click)="cerrarAjuste()">✕</button>
+          </div>
+          <form [formGroup]="editForm" class="ce-modal__body">
+            <div class="ce-field-group">
+              <label>Retención en la fuente *</label>
+              <input type="number" formControlName="reteFuente" min="0" step="0.01" />
+              <small class="block mt-0.5 text-[10px] font-semibold text-gray-500 tabular-nums">{{ formatCurrency(editForm.get('reteFuente')?.value) }}</small>
+            </div>
+            <div class="ce-field-group">
+              <label>Retención ICA *</label>
+              <input type="number" formControlName="reteIca" min="0" step="0.01" />
+              <small class="block mt-0.5 text-[10px] font-semibold text-gray-500 tabular-nums">{{ formatCurrency(editForm.get('reteIca')?.value) }}</small>
+            </div>
+            <p class="ce-modal__hint">El sistema calcula automático, pero aquí puede editar o agregar manual. El neto se recalcula al guardar.</p>
+          </form>
+          <div class="ce-modal__actions">
+            <button type="button" class="ce-btn-discard" (click)="cerrarAjuste()">Cancelar</button>
+            <button type="button" class="ce-btn-apply" (click)="guardarAjuste()" [disabled]="editForm.invalid || guardandoAjuste()">
+              {{ guardandoAjuste() ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    <!-- MODAL SOLICITUD DE ELIMINACIÓN -->
+    @if (eliminando(); as ed) {
+      <div class="ce-modal__overlay" (click)="cerrarSolicitudEliminacion()">
+        <div class="ce-modal" (click)="$event.stopPropagation()">
+          <div class="ce-modal__header">
+            <div>
+              <h3>Solicitar eliminación</h3>
+              <p>Egreso {{ ed.numeroFactura }} · {{ formatCurrency(ed.valorNetoPagar ?? ed.valor) }}</p>
+            </div>
+            <button class="ce-modal__close" (click)="cerrarSolicitudEliminacion()">✕</button>
+          </div>
+          <div class="ce-modal__body">
+            <div class="ce-field-group">
+              <label>Causal de cancelación o eliminación *</label>
+              <select [value]="causalSeleccionada()" (change)="causalSeleccionada.set($any($event.target).value)">
+                <option value="">Seleccione la causal...</option>
+                <option *ngFor="let c of causalesEliminacion" [value]="c">{{ c }}</option>
+              </select>
+            </div>
+            <p class="ce-modal__hint">La solicitud entra a la bandeja del editor contable, quien la aprueba o rechaza.</p>
+          </div>
+          <div class="ce-modal__actions">
+            <button type="button" class="ce-btn-discard" (click)="cerrarSolicitudEliminacion()">Cancelar</button>
+            <button type="button" class="ce-btn-apply" (click)="solicitarEliminacion()" [disabled]="!causalSeleccionada() || enviandoSolicitud()">
+              {{ enviandoSolicitud() ? 'Enviando...' : 'Enviar solicitud' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    <!-- MODAL RECHAZO DE GERENCIA FINANCIERA -->
+    @if (rechazandoRevision(); as rg) {
+      <div class="ce-modal__overlay" (click)="cerrarRechazoRevision()">
+        <div class="ce-modal" (click)="$event.stopPropagation()">
+          <div class="ce-modal__header">
+            <div>
+              <h3>Rechazar egreso</h3>
+              <p>Egreso {{ rg.numeroFactura }} · {{ formatCurrency(rg.valorNetoPagar ?? rg.valor) }}</p>
+            </div>
+            <button class="ce-modal__close" (click)="cerrarRechazoRevision()">✕</button>
+          </div>
+          <div class="ce-modal__body">
+            <div class="ce-field-group">
+              <label>Observación del rechazo *</label>
+              <textarea rows="3" maxlength="300" [value]="motivoRechazo()" (input)="motivoRechazo.set($any($event.target).value)"
+                placeholder="Explica qué debe corregir el contador (ej. falta el soporte, el valor no coincide...)"></textarea>
+              <small class="block mt-0.5 text-[10px] font-semibold text-gray-500">{{ motivoRechazo().length }}/300</small>
+            </div>
+            <p class="ce-modal__hint">El egreso vuelve al contador en estado Registrado con esta observación.</p>
+          </div>
+          <div class="ce-modal__actions">
+            <button type="button" class="ce-btn-discard" (click)="cerrarRechazoRevision()">Cancelar</button>
+            <button type="button" class="ce-btn-apply" (click)="confirmarRechazoRevision()" [disabled]="!motivoRechazo().trim() || guardandoRevision()">
+              {{ guardandoRevision() ? 'Rechazando...' : 'Rechazar y devolver' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+</div>

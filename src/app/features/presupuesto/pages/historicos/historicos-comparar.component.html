@@ -1,0 +1,34 @@
+<main class="hist-page">
+  <a class="hist-back" routerLink="/presupuesto/historicos" [queryParams]="{empresaId:ctx.empresaId()}">← Históricos</a>
+  <header class="hist-hero"><div><span class="hist-eyebrow">Gestor Presupuestal</span><h1>Comparar períodos</h1><p>Consulta qué cambió y cuánto varió entre dos fotografías del mismo gestor.</p></div><span class="hist-company">{{ ctx.nombreEmpresa() }}</span></header>
+  <p *ngIf="!ctx.empresaId()" class="hist-card">Selecciona una empresa para comparar sus períodos.</p>
+  <p *ngIf="cargandoPeriodos()" role="status">Cargando períodos disponibles…</p>
+  <ng-container *ngIf="periodos().length">
+    <section class="hist-card">
+      <div class="hist-toolbar"><label>Origen<select [(ngModel)]="origen" (ngModelChange)="comparar(true)"><option value="actual">{{ etiqueta(actual) }} · Actual</option><option *ngFor="let h of periodos()" [value]="'' + h.id">{{ etiqueta(h.periodo) }} · Histórico</option></select></label>
+        <button (click)="intercambiar()" aria-label="Intercambiar períodos">⇄ Intercambiar</button>
+        <label>Destino<select [(ngModel)]="destino" (ngModelChange)="comparar(true)"><option value="actual">{{ etiqueta(actual) }} · Actual</option><option *ngFor="let h of periodos()" [value]="'' + h.id">{{ etiqueta(h.periodo) }} · Histórico</option></select></label>
+      </div>
+      <p class="hist-muted">La variación es destino menos origen. El resumen compara los valores del mes indicado; las demás secciones comparan todos los registros conservados en cada fotografía. El porcentaje usa el valor absoluto del origen; si es cero o no existe, se muestra «—».</p>
+      <form class="hist-filters" (ngSubmit)="comparar(true)">
+        <label>Sección<select name="seccion" [(ngModel)]="seccion" (ngModelChange)="comparar(true)"><option value="">Todas las secciones</option><option *ngFor="let s of secciones | keyvalue" [value]="s.key">{{ s.value }}</option></select></label>
+        <label>Cambios<select name="estado" [(ngModel)]="estado" (ngModelChange)="comparar(true)"><option value="">Todos</option><option *ngFor="let e of estados" [value]="e">{{ nombresEstado[e] }}</option></select></label>
+        <label>Buscar<input name="busqueda" [(ngModel)]="busqueda" placeholder="Concepto, nombre, NIT o factura"></label><button type="submit">Aplicar filtros</button>
+      </form>
+    </section>
+    <p *ngIf="cargando()" role="status" class="hist-card">Comparando períodos…</p>
+    <section *ngIf="resultado() as r" class="hist-card">
+      <div class="hist-stats"><span *ngFor="let e of estados" class="hist-badge" [ngClass]="e">{{ nombresEstado[e] }}: {{ r.conteos[e] || 0 }}</span></div>
+      <p class="hist-muted">Conteos del gestor completo. {{ r.filas.totalElements }} registros coinciden con los filtros.</p>
+      <div class="hist-table"><table><caption>{{ titulo(r.origen) }} → {{ titulo(r.destino) }}<br>Fotografías tomadas el {{ r.origen.generadoEn | date:'dd/MM/yyyy HH:mm':'-0500' }} y el {{ r.destino.generadoEn | date:'dd/MM/yyyy HH:mm':'-0500' }}</caption>
+        <thead><tr><th>Concepto / registro</th><th>Estado</th><th class="money">{{ titulo(r.origen) }}</th><th class="money">{{ titulo(r.destino) }}</th><th class="money">Variación</th><th class="money">%</th></tr></thead>
+        <tbody><ng-container *ngFor="let f of r.filas.content"><tr [class.hist-diff]="f.estado === 'MODIFICADO'"><td><span class="hist-muted">{{ secciones[f.seccion] }}</span><br>{{ f.concepto }}</td><td><span class="hist-badge" [ngClass]="f.estado">{{ nombresEstado[f.estado] }}</span></td><td class="money">{{ numero(f.origen,f.unidad) }}</td><td class="money">{{ numero(f.destino,f.unidad) }}</td><td class="money">{{ numero(f.variacion,f.unidad,true) }}</td><td class="money">{{ porcentaje(f.porcentaje) }}</td></tr>
+          <tr *ngIf="f.cambios.length && f.seccion !== 'resumen'"><td colspan="6"><details><summary>{{ f.cambios.length }} campos diferentes · Ver detalle</summary><table><thead><tr><th>Campo</th><th>Origen</th><th>Destino</th><th>Diferencia</th><th>%</th></tr></thead><tbody><tr *ngFor="let c of f.cambios"><td>{{ campo(c.campo) }}</td><td class="hist-values">{{ texto(c.origen) }}</td><td class="hist-values">{{ texto(c.destino) }}</td><td>{{ numero(c.variacion,'numero',true) }}</td><td>{{ porcentaje(c.porcentaje) }}</td></tr></tbody></table></details></td></tr>
+        </ng-container><tr *ngIf="!r.filas.content.length"><td colspan="6" class="hist-empty">No hay registros con estos filtros.</td></tr></tbody>
+      </table></div>
+      <nav class="hist-pagination" aria-label="Páginas de comparación"><span>Página {{ r.filas.totalPages ? r.filas.page + 1 : 0 }} de {{ r.filas.totalPages }}</span><button [disabled]="r.filas.page === 0" (click)="cambiarPagina(-1)">Anterior</button><button [disabled]="r.filas.page + 1 >= r.filas.totalPages" (click)="cambiarPagina(1)">Siguiente</button></nav>
+    </section>
+  </ng-container>
+  <p *ngIf="error()" role="alert" class="hist-error">{{ error() }}</p>
+  <p *ngIf="ctx.empresaId() && !periodos().length && !cargandoPeriodos() && !error()" class="hist-card">Este gestor todavía no tiene históricos para comparar.</p>
+</main>

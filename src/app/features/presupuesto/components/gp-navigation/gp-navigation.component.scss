@@ -1,0 +1,125 @@
+.gp-app {
+  font-family: var(--font-sans); color: var(--tx-1); background: var(--bg-base); min-height: 100dvh; line-height: 1.6;
+  color-scheme: light;
+  button, input, select, textarea { font-family: inherit; }
+  h1, h2, h3, h4, p, table { font-family: inherit; }
+  .gp-workspace-status {padding:32px 24px;font-size:14px;color:var(--tx-2);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .gp-workspace-picker {max-width:720px;margin:48px auto;padding:32px;display:flex;flex-direction:column;gap:8px}
+  .gp-workspace-picker h1 {font-size:24px;font-weight:700;color:var(--tx-1)}
+  .gp-workspace-picker h1 ~ p {font-size:14px;color:var(--tx-2);margin-bottom:8px}
+  .gp-workspace-picker h2 {font-size:12px;font-weight:700;color:var(--tx-3);text-transform:uppercase;letter-spacing:.08em;margin-top:16px}
+  .gp-workspace-picker .btn-ghost {justify-content:flex-start;gap:10px;padding:12px 16px;border-radius:12px;color:var(--tx-1)}
+  .gp-workspace-picker .btn-ghost app-gp-icon:first-child {color:var(--acc-solid)}
+  .gp-workspace-picker .btn-ghost app-gp-icon:last-child {margin-left:auto;color:var(--tx-3)}
+  .gp-workspace-picker .btn-ghost:hover {border-color:rgb(var(--acc-rgb)/.4);background:rgb(var(--acc-rgb)/.05)}
+  .gp-workspace-picker p:last-child {color:var(--tx-3);font-size:13px}
+  .gp-native-page { min-height: calc(100dvh - 64px); margin: 0; padding: 24px; background: var(--bg-base); }
+  .gp-native-page.module-page { background: color-mix(in srgb,var(--module-accent) 3%,transparent); }
+  &.dark .gp-native-page.module-page {background:color-mix(in srgb,var(--module-accent) 7%,transparent)}
+  app-modulo-page .gp-native-page, app-pagos-proyectados-page .gp-native-page { max-width:none; }
+  .gp-module-empty { display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:65vh;text-align:center; }
+  .gp-empty-symbol { width:96px;height:96px;border-radius:24px;display:grid;place-items:center;background:rgb(var(--acc-rgb)/.10);border:1px solid rgb(var(--acc-rgb)/.18);color:var(--acc-solid);margin-bottom:32px; }
+  .gp-module-empty h2 {font-size:24px;font-weight:700;margin-bottom:12px;color:var(--tx-1)}
+  .gp-module-empty p {font-size:16px;line-height:26px;color:var(--tx-2);max-width:450px}
+  .gp-module-empty strong {color:var(--tx-1)}
+  .gp-empty-puc {font-size:12px;color:var(--tx-3);border:1px solid rgb(var(--bdr-rgb)/.1);background:var(--bg-elevated);border-radius:999px;padding:6px 12px;margin-top:8px}
+  .gp-empty-import {font-size:16px;padding:14px 28px;border-radius:20px;margin-top:32px;margin-bottom:12px}
+  .gp-module-empty small {font-size:12px;color:var(--tx-3);margin-top:20px}
+  .gp-budget-company {font-size:12px;font-weight:600;border-radius:99px;background:#ffffff24;border:1px solid #ffffff33;color:white;padding:6px 12px}
+  .gp-budget-downloads {display:flex;gap:12px}.gp-budget-downloads button {flex:1;border-radius:16px;padding:16px;font-size:16px;font-weight:700;color:white;display:flex;justify-content:center;align-items:center;gap:10px;background:linear-gradient(135deg,var(--acc-solid),#0F6B5C)}
+  .gp-budget-downloads button+button {background:linear-gradient(135deg,#1E7B4D,#0F6B5C)}.gp-budget-downloads button:disabled {opacity:.5;cursor:not-allowed}
+  .gp-budget-progress div {display:flex;justify-content:space-between;font-size:11px;color:var(--tx-3);text-transform:uppercase;letter-spacing:.18em;margin-bottom:6px}.gp-budget-progress strong {color:var(--acc-solid);font-size:12px;letter-spacing:0}
+  .gp-budget-progress progress {width:100%;height:8px;border-radius:99px;overflow:hidden;display:block;appearance:none;border:0;background:var(--bg-elevated)}.gp-budget-progress progress::-webkit-progress-bar {background:var(--bg-elevated)}.gp-budget-progress progress::-webkit-progress-value {background:var(--acc-solid);border-radius:99px}.gp-budget-progress small {font-size:11px;color:var(--tx-3)}
+  .gp-budget-section {padding:0;scroll-margin-top:84px;overflow:hidden;position:relative}.gp-budget-section::before {content:'';position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--acc-solid),transparent 85%)}
+  .gp-budget-section header {display:flex;align-items:center;gap:12px;padding:20px 20px 16px}.gp-budget-section header>button:first-child {flex:1;text-align:left}.gp-budget-section h2 {font-size:14px;font-weight:700;color:var(--tx-1)}.gp-budget-section header p {font-size:12px;color:var(--tx-3);margin-top:2px}.gp-budget-collapse {width:32px;height:32px;border-radius:12px;background:var(--bg-elevated);border:1px solid rgb(var(--bdr-rgb)/.14)}
+  .gp-budget-index {display:flex;gap:6px;overflow:auto;padding:8px 0;position:sticky;top:64px;background:var(--bg-base);z-index:10}.gp-budget-index button {white-space:nowrap;font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid rgb(var(--bdr-rgb)/.12);color:var(--tx-2)}
+  .gp-budget-empty {min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.gp-budget-empty .gp-empty-symbol {width:80px;height:80px;margin-bottom:24px}.gp-budget-empty h2 {font-size:20px;font-weight:700;margin-bottom:12px}.gp-budget-empty p {max-width:384px;font-size:14px;line-height:23px;color:var(--tx-2);margin-bottom:24px}
+  .gp-reference-contract .gp-contrato-box {background:var(--bg-elevated);border:1px solid rgb(var(--bdr-rgb)/.12);box-shadow:none;border-radius:12px}.gp-reference-contract .gp-contrato-box__icono,.gp-reference-contract .gp-contrato-subtit {display:none}.gp-reference-contract .gp-contrato-box__value {color:var(--tx-1)!important}.gp-reference-contract .gp-hero-icon {width:16px;height:16px;background:none;box-shadow:none;color:var(--acc-solid)}
+  .gp-reference-contract h2 {font-size:14px}.gp-reference-contract .btn-primary {background:transparent;color:var(--tx-2);border:1px solid rgb(var(--bdr-rgb)/.12)}
+  .gp-payment-filters {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;font-size:12px}.gp-payment-filters>.field {width:224px}.gp-payment-filters input[type=date] {width:auto}
+  .gp-payment-date-filters {display:flex;gap:4px;border-radius:12px;background:var(--bg-elevated);padding:4px}.gp-payment-date-filters button {font-size:12px;padding:6px 12px;border-radius:8px;color:var(--tx-3)}.gp-payment-date-filters button.active {background:var(--bg-surface);color:var(--tx-1)}
+  .gp-payment-empty {padding:40px;text-align:center;font-size:14px;color:var(--tx-2)}.gp-payment-empty small {display:block;font-size:12px;color:var(--tx-3);margin-top:4px}
+  .gp-payment-total {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border:1px solid rgb(var(--acc-rgb)/.18);background:linear-gradient(90deg,rgb(var(--acc-rgb)/.09),rgb(var(--acc-rgb)/.03));border-radius:14px;padding:11px 16px;margin-bottom:14px;font-size:13px;color:var(--tx-2)}
+  .gp-payment-total__resumen {display:inline-flex;align-items:center;gap:8px}
+  .gp-payment-total__resumen app-gp-icon {color:var(--acc-solid)}
+  .gp-payment-total__resumen strong {color:var(--tx-1);font-size:14px}
+  .gp-payment-total__monto {display:inline-flex;align-items:baseline;gap:8px;font-size:12px;color:var(--tx-3)}
+  .gp-payment-total__monto strong {font-size:15px;color:var(--acc-solid);font-variant-numeric:tabular-nums}
+  .gp-payment-group {margin-bottom:24px}.gp-payment-group header {display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;color:var(--tx-3)}.gp-payment-group header>span {text-transform:uppercase;letter-spacing:.05em;font-weight:600}.gp-payment-group header>strong {color:var(--acc-solid)}.gp-payment-group header>select {width:192px;font-size:11px;padding-top:4px;padding-bottom:4px}
+  .gp-payment-card {position:relative;width:100%;padding:15px 16px 15px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;text-align:left;margin-bottom:10px;overflow:hidden;border-radius:16px;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+  .gp-payment-card::before {content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:0 4px 4px 0;background:var(--acc-solid);opacity:.85;transition:opacity .16s ease}
+  .gp-payment-card:hover {transform:translateY(-2px);border-color:rgb(var(--acc-rgb)/.35);box-shadow:var(--sh-elevated)}
+  .gp-payment-card:hover::before {opacity:1}
+  .gp-payment-card:focus-visible {outline:2px solid var(--acc-solid);outline-offset:2px}
+  .gp-payment-card--vencido::before {background:var(--err-solid)}
+  .gp-payment-card--cancelado::before {background:#94a3b8}
+  .gp-payment-day {width:54px;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex-shrink:0;border-radius:16px;line-height:1;color:var(--acc-solid);background:linear-gradient(160deg,rgb(var(--acc-rgb)/.14),rgb(var(--acc-rgb)/.06));border:1px solid rgb(var(--acc-rgb)/.18)}
+  .gp-payment-day.overdue {color:var(--err-solid);background:linear-gradient(160deg,rgb(var(--err-rgb)/.14),rgb(var(--err-rgb)/.05));border-color:rgb(var(--err-rgb)/.22)}
+  .gp-payment-day small {font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+  .gp-payment-day strong {font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+  .gp-payment-beneficiary {flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px}
+  .gp-payment-beneficiary>strong {font-size:15px;font-weight:700;color:var(--tx-1);line-height:1.3}
+  .gp-payment-meta {display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .gp-payment-meta code {font-size:11px;font-weight:600;color:var(--tx-2);background:var(--bg-elevated);border:1px solid rgb(var(--bdr-rgb)/.1);border-radius:7px;padding:2px 7px;font-family:var(--font-mono)}
+  .gp-payment-pagos {display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--tx-3)}
+  .gp-payment-pagos app-gp-icon {color:var(--acc-solid);opacity:.8}
+  .gp-payment-beneficiary .gp-payment-invoices {color:var(--tx-3);font-size:12px;font-weight:400}
+  .gp-payment-amount {display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right;min-width:118px}
+  .gp-payment-amount small {font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--tx-3)}
+  .gp-payment-amount strong {font-size:16px;font-weight:800;color:var(--tx-1);font-variant-numeric:tabular-nums;line-height:1.15}
+  .gp-payment-egreso {font-size:12.5px;font-weight:700;color:var(--acc-solid);font-variant-numeric:tabular-nums;padding:2px 9px;border-radius:8px;background:rgb(var(--acc-rgb)/.08);border:1px solid rgb(var(--acc-rgb)/.16)}
+  .gp-payment-egreso--vacio {font-weight:600;color:var(--tx-3);background:transparent;border:1px dashed rgb(var(--bdr-rgb)/.24)}
+  .gp-payment-aprobado {display:flex;flex-direction:column;align-items:flex-end;gap:4px;width:100%}
+  .gp-payment-aprobado small {font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--tx-3);font-variant-numeric:tabular-nums}
+  .gp-payment-aprobado__barra {width:96px;height:5px;border-radius:99px;background:rgb(var(--bdr-rgb)/.12);overflow:hidden}
+  .gp-payment-aprobado__barra i {display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acc-solid),var(--ok-solid));transition:width .3s ease}
+  .gp-payment-card.paid::before {background:var(--ok-solid)}
+  .gp-payment-go {display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;border-radius:10px;color:var(--acc-solid);background:rgb(var(--acc-rgb)/.07);border:1px solid rgb(var(--acc-rgb)/.14);transition:background .15s ease,transform .15s ease}
+  .gp-payment-card:hover .gp-payment-go {background:rgb(var(--acc-rgb)/.15);transform:translateX(2px)}
+  .gp-payment-card.paid .gp-payment-go {color:var(--ok-solid);background:rgb(var(--ok-rgb)/.08);border-color:rgb(var(--ok-rgb)/.18)}
+  .gp-payment-card.paid .gp-payment-aprobado__barra i {background:var(--ok-solid)}
+  @media(max-width:640px){.gp-payment-card{gap:12px;padding:13px 13px 13px 17px}.gp-payment-day{width:48px;height:48px;border-radius:14px}.gp-payment-go{display:none}.gp-payment-amount--egreso{display:none}}
+  .gp-payment-detail {display:flex;flex-direction:column;gap:16px;font-size:14px;color:var(--tx-2)}.gp-payment-detail .card {padding:16px}.gp-payment-detail-title {display:flex;align-items:center;gap:12px;margin-bottom:12px}.gp-payment-detail-title>div {flex:1}.gp-payment-detail-title p {font-size:12px;color:var(--tx-3)}.gp-payment-detail .gp-payment-filters {margin:12px 0 0}
+  app-pagos-proyectados-page .gp-tabs {background:var(--bg-elevated);border:0;border-radius:12px;padding:4px;width:fit-content;display:flex;gap:4px}.gp-tabs .gp-tab {background:transparent;color:var(--tx-3);border-radius:8px;font-size:14px;padding:8px 16px;box-shadow:none}.gp-tabs .gp-tab.gp-tab--activa {background:var(--bg-surface);color:var(--tx-1);box-shadow:none}.gp-tabs .gp-tab>app-gp-icon {display:none}
+  .bg-surface { background-color: var(--bg-surface); }
+  .bg-elevated { background-color: var(--bg-elevated); }
+  .text-t1 { color: var(--tx-1); }
+  .text-t2 { color: var(--tx-2); }
+  .text-t3 { color: var(--tx-3); }
+  .text-acc { color: var(--acc-solid); }
+  .gp-native-page.gp-page { background: var(--bg-base); }
+  .gp-native-content .gp-estado { background: var(--bg-surface); }
+  .gp-tabla-hero, .gp-thead, .gp-thead th, .gp-table tfoot tr { background: var(--bg-elevated); color: var(--tx-2); }
+  .input-field, .btn-secondary { color: var(--tx-2); background: var(--bg-elevated); border: 1px solid rgb(var(--bdr-rgb) / .14); }
+  .kpi-card { background: var(--bg-surface); border: 1px solid rgb(var(--bdr-rgb) / .1); box-shadow: var(--sh-card); }
+  .kpi-value { color: var(--tx-1); }
+  .kpi-label { color: var(--tx-3); }
+  .gp-modal-hero { background: var(--bg-surface); }
+  .gp-modal-hero__titulo { color: var(--tx-1); }
+  .gp-modal-hero__glow { display: none; }
+  app-gp-icon { display: inline-flex; flex-shrink: 0; vertical-align: middle; }
+  .gp-native-admin {position:relative}
+  .gp-native-dropdown {position:absolute;right:0;top:44px;width:224px;padding:6px;z-index:60}
+  .gp-native-dropdown a {display:flex;align-items:center;gap:10px;padding:10px 12px;color:var(--tx-2);border-radius:12px;font-size:13px}
+  .gp-native-dropdown a:hover {background:var(--bg-elevated);color:var(--tx-1)}
+  .gp-native-backdrop {position:fixed;inset:0;z-index:100;background:#0f172a80;display:grid;place-items:center;padding:16px}
+  .gp-native-profile {width:min(100%,420px);max-height:90dvh;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+  .gp-native-profile h2 {font-weight:700;font-size:18px}
+  .gp-native-profile p,.gp-native-profile label {font-size:13px;color:var(--tx-2)}
+  .gp-native-profile label {display:flex;flex-direction:column;gap:6px}
+  .gp-native-profile-actions {display:flex;justify-content:flex-end;gap:8px}
+}
+
+.gp-global-period{display:flex;align-items:center;gap:1.1rem;padding:.85rem 1.25rem;flex-wrap:wrap;border-bottom:1px solid #045c941f;background:linear-gradient(180deg,#ffffff,#fbfcfe)}
+.gp-global-period label{display:flex;flex-direction:column;gap:.28rem;font-size:.66rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#64748b}
+.gp-global-period .field{min-width:9.5rem;width:auto;padding:.5rem .75rem;border-radius:10px;font-size:.82rem;font-weight:600;color:#213053;background:#fff;border:1px solid #dbe2ec;transition:border-color .15s ease,box-shadow .15s ease}
+.gp-global-period .field:hover{border-color:#b9c7da}
+.gp-global-period .field:focus{border-color:#045c94;box-shadow:0 0 0 3px #045c9417}
+.gp-global-period a{margin-left:auto}
+.gp-period-chip{display:inline-flex;align-items:center;gap:.45rem;align-self:center;padding:.4rem .8rem;border-radius:999px;font-size:.72rem;font-weight:600;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;white-space:nowrap}
+.gp-period-chip::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.85}
+.gp-period-chip--ok{color:#047857;background:#ecfdf5;border-color:#a7f3d0}
+.gp-period-chip--warn{color:#b45309;background:#fffbeb;border-color:#fde68a}
+.gp-period-chip--info{color:#045c94;background:#eff6ff;border-color:#bfdbfe}
+.gp-period-chip--muted{color:#64748b;background:#f8fafc;border-color:#e2e8f0}
+@media(max-width:600px){.gp-global-period{gap:.65rem;padding:.75rem}.gp-global-period a{margin-left:0}.gp-global-period label{flex:1}.gp-global-period select{max-width:100%}.gp-period-chip{order:3;width:100%;justify-content:center}}

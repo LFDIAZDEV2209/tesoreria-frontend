@@ -1,0 +1,49 @@
+<div class="ue-page">
+  <header class="ue-header">
+    <h1>Usuarios y Empresas</h1>
+    <p>Asigna las empresas de cada cuenta y otorga el permiso de aprobación (Gerente Ejecutivo).</p>
+  </header>
+
+  @if (mensaje()) {
+    <div class="ue-alert">{{ mensaje() }}</div>
+  }
+
+  @if (cargando()) {
+    <p class="ue-loading">Cargando usuarios…</p>
+  } @else {
+    <div class="ue-list">
+      @for (u of usuarios(); track u.usuarioId) {
+        <div class="ue-card">
+          <div class="ue-card__head">
+            <div>
+              <strong>{{ u.username }}</strong>
+              <span class="ue-email">{{ u.email }}</span>
+            </div>
+            <label class="ue-toggle">
+              <input type="checkbox" [checked]="u.puedeAprobar === true"
+                [disabled]="guardando() === u.usuarioId"
+                (change)="togglePermiso(u)" />
+              <span>Puede aprobar (Gerente Ejecutivo)</span>
+            </label>
+          </div>
+
+          <div class="ue-empresas">
+            @for (e of empresas(); track e.id) {
+              <label class="ue-empresa">
+                <input type="checkbox" [checked]="estaSeleccionada(u.usuarioId, e.id)"
+                  (change)="toggleEmpresa(u.usuarioId, e.id)" />
+                <span>{{ e.name }}</span>
+              </label>
+            }
+          </div>
+
+          <div class="ue-actions">
+            <button class="ue-btn" [disabled]="guardando() === u.usuarioId" (click)="guardar(u)">
+              Guardar empresas
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

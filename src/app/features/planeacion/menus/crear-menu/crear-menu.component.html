@@ -1,0 +1,303 @@
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- CREAR MENÚ — Drag & Drop Menu Builder                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="crear-menu-container min-h-screen" @fadeSlideIn>
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="px-6 lg:px-8 pt-6 lg:pt-8 pb-4">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#045C94] to-[#FFB71B] flex items-center justify-center shadow-lg shadow-[#045C94]/30">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl lg:text-3xl font-extrabold text-[#213053]">Creación de Menú</h1>
+          <p class="text-sm text-[#213053]/50">Arrastra productos para armar el menú mensual</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 flex-wrap">
+        <a routerLink="/planeacion/menus/listado"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm border-2 border-[#213053]/10 text-[#213053]/60 hover:border-[#045C94] hover:text-[#045C94] hover:bg-[#045C94]/5 transition-all duration-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          Ver Listado
+        </a>
+        <button (click)="showProductPanel.set(!showProductPanel())"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm border-2 transition-all duration-300"
+                [class]="showProductPanel() ? 'border-[#045C94] text-[#045C94] bg-[#045C94]/5' : 'border-[#213053]/10 text-[#213053]/60 hover:border-[#045C94]'">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/></svg>
+          {{ showProductPanel() ? 'Ocultar' : 'Mostrar' }} Productos
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONFIG BAR ═══ -->
+  <div class="px-6 lg:px-8 pb-4">
+    <div class="glass-card rounded-2xl p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+        <!-- Nombre -->
+        <div class="lg:col-span-2">
+          <label class="text-xs font-bold text-[#213053]/50 mb-1.5 block">Nombre del Menú</label>
+          <input type="text" [ngModel]="menuNombre()" (ngModelChange)="menuNombre.set($event)"
+                 [placeholder]="'Menú ' + mesLabel() + ' ' + selectedAnio()"
+                 class="config-input w-full">
+        </div>
+        <!-- Mes -->
+        <div>
+          <label class="text-xs font-bold text-[#213053]/50 mb-1.5 block">Mes</label>
+          <select [ngModel]="selectedMes()" (ngModelChange)="selectedMes.set(+$event)" class="config-input w-full">
+            <option *ngFor="let m of meses" [ngValue]="m.value">{{ m.label }}</option>
+          </select>
+        </div>
+        <!-- Año -->
+        <div>
+          <label class="text-xs font-bold text-[#213053]/50 mb-1.5 block">Año</label>
+          <select [ngModel]="selectedAnio()" (ngModelChange)="selectedAnio.set(+$event)" class="config-input w-full">
+            <option [ngValue]="2024">2024</option>
+            <option [ngValue]="2025">2025</option>
+            <option [ngValue]="2026">2026</option>
+          </select>
+        </div>
+        <!-- Cant menús -->
+        <div>
+          <label class="text-xs font-bold text-[#213053]/50 mb-1.5 block">Cant. Menús</label>
+          <select [ngModel]="cantidadMenus()" (ngModelChange)="cantidadMenus.set(+$event)" class="config-input w-full">
+            <option *ngFor="let n of [3,4,5,6,7]" [ngValue]="n">{{ n }} menús</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROGRESS BAR ═══ -->
+  <div class="px-6 lg:px-8 pb-4">
+    <div class="flex items-center gap-4">
+      <div class="flex-1 h-2 rounded-full bg-[#213053]/5 overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-700 ease-out"
+             [style.width.%]="completionPercent()"
+             [style.background]="completionPercent() === 100 ? 'linear-gradient(90deg, #10b981, #059669)' : 'linear-gradient(90deg, #045C94, #0ea5e9)'">
+        </div>
+      </div>
+      <span class="text-xs font-bold text-[#213053]/50">{{ filledCells() }}/{{ totalCells() }} ({{ completionPercent() }}%)</span>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN LAYOUT ═══ -->
+  <div class="flex gap-0 px-6 lg:px-8 pb-8">
+
+    <!-- ─── PRODUCT PANEL (left sidebar) ─── -->
+    <div *ngIf="showProductPanel()" @slideRight class="w-72 flex-shrink-0 mr-5">
+      <div class="glass-card rounded-2xl p-4 sticky top-4 max-h-[calc(100vh-200px)] flex flex-col">
+        <h3 class="text-xs font-extrabold text-[#213053]/50 uppercase tracking-wider mb-3">
+          🧩 Productos Disponibles
+        </h3>
+
+        <!-- Search -->
+        <div class="relative mb-3">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#213053]/25" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" [ngModel]="productoSearch()" (ngModelChange)="productoSearch.set($event)"
+                 placeholder="Buscar producto..."
+                 class="w-full pl-9 pr-3 py-2 rounded-lg border border-[#213053]/10 bg-white text-xs font-medium text-[#213053] outline-none focus:border-[#045C94] transition-colors">
+        </div>
+
+        <!-- Category filter -->
+        <select [ngModel]="productoFilterCategoria()" (ngModelChange)="productoFilterCategoria.set($event)"
+                class="w-full px-3 py-2 rounded-lg border border-[#213053]/10 bg-white text-xs font-medium text-[#213053] outline-none mb-3 focus:border-[#045C94] transition-colors">
+          <option value="">Todas las categorías</option>
+          <option *ngFor="let cat of categoriaOptions" [value]="cat.value">{{ cat.icon }} {{ cat.label }}</option>
+        </select>
+
+        <!-- Product list -->
+        <div class="flex-1 overflow-y-auto space-y-1.5 product-list-scroll" @staggerItems>
+          <div *ngFor="let p of filteredProducts()"
+               class="stagger-item product-drag-item flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-grab active:cursor-grabbing transition-all duration-200"
+               [class.dragging-source]="draggingProduct()?.id === p.id"
+               draggable="true"
+               (dragstart)="onDragStart($event, p)"
+               (dragend)="onDragEnd()">
+            <span class="text-base flex-shrink-0">{{ p.categoriaIcon }}</span>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-bold text-[#213053] truncate">{{ p.nombre }}</p>
+              <p class="text-[10px] text-[#213053]/35 font-medium">{{ p.tipo }}</p>
+            </div>
+            <svg class="w-3.5 h-3.5 text-[#213053]/15 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+            </svg>
+          </div>
+
+          <div *ngIf="filteredProducts().length === 0" class="text-center py-6">
+            <p class="text-xs text-[#213053]/30 font-medium">No se encontraron productos</p>
+          </div>
+        </div>
+
+        <div class="pt-3 mt-3 border-t border-[#213053]/8">
+          <p class="text-[10px] text-[#213053]/30 font-semibold text-center">
+            {{ filteredProducts().length }} productos · Arrastra hacia la tabla →
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── MENU TABLE ─── -->
+    <div class="flex-1 min-w-0">
+      <!-- Title bar -->
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-extrabold text-[#213053]">
+          📋 Menú Mes {{ mesLabel() }} {{ selectedAnio() }}
+        </h2>
+        <div class="flex items-center gap-2">
+          <button (click)="clearAllCells()" class="text-xs font-bold text-red-400 hover:text-red-500 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50">
+            🗑️ Limpiar todo
+          </button>
+          <button (click)="saveMenu()" [disabled]="saving()"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#045C94] to-[#0ea5e9] text-white font-bold text-sm shadow-lg shadow-[#045C94]/30 hover:shadow-xl hover:shadow-[#045C94]/40 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg *ngIf="!saving()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <svg *ngIf="saving()" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            {{ saving() ? 'Guardando...' : 'Guardar Menú' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- The actual table -->
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto menu-table-scroll">
+          <table class="w-full menu-table">
+            <!-- TABLE HEADER -->
+            <thead>
+              <tr>
+                <th class="th-label sticky left-0 z-10 bg-gradient-to-r from-[#213053] to-[#2d4a73]">
+                  <div class="flex items-center gap-2">
+                    <span class="text-white/70 text-[10px] font-bold uppercase tracking-wider">Ing. / Platillo</span>
+                  </div>
+                </th>
+                <th *ngFor="let num of visibleMenuNumbers()" class="th-menu bg-gradient-to-b from-[#213053] to-[#2d4a73]">
+                  <span class="text-white font-extrabold text-xs">MENÚ {{ num }}</span>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <!-- For each section (DESAYUNO, MERIENDA, ALMUERZO, CENA) -->
+              <ng-container *ngFor="let section of sections()">
+                <!-- Section header row -->
+                <tr class="section-header-row">
+                  <td [attr.colspan]="cantidadMenus() + 1" class="section-header-cell"
+                      [style.background]="'linear-gradient(90deg, ' + section.color + '15, ' + section.color + '05)'">
+                    <div class="flex items-center gap-2 justify-center py-1">
+                      <span class="text-lg">{{ section.icon }}</span>
+                      <span class="font-extrabold text-sm uppercase tracking-widest" [style.color]="section.color">
+                        {{ section.label }}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Category rows -->
+                <tr *ngFor="let cat of section.categorias" class="data-row">
+                  <!-- Category label -->
+                  <td class="td-label sticky left-0 z-10">
+                    <span class="text-[11px] font-bold text-[#213053]/70 uppercase tracking-wide">{{ cat.nombre }}</span>
+                  </td>
+
+                  <!-- Menu cells -->
+                  <td *ngFor="let num of visibleMenuNumbers()"
+                      class="td-cell"
+                      [class.cell-drag-over]="dragOverCell() === getCellKey(cat.id, num)"
+                      [class.cell-filled]="getCellValue(cat.id, num)"
+                      (dragover)="onDragOver($event, cat.id, num)"
+                      (dragleave)="onDragLeave(cat.id, num)"
+                      (drop)="onDrop($event, cat.id, num)"
+                      (dblclick)="startEdit(cat.id, num)">
+
+                    <!-- Editing mode -->
+                    <div *ngIf="isEditing(cat.id, num)" class="edit-wrapper">
+                      <input type="text"
+                             [ngModel]="editingValue()"
+                             (ngModelChange)="editingValue.set($event)"
+                             (keydown.enter)="confirmEdit(cat.id, num)"
+                             (keydown.escape)="cancelEdit()"
+                             (blur)="confirmEdit(cat.id, num)"
+                             class="edit-input"
+                             autofocus>
+                    </div>
+
+                    <!-- Display mode -->
+                    <div *ngIf="!isEditing(cat.id, num)" class="cell-content group">
+                      <span *ngIf="getCellValue(cat.id, num)" @dropAnimation
+                            class="cell-text">
+                        {{ getCellValue(cat.id, num) }}
+                      </span>
+                      <span *ngIf="!getCellValue(cat.id, num) && !draggingProduct()"
+                            class="cell-empty">
+                        —
+                      </span>
+                      <span *ngIf="!getCellValue(cat.id, num) && draggingProduct()"
+                            class="cell-drop-hint">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                      </span>
+
+                      <!-- Clear button -->
+                      <button *ngIf="getCellValue(cat.id, num)"
+                              (click)="clearCell(cat.id, num); $event.stopPropagation()"
+                              class="cell-clear-btn opacity-0 group-hover:opacity-100">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Instructions -->
+      <div class="mt-4 flex items-center gap-6 text-[10px] text-[#213053]/30 font-semibold">
+        <span class="flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"/></svg>
+          Arrastra productos desde el panel
+        </span>
+        <span class="flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+          Doble clic para editar manualmente
+        </span>
+        <span class="flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          Hover + ✕ para eliminar
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SUCCESS MODAL ═══ -->
+  <div *ngIf="showSuccess()" @successModal
+       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+       (click)="closeSuccess()">
+    <div class="bg-white rounded-3xl p-8 max-w-sm mx-4 text-center shadow-2xl" (click)="$event.stopPropagation()">
+      <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mb-5 shadow-lg shadow-emerald-200">
+        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-extrabold text-[#213053] mb-2">¡Menú Guardado!</h3>
+      <p class="text-sm text-[#213053]/50 mb-6">El menú de {{ mesLabel() }} {{ selectedAnio() }} fue guardado exitosamente con {{ filledCells() }} productos asignados.</p>
+      <button (click)="closeSuccess()"
+              class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#045C94] to-[#0ea5e9] text-white font-bold text-sm shadow-lg shadow-[#045C94]/30 hover:shadow-xl transition-all">
+        Aceptar
+      </button>
+    </div>
+  </div>
+</div>

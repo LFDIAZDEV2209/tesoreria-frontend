@@ -1,0 +1,693 @@
+<div class="configuracion-reteica-page">
+  <!-- ═══ HEADER ═══ -->
+  <header class="page-header">
+    <div class="header-selector-area">
+      <div class="year-selector-card">
+        <div class="year-selector-header">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span>Selecciona un año de vigencia</span>
+        </div>
+        <div class="year-buttons-container">
+          <button
+            *ngFor="let year of availableYears()"
+            (click)="onYearChange(year)"
+            [class.active]="selectedYear() === year"
+            class="year-btn"
+            [title]="'Ver tarifas de ' + year"
+          >
+            {{ year }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg
+            class="w-7 h-7 text-[#FFB71B]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+            />
+          </svg>
+        </div>
+        <div>
+          <p class="header-subtitle">Configuración Municipal</p>
+          <h1 class="header-title">
+            ReteICA — Retención de Industria y Comercio ({{ selectedYear() }})
+          </h1>
+          <p class="header-desc">
+            Tarifas por mil (‰) por municipio y actividad económica
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Agregar tarifa -->
+        <button
+          (click)="openAddModal()"
+          class="btn-action btn-primary"
+          title="Agregar tarifa ReteICA"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <span class="btn-label">Agregar</span>
+        </button>
+
+        <!-- Refrescar -->
+        <button
+          (click)="refreshData()"
+          class="btn-refresh"
+          title="Actualizar datos"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ FILTER PANEL ═══ -->
+  <div class="filter-panel">
+    <div class="filter-bar">
+      <!-- Búsqueda de texto -->
+      <div class="filter-search-wrapper">
+        <svg
+          class="filter-search-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"
+          />
+        </svg>
+        <input
+          type="text"
+          class="filter-search-input"
+          placeholder="Buscar por municipio, actividad, código CIIU..."
+          [value]="searchText()"
+          (input)="searchText.set($any($event.target).value)"
+        />
+        <button
+          *ngIf="searchText()"
+          (click)="searchText.set('')"
+          class="filter-clear-input"
+          title="Limpiar"
+        >
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Filtro: Municipio -->
+      <div class="filter-select-wrapper">
+        <svg
+          class="filter-select-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+          />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+        <select
+          class="filter-select"
+          [value]="filterMunicipio()"
+          (change)="filterMunicipio.set($any($event.target).value)"
+        >
+          <option value="">Todos los municipios</option>
+          <option *ngFor="let m of municipios()" [value]="m">{{ m }}</option>
+        </select>
+      </div>
+
+      <!-- Filtro: Departamento -->
+      <div class="filter-select-wrapper">
+        <svg
+          class="filter-select-icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <select
+          class="filter-select"
+          [value]="filterDepartamento()"
+          (change)="filterDepartamento.set($any($event.target).value)"
+        >
+          <option value="">Todos los departamentos</option>
+          <option *ngFor="let d of departamentos()" [value]="d">{{ d }}</option>
+        </select>
+      </div>
+
+      <!-- Limpiar filtros -->
+      <button
+        *ngIf="hayFiltrosActivos()"
+        (click)="clearFilters()"
+        class="btn-clear-filters"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+        Limpiar filtros
+      </button>
+    </div>
+
+    <!-- Contador resultados -->
+    <div *ngIf="!loading() && tarifas().length > 0" class="results-info">
+      <span class="results-count">
+        {{ tarifasFiltradas().length }}
+        <ng-container *ngIf="hayFiltrosActivos()">
+          de {{ tarifas().length }}</ng-container
+        >
+        resultado{{ tarifasFiltradas().length !== 1 ? "s" : "" }}
+      </span>
+      <span *ngIf="hayFiltrosActivos()" class="results-filtered-label"
+        >— filtrado</span
+      >
+    </div>
+  </div>
+
+  <!-- ═══ TABLE PANEL ═══ -->
+  <div class="table-panel">
+    <!-- Cargando -->
+    <div *ngIf="loading()" class="loading-container">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring"></div>
+      </div>
+      <p class="loading-text">
+        Cargando tarifas ReteICA de {{ selectedYear() }}...
+      </p>
+    </div>
+
+    <!-- Sin datos del año -->
+    <div *ngIf="!loading() && tarifas().length === 0" class="empty-state">
+      <div class="empty-state__icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      </div>
+      <p class="empty-state__title">
+        No hay tarifas ReteICA para {{ selectedYear() }}
+      </p>
+      <p class="empty-state__desc">
+        Intenta con otro año o agrega nuevas tarifas
+      </p>
+    </div>
+
+    <!-- Sin resultados de filtro -->
+    <div
+      *ngIf="
+        !loading() && tarifas().length > 0 && tarifasFiltradas().length === 0
+      "
+      class="empty-state"
+    >
+      <div class="empty-state__icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"
+          />
+        </svg>
+      </div>
+      <p class="empty-state__title">Sin resultados</p>
+      <p class="empty-state__desc">
+        No hay tarifas que coincidan con los filtros aplicados
+      </p>
+      <button
+        (click)="clearFilters()"
+        class="btn-clear-filters"
+        style="margin-top: 1rem"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+
+    <!-- Tabla de tarifas -->
+    <div
+      *ngIf="!loading() && tarifasFiltradas().length > 0"
+      class="table-container"
+    >
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="th-num">#</th>
+            <th>Municipio</th>
+            <th>Departamento</th>
+            <th>Actividad Económica</th>
+            <th>Código CIIU</th>
+            <th class="th-right">Tarifa (‰)</th>
+            <th class="th-center">Vigente</th>
+            <th class="th-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let tarifa of tarifasPaginadas(); let i = index"
+            class="data-row"
+          >
+            <td>
+              <span class="row-number">{{
+                (currentPage() - 1) * pageSize() + i + 1
+              }}</span>
+            </td>
+            <td>
+              <span class="municipio-badge">{{ tarifa.municipio }}</span>
+            </td>
+            <td>
+              <span class="departamento-text">{{ tarifa.departamento }}</span>
+            </td>
+            <td>
+              <span class="actividad-text">{{
+                tarifa.actividadEconomica
+              }}</span>
+            </td>
+            <td>
+              <span class="codigo-badge" *ngIf="tarifa.codigoActividad">{{
+                tarifa.codigoActividad
+              }}</span>
+              <span class="text-muted" *ngIf="!tarifa.codigoActividad">—</span>
+            </td>
+            <td class="td-right tarifa-valor">
+              {{ formatTarifaPorMil(tarifa.tarifaPorMil) }}
+            </td>
+            <td class="td-center">
+              <span
+                class="vigente-badge"
+                [ngClass]="{
+                  'vigente-si': tarifa.vigente,
+                  'vigente-no': !tarifa.vigente,
+                }"
+              >
+                {{ tarifa.vigente ? "Sí" : "No" }}
+              </span>
+            </td>
+            <td class="td-center">
+              <div class="action-buttons">
+                <button
+                  (click)="openEditModal(tarifa)"
+                  class="btn-icon btn-icon-edit"
+                  title="Editar tarifa"
+                >
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination-bar" *ngIf="totalPages() > 1">
+        <div class="pagination-info">
+          Mostrando {{ (currentPage() - 1) * pageSize() + 1 }}–{{
+            currentPage() * pageSize() > tarifasFiltradas().length
+              ? tarifasFiltradas().length
+              : currentPage() * pageSize()
+          }}
+          de {{ tarifasFiltradas().length }}
+        </div>
+        <div class="pagination-controls">
+          <button
+            class="pagination-btn"
+            [disabled]="currentPage() === 1"
+            (click)="prevPage()"
+            title="Página anterior"
+          >
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              class="pagination-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+          <ng-container *ngFor="let page of paginationPages()">
+            <span *ngIf="page === '...'" class="pagination-ellipsis">…</span>
+            <button
+              *ngIf="page !== '...'"
+              class="pagination-btn pagination-page"
+              [class.active]="page === currentPage()"
+              (click)="goToPage(page)"
+            >
+              {{ page }}
+            </button>
+          </ng-container>
+          <button
+            class="pagination-btn"
+            [disabled]="currentPage() === totalPages()"
+            (click)="nextPage()"
+            title="Página siguiente"
+          >
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              class="pagination-icon"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+        <div class="pagination-size">
+          <label>Filas:</label>
+          <select
+            [value]="pageSize()"
+            (change)="
+              pageSize.set(+$any($event.target).value); currentPage.set(1)
+            "
+          >
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MODAL: AGREGAR / EDITAR TARIFA                     -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="showAddModal()" class="modal-overlay" (click)="closeAddModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-icon modal-icon-primary">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        </div>
+        <div>
+          <h2 class="modal-title">
+            {{ editingTarifa() ? "Editar" : "Agregar" }} Tarifa ReteICA
+          </h2>
+          <p class="modal-subtitle">
+            Complete los campos para
+            {{ editingTarifa() ? "actualizar" : "crear" }} la tarifa
+          </p>
+        </div>
+        <button (click)="closeAddModal()" class="modal-close">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Error -->
+        <div *ngIf="saveError()" class="alert-error">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span>{{ saveError() }}</span>
+        </div>
+
+        <!-- Municipio y Departamento -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"
+              >Municipio <span class="required">*</span></label
+            >
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="newTarifa.municipio"
+              placeholder="Ej: BOGOTA D.C."
+              list="municipiosList"
+            />
+            <datalist id="municipiosList">
+              <option
+                *ngFor="let m of municipiosCatalog()"
+                [value]="m"
+              ></option>
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label class="form-label"
+              >Departamento <span class="required">*</span></label
+            >
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="newTarifa.departamento"
+              placeholder="Ej: CUNDINAMARCA"
+              list="departamentosList"
+            />
+            <datalist id="departamentosList">
+              <option
+                *ngFor="let d of departamentosCatalog()"
+                [value]="d"
+              ></option>
+            </datalist>
+          </div>
+        </div>
+
+        <!-- Código DANE -->
+        <div class="form-group">
+          <label class="form-label">Código DANE</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="newTarifa.codigoDane"
+            placeholder="Ej: 11001"
+          />
+        </div>
+
+        <!-- Actividad económica y Código CIIU -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"
+              >Actividad Económica <span class="required">*</span></label
+            >
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="newTarifa.actividadEconomica"
+              placeholder="Ej: Desarrollo de software"
+            />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Código CIIU</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="newTarifa.codigoActividad"
+              placeholder="Ej: 6201"
+            />
+          </div>
+        </div>
+
+        <!-- Tarifa y Año -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label"
+              >Tarifa por mil (‰) <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="newTarifa.tarifaPorMil"
+              min="0"
+              step="0.01"
+              placeholder="Ej: 4.14"
+            />
+            <p class="form-hint">Valor en por mil. Ej: 4.14‰ = 0.414%</p>
+          </div>
+          <div class="form-group">
+            <label class="form-label"
+              >Año Vigencia <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              class="form-control"
+              [(ngModel)]="newTarifa.anioVigencia"
+              min="2000"
+              max="2100"
+              placeholder="2026"
+            />
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="newTarifa.descripcion"
+            placeholder="Notas adicionales (opcional)"
+          />
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          (click)="closeAddModal()"
+          class="btn-modal-cancel"
+          [disabled]="saving()"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="saveTarifa()"
+          class="btn-modal-primary"
+          [disabled]="saving()"
+        >
+          <span *ngIf="saving()" class="btn-spinner"></span>
+          {{
+            saving()
+              ? "Guardando..."
+              : editingTarifa()
+                ? "Actualizar"
+                : "Guardar"
+          }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TOAST ═══ -->
+  <div
+    *ngIf="showToast()"
+    class="reteica-toast"
+    [class.reteica-toast--success]="toastType() === 'success'"
+    [class.reteica-toast--error]="toastType() === 'error'"
+  >
+    <div class="reteica-toast__icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          *ngIf="toastType() === 'success'"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+        <path
+          *ngIf="toastType() === 'error'"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    </div>
+    <span class="reteica-toast__text">{{ toastMessage() }}</span>
+    <button class="reteica-toast__close" (click)="showToast.set(false)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+  </div>
+</div>

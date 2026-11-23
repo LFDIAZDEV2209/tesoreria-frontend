@@ -1,0 +1,2056 @@
+<div class="seg-root" [class.seg-root--loaded]="!loading()">
+  <!-- BG -->
+  <div class="seg-bg" aria-hidden="true">
+    <div class="seg-bg__orb seg-bg__orb--1"></div>
+    <div class="seg-bg__orb seg-bg__orb--2"></div>
+    <div class="seg-bg__orb seg-bg__orb--3"></div>
+  </div>
+
+  <!-- HERO -->
+  <header class="seg-hero">
+    <div class="seg-hero__inner">
+      <div class="seg-hero__icon-wrap">
+        <div class="seg-hero__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
+          </svg>
+        </div>
+        <div class="seg-hero__icon-ring"></div>
+      </div>
+      <div class="seg-hero__copy">
+        <span class="seg-hero__eyebrow">
+          <span class="seg-hero__eyebrow-dot"></span>
+          Panel de Seguimiento
+        </span>
+        <h1 class="seg-hero__title">Requisiciones</h1>
+        <p class="seg-hero__subtitle">
+          Monitorea el avance de cada solicitud en tiempo real
+        </p>
+      </div>
+    </div>
+    <button class="seg-hero__back" (click)="volver()">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M10 19l-7-7m0 0l7-7m-7 7h18"
+        />
+      </svg>
+      <span>Volver</span>
+    </button>
+  </header>
+
+  <!-- MAIN TABS -->
+  <nav class="seg-tabs">
+    <button
+      class="seg-tabs__btn"
+      [class.seg-tabs__btn--active]="activeMainTab() === 'requisiciones'"
+      (click)="setMainTab('requisiciones')"
+    >
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      <span>Requisiciones</span>
+      @if (tramites().length > 0) {
+        <span class="seg-tabs__count">{{ tramites().length }}</span>
+      }
+    </button>
+    <button
+      class="seg-tabs__btn"
+      [class.seg-tabs__btn--active]="activeMainTab() === 'solicitudes'"
+      (click)="setMainTab('solicitudes')"
+    >
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+          d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+      <span>Solicitudes Tesorería</span>
+      @if (solicitudes().length > 0) {
+        <span class="seg-tabs__count">{{ solicitudes().length }}</span>
+      }
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- TAB: REQUISICIONES (existing content) -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  @if (activeMainTab() === 'requisiciones') {
+  @if (!loading() && tramites().length > 0) {
+    <section class="seg-stats">
+      <button
+        class="seg-stat seg-stat--all"
+        [class.seg-stat--active]="activeFilter() === 'all'"
+        (click)="setFilter('all')"
+      >
+        <div class="seg-stat__glow"></div>
+        <div class="seg-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M4 6h16M4 10h16M4 14h16M4 18h7"
+            />
+          </svg>
+        </div>
+        <div class="seg-stat__data">
+          <span class="seg-stat__num">{{ tramites().length }}</span>
+          <span class="seg-stat__label">Total</span>
+        </div>
+        <div class="seg-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-opacity=".15"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-dasharray="100.5"
+              [attr.stroke-dashoffset]="0"
+              stroke-linecap="round"
+              transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        class="seg-stat seg-stat--proceso"
+        [class.seg-stat--active]="activeFilter() === 'EN_PROCESO'"
+        (click)="setFilter('EN_PROCESO')"
+      >
+        <div class="seg-stat__glow"></div>
+        <div class="seg-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="seg-stat__data">
+          <span class="seg-stat__num">{{
+            getCountByStatus("EN_PROCESO")
+          }}</span>
+          <span class="seg-stat__label">En Proceso</span>
+        </div>
+        <div class="seg-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-opacity=".15"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                tramites().length
+                  ? 100.5 -
+                    (getCountByStatus('EN_PROCESO') / tramites().length) * 100.5
+                  : 100.5
+              "
+              stroke-linecap="round"
+              transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        class="seg-stat seg-stat--vobo"
+        [class.seg-stat--active]="activeFilter() === 'ESPERANDO_VISTO_BUENO'"
+        (click)="setFilter('ESPERANDO_VISTO_BUENO')"
+      >
+        <div class="seg-stat__glow"></div>
+        <div class="seg-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+        </div>
+        <div class="seg-stat__data">
+          <span class="seg-stat__num">{{
+            getCountByStatus("ESPERANDO_VISTO_BUENO")
+          }}</span>
+          <span class="seg-stat__label">Visto Bueno</span>
+        </div>
+        <div class="seg-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20" cy="20" r="16" fill="none" stroke="currentColor"
+              stroke-width="3" stroke-opacity=".15"
+            />
+            <circle
+              cx="20" cy="20" r="16" fill="none" stroke="currentColor"
+              stroke-width="3" [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                tramites().length
+                  ? 100.5 - (getCountByStatus('ESPERANDO_VISTO_BUENO') / tramites().length) * 100.5
+                  : 100.5
+              "
+              stroke-linecap="round" transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        class="seg-stat seg-stat--cadena"
+        [class.seg-stat--active]="activeFilter() === 'EN_CADENA_SUMINISTROS'"
+        (click)="setFilter('EN_CADENA_SUMINISTROS')"
+      >
+        <div class="seg-stat__glow"></div>
+        <div class="seg-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M4 6h16M4 10h16M4 14h7"
+            />
+          </svg>
+        </div>
+        <div class="seg-stat__data">
+          <span class="seg-stat__num">{{
+            getCountByStatus("EN_CADENA_SUMINISTROS")
+          }}</span>
+          <span class="seg-stat__label">Cadena Sumi.</span>
+        </div>
+        <div class="seg-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20" cy="20" r="16" fill="none" stroke="currentColor"
+              stroke-width="3" stroke-opacity=".15"
+            />
+            <circle
+              cx="20" cy="20" r="16" fill="none" stroke="currentColor"
+              stroke-width="3" [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                tramites().length
+                  ? 100.5 - (getCountByStatus('EN_CADENA_SUMINISTROS') / tramites().length) * 100.5
+                  : 100.5
+              "
+              stroke-linecap="round" transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        class="seg-stat seg-stat--contab"
+        [class.seg-stat--active]="activeFilter() === 'EN_CONTABILIDAD'"
+        (click)="setFilter('EN_CONTABILIDAD')"
+      >
+        <div class="seg-stat__glow"></div>
+        <div class="seg-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+        <div class="seg-stat__data">
+          <span class="seg-stat__num">{{
+            getCountByStatus("EN_CONTABILIDAD") +
+              getCountByStatus("ESPERANDO_CONTABILIDAD")
+          }}</span>
+          <span class="seg-stat__label">Contabilidad</span>
+        </div>
+        <div class="seg-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-opacity=".15"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                tramites().length
+                  ? 100.5 -
+                    ((getCountByStatus('EN_CONTABILIDAD') +
+                      getCountByStatus('ESPERANDO_CONTABILIDAD')) /
+                      tramites().length) *
+                      100.5
+                  : 100.5
+              "
+              stroke-linecap="round"
+              transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        class="seg-stat seg-stat--tesoreria"
+        [class.seg-stat--active]="activeFilter() === 'EN_TESORERIA'"
+        (click)="setFilter('EN_TESORERIA')"
+      >
+        <div class="seg-stat__glow"></div>
+        <div class="seg-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+        </div>
+        <div class="seg-stat__data">
+          <span class="seg-stat__num">{{
+            getCountByStatus("EN_TESORERIA")
+          }}</span>
+          <span class="seg-stat__label">Tesorería</span>
+        </div>
+        <div class="seg-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-opacity=".15"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                tramites().length
+                  ? 100.5 -
+                    (getCountByStatus('EN_TESORERIA') / tramites().length) *
+                      100.5
+                  : 100.5
+              "
+              stroke-linecap="round"
+              transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        class="seg-stat seg-stat--done"
+        [class.seg-stat--active]="activeFilter() === 'COMPLETADO'"
+        (click)="setFilter('COMPLETADO')"
+      >
+        <div class="seg-stat__glow"></div>
+        <div class="seg-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="seg-stat__data">
+          <span class="seg-stat__num">{{
+            getCountByStatus("COMPLETADO")
+          }}</span>
+          <span class="seg-stat__label">Finalizados</span>
+        </div>
+        <div class="seg-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-opacity=".15"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                tramites().length
+                  ? 100.5 -
+                    (getCountByStatus('COMPLETADO') / tramites().length) *
+                      100.5
+                  : 100.5
+              "
+              stroke-linecap="round"
+              transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+    </section>
+  }
+
+  <!-- TOOLBAR -->
+  @if (!loading() && tramites().length > 0) {
+    <div class="seg-toolbar">
+      <div class="seg-search">
+        <svg
+          class="seg-search__icon"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          class="seg-search__input"
+          type="text"
+          placeholder="Buscar por requisición, solicitante, área o tipo..."
+          (input)="onSearch($event)"
+        />
+        <span class="seg-search__count"
+          >{{ filteredTramites().length }} resultado{{
+            filteredTramites().length !== 1 ? "s" : ""
+          }}</span
+        >
+      </div>
+      <button class="seg-sort" (click)="toggleSort()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+          />
+        </svg>
+        {{ sortAsc() ? "Más antiguos" : "Más recientes" }}
+      </button>
+    </div>
+  }
+
+  <!-- LOADING -->
+  @if (loading()) {
+    <div class="seg-loader">
+      <div class="seg-loader__spinner">
+        <div class="seg-loader__ring seg-loader__ring--a"></div>
+        <div class="seg-loader__ring seg-loader__ring--b"></div>
+        <div class="seg-loader__core"></div>
+      </div>
+      <p class="seg-loader__text">Cargando requisiciones&hellip;</p>
+      <div class="seg-skeletons">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="seg-skel">
+            <div class="seg-skel__stripe"></div>
+            <div class="seg-skel__head">
+              <div class="seg-skel__avatar"></div>
+              <div class="seg-skel__lines">
+                <div class="seg-skel__bar" style="width: 36%"></div>
+                <div class="seg-skel__bar" style="width: 60%"></div>
+              </div>
+              <div class="seg-skel__pipe">
+                @for (s of [1, 2, 3, 4]; track s) {
+                  <div class="seg-skel__pdot"></div>
+                  @if (s < 4) {
+                    <div class="seg-skel__pconn"></div>
+                  }
+                }
+              </div>
+            </div>
+            <div class="seg-skel__progbar"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- EMPTY -->
+  @if (!loading() && tramites().length === 0) {
+    <div class="seg-empty">
+      <div class="seg-empty__visual">
+        <div class="seg-empty__ring seg-empty__ring--outer"></div>
+        <div class="seg-empty__ring seg-empty__ring--inner"></div>
+        <div class="seg-empty__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+            />
+          </svg>
+        </div>
+      </div>
+      <h3 class="seg-empty__title">Sin requisiciones</h3>
+      <p class="seg-empty__desc">
+        Las requisiciones que tramites aparecerán aquí con su progreso en tiempo
+        real.
+      </p>
+    </div>
+  }
+
+  <!-- CARDS -->
+  @if (!loading() && filteredTramites().length > 0) {
+    <div class="seg-list">
+      @for (
+        tramite of paginatedTramites();
+        track tramite.id;
+        let idx = $index
+      ) {
+        <article
+          class="tl-card"
+          [style.--idx]="idx"
+          [class.tl-card--expanded]="expandedTramiteId() === tramite.id"
+          [class.tl-card--proceso]="tramite.estadoTramite === 'EN_PROCESO'"
+          [class.tl-card--vobo]="
+            tramite.estadoTramite === 'ESPERANDO_VISTO_BUENO' ||
+            tramite.estadoTramite === 'VISTO_BUENO'
+          "
+          [class.tl-card--cadena]="tramite.estadoTramite === 'EN_CADENA_SUMINISTROS'"
+          [class.tl-card--contab]="
+            tramite.estadoTramite === 'EN_CONTABILIDAD' ||
+            tramite.estadoTramite === 'ESPERANDO_CONTABILIDAD'
+          "
+          [class.tl-card--aprobado]="tramite.estadoTramite === 'APROBADO_CONTABILIDAD'"
+          [class.tl-card--tesoreria]="tramite.estadoTramite === 'EN_TESORERIA'"
+          [class.tl-card--rejected]="
+            tramite.estadoTramite === 'RECHAZADO_JEFE' ||
+            tramite.estadoTramite === 'RECHAZADO'
+          "
+          [class.tl-card--done]="tramite.estadoTramite === 'COMPLETADO'"
+        >
+          <div class="tl-card__stripe"></div>
+
+          <!-- HEADER -->
+          <div class="tl-card__header" (click)="toggleExpand(tramite.id!)">
+            <div class="tl-card__avatar">
+              <span>{{ getAvatarLetter(tramite) }}</span>
+            </div>
+
+            <div class="tl-card__info">
+              <div class="tl-card__info-top">
+                <span class="tl-card__reqnum">{{
+                  tramite.requisicion.numeroRequisicion || "—"
+                }}</span>
+                <span
+                  class="tl-card__badge"
+                  [class.tl-card__badge--proceso]="tramite.estadoTramite === 'EN_PROCESO'"
+                  [class.tl-card__badge--vobo]="
+                    tramite.estadoTramite === 'ESPERANDO_VISTO_BUENO' ||
+                    tramite.estadoTramite === 'VISTO_BUENO'
+                  "
+                  [class.tl-card__badge--cadena]="tramite.estadoTramite === 'EN_CADENA_SUMINISTROS'"
+                  [class.tl-card__badge--contab]="
+                    tramite.estadoTramite === 'EN_CONTABILIDAD' ||
+                    tramite.estadoTramite === 'ESPERANDO_CONTABILIDAD'
+                  "
+                  [class.tl-card__badge--aprobado]="tramite.estadoTramite === 'APROBADO_CONTABILIDAD'"
+                  [class.tl-card__badge--rejected]="
+                    tramite.estadoTramite === 'RECHAZADO_JEFE' ||
+                    tramite.estadoTramite === 'RECHAZADO'
+                  "
+                  [class.tl-card__badge--done]="tramite.estadoTramite === 'COMPLETADO'"
+                >
+                  <span class="tl-card__badge-dot"></span>
+                  {{ getEstadoLabel(tramite) }}
+                </span>
+              </div>
+              <div class="tl-card__meta">
+                <span class="tl-chip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  {{ tramite.requisicion.solicitante }}
+                </span>
+                <span class="tl-chip">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                  {{ tramite.requisicion.areaCentroCosto }}
+                </span>
+                @if (
+                  tramite.ordenesCargadas && tramite.ordenesCargadas.length > 0
+                ) {
+                  <span class="tl-chip tl-chip--money">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    {{ formatCurrency(tramite.ordenesCargadas[0].valorTotal) }}
+                    <em>{{ tramite.ordenesCargadas.length }} OC</em>
+                  </span>
+                }
+                <span class="tl-chip tl-chip--date">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  {{ formatDate(tramite.fechaCreacion) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Pipeline horizontal -->
+            <div class="tl-hpipe">
+              @for (
+                step of pipelineSteps;
+                track step.key;
+                let i = $index;
+                let last = $last
+              ) {
+                @let si = getPipelineStepIndex(tramite);
+                <div
+                  class="tl-hpipe__node"
+                  [class.tl-hpipe__node--done]="i < si"
+                  [class.tl-hpipe__node--active]="i === si && si < 7"
+                  [class.tl-hpipe__node--rejected]="
+                    getStepStatus(tramite, i) === 'RECHAZADO'
+                  "
+                  [title]="step.label"
+                >
+                  @if (i < si) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  } @else if (getStepStatus(tramite, i) === "RECHAZADO") {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2.5"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.8"
+                        [attr.d]="step.icon"
+                      />
+                    </svg>
+                  }
+                  @if (i === si && si < 7) {
+                    <span class="tl-hpipe__pulse"></span>
+                  }
+                </div>
+                @if (!last) {
+                  <div
+                    class="tl-hpipe__seg"
+                    [class.tl-hpipe__seg--filled]="i < si"
+                    [class.tl-hpipe__seg--rejected]="
+                      getStepStatus(tramite, i) === 'RECHAZADO'
+                    "
+                  ></div>
+                }
+              }
+              <div class="tl-hpipe__info">
+                <span class="tl-hpipe__step-name">{{
+                  getCurrentStepName(tramite)
+                }}</span>
+                <span class="tl-hpipe__label">{{
+                  getProgressLabel(tramite)
+                }}</span>
+              </div>
+            </div>
+
+            <button class="tl-card__chevron" (click)="$event.stopPropagation()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Barra de progreso -->
+          <div class="tl-card__progbar">
+            <div
+              class="tl-card__progfill"
+              [style.width]="getProgressPercent(tramite)"
+            ></div>
+          </div>
+
+          <!-- Motivo de rechazo visible en la tarjeta (sin expandir) -->
+          @if (
+            tramite.estadoTramite === "RECHAZADO_JEFE" &&
+            tramite.vistoBuenoJefe?.motivoRechazo
+          ) {
+            <div class="tl-card__rejection-banner">
+              <div class="tl-card__rejection-banner-icon">
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  class="w-4 h-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                  />
+                </svg>
+              </div>
+              <div class="tl-card__rejection-banner-content">
+                <span class="tl-card__rejection-banner-label"
+                  >Motivo del rechazo:</span
+                >
+                <span class="tl-card__rejection-banner-text">{{
+                  tramite.vistoBuenoJefe!.motivoRechazo
+                }}</span>
+              </div>
+              @if (tramite.vistoBuenoJefe?.observaciones) {
+                <div class="tl-card__rejection-banner-obs">
+                  <span class="tl-card__rejection-banner-label"
+                    >Observaciones:</span
+                  >
+                  <span class="tl-card__rejection-banner-text">{{
+                    tramite.vistoBuenoJefe!.observaciones
+                  }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- BODY EXPANDIDO -->
+          <div class="tl-card__body">
+            <div class="tl-body">
+              <!-- Izquierda: timeline vertical con estados de aprobación -->
+              <div class="tl-body__left">
+                <p class="tl-body__section-label">Flujo del trámite</p>
+
+                @if (isTrackingLoading(tramite.id!)) {
+                  <div class="tl-tracking-loader">
+                    <div class="tl-tracking-loader__spinner"></div>
+                    <span>Cargando historial…</span>
+                  </div>
+                } @else {
+                  <div class="tl-vtimeline">
+                    @for (
+                      step of pipelineSteps;
+                      track step.key;
+                      let i = $index;
+                      let last = $last
+                    ) {
+                      @let trackingSteps = getTrackingSteps(tramite.id!);
+                      @let tStep =
+                        trackingSteps.length > i ? trackingSteps[i] : null;
+                      @let stepEstado =
+                        tStep ? tStep.estado : getStepStatus(tramite, i);
+                      @let done =
+                        stepEstado === "COMPLETADO" ||
+                        stepEstado === "APROBADO";
+                      @let active = stepEstado === "EN_CURSO";
+                      @let rejected = stepEstado === "RECHAZADO";
+
+                      <div
+                        class="tl-vstep"
+                        [class.tl-vstep--done]="done"
+                        [class.tl-vstep--active]="active"
+                        [class.tl-vstep--rejected]="rejected"
+                        [class.tl-vstep--pending]="
+                          !done && !active && !rejected
+                        "
+                        [style.--vd]="i * 80 + 'ms'"
+                      >
+                        <div class="tl-vstep__track">
+                          <div class="tl-vstep__node">
+                            @if (done) {
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2.5"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            } @else if (rejected) {
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2.5"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            } @else {
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.8"
+                                  [attr.d]="step.icon"
+                                />
+                              </svg>
+                            }
+                            @if (active) {
+                              <span class="tl-vstep__halo"></span>
+                              <span class="tl-vstep__pulse"></span>
+                            }
+                          </div>
+                          @if (!last) {
+                            <div
+                              class="tl-vstep__line"
+                              [class.tl-vstep__line--filled]="done"
+                              [class.tl-vstep__line--rejected]="rejected"
+                            ></div>
+                          }
+                        </div>
+                        <div class="tl-vstep__content">
+                          <span class="tl-vstep__name">{{ step.label }}</span>
+                          <span class="tl-vstep__desc">{{
+                            getStepDescription(i)
+                          }}</span>
+
+                          <!-- Tag de estado -->
+                          @if (done) {
+                            <span class="tl-vstep__tag tl-vstep__tag--done">
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M9 12l2 2 4-4"
+                                />
+                              </svg>
+                              {{
+                                stepEstado === "APROBADO"
+                                  ? "Aprobado"
+                                  : "Completado"
+                              }}
+                            </span>
+                          }
+                          @if (active) {
+                            <span class="tl-vstep__tag tl-vstep__tag--active">
+                              <span class="tl-vstep__tag-dot"></span>En curso
+                            </span>
+                          }
+                          @if (rejected) {
+                            <span class="tl-vstep__tag tl-vstep__tag--rejected">
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                              Rechazado
+                            </span>
+                          }
+                          @if (!done && !active && !rejected) {
+                            <span class="tl-vstep__tag tl-vstep__tag--pending"
+                              >Pendiente</span
+                            >
+                          }
+
+                          <!-- Info del revisor si existe -->
+                          @if (
+                            tStep && tStep.revisadoPor && (done || rejected)
+                          ) {
+                            <div class="tl-vstep__reviewer">
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                              <span>{{ tStep.revisadoPor }}</span>
+                              @if (tStep.fecha) {
+                                <em>{{ formatDateTime(tStep.fecha) }}</em>
+                              }
+                            </div>
+                          }
+
+                          <!-- Observaciones si existen -->
+                          @if (
+                            tStep && tStep.observaciones && (done || rejected)
+                          ) {
+                            <div class="tl-vstep__obs">
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                                />
+                              </svg>
+                              <span>{{ tStep.observaciones }}</span>
+                            </div>
+                          }
+
+                          <!-- Causaciones (motivos de rechazo / novedades) -->
+                          @if (
+                            tStep &&
+                            tStep.causaciones &&
+                            tStep.causaciones.length > 0
+                          ) {
+                            <div class="tl-vstep__causaciones">
+                              @for (
+                                causacion of tStep.causaciones;
+                                track causacion.id
+                              ) {
+                                <div
+                                  class="tl-vstep__causacion"
+                                  [class.tl-vstep__causacion--rechazo]="
+                                    causacion.tipo === 'RECHAZO'
+                                  "
+                                  [class.tl-vstep__causacion--novedad]="
+                                    causacion.tipo === 'ACEPTACION_CON_NOVEDAD'
+                                  "
+                                >
+                                  <span class="tl-vstep__causacion-tipo">{{
+                                    causacion.tipo === "RECHAZO"
+                                      ? "Motivo de rechazo"
+                                      : "Novedad"
+                                  }}</span>
+                                  <span class="tl-vstep__causacion-motivo">{{
+                                    causacion.motivo
+                                  }}</span>
+                                  @if (causacion.observaciones) {
+                                    <span class="tl-vstep__causacion-obs">{{
+                                      causacion.observaciones
+                                    }}</span>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Derecha: panel de detalles -->
+              <div class="tl-body__right">
+                <p class="tl-body__section-label">Detalles de la solicitud</p>
+                <div class="tl-details">
+                  <div class="tl-detail">
+                    <span class="tl-detail__k">Solicitante</span>
+                    <span class="tl-detail__v">{{
+                      tramite.requisicion.solicitante
+                    }}</span>
+                  </div>
+                  <div class="tl-detail">
+                    <span class="tl-detail__k">Área / Centro de costo</span>
+                    <span class="tl-detail__v">{{
+                      tramite.requisicion.areaCentroCosto
+                    }}</span>
+                  </div>
+                  <div class="tl-detail">
+                    <span class="tl-detail__k">Tipo de compra</span>
+                    <span class="tl-detail__v">{{
+                      tramite.requisicion.tipoCompra || "—"
+                    }}</span>
+                  </div>
+                  <div class="tl-detail">
+                    <span class="tl-detail__k">Fecha de creación</span>
+                    <span class="tl-detail__v">{{
+                      formatDate(tramite.fechaCreacion)
+                    }}</span>
+                  </div>
+                  @if (
+                    tramite.ordenesCargadas &&
+                    tramite.ordenesCargadas.length > 0
+                  ) {
+                    <div class="tl-detail tl-detail--highlight">
+                      <span class="tl-detail__k">Valor total OC</span>
+                      <span class="tl-detail__v tl-detail__v--money">
+                        {{
+                          formatCurrency(tramite.ordenesCargadas[0].valorTotal)
+                        }}
+                        <em
+                          >{{ tramite.ordenesCargadas.length }} orden{{
+                            tramite.ordenesCargadas.length > 1 ? "es" : ""
+                          }}
+                          de compra</em
+                        >
+                      </span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Historial de procesos detallado -->
+                @if (getTrackingSteps(tramite.id!).length > 0) {
+                  <p class="tl-body__section-label" style="margin-top: 16px">
+                    Historial de procesos
+                  </p>
+                  <div class="tl-history">
+                    @for (
+                      tStep of getTrackingSteps(tramite.id!);
+                      track tStep.stepIndex
+                    ) {
+                      @if (tStep.estado !== "PENDIENTE") {
+                        <div
+                          class="tl-history__item"
+                          [class.tl-history__item--aprobado]="
+                            tStep.estado === 'APROBADO' ||
+                            tStep.estado === 'COMPLETADO'
+                          "
+                          [class.tl-history__item--rechazado]="
+                            tStep.estado === 'RECHAZADO'
+                          "
+                          [class.tl-history__item--en-curso]="
+                            tStep.estado === 'EN_CURSO'
+                          "
+                        >
+                          <div class="tl-history__icon">
+                            @if (
+                              tStep.estado === "APROBADO" ||
+                              tStep.estado === "COMPLETADO"
+                            ) {
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M9 12l2 2 4-4"
+                                />
+                              </svg>
+                            } @else if (tStep.estado === "RECHAZADO") {
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            } @else {
+                              <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            }
+                          </div>
+                          <div class="tl-history__content">
+                            <div class="tl-history__header">
+                              <span class="tl-history__step-name">{{
+                                tStep.stepLabel
+                              }}</span>
+                              <span
+                                class="tl-history__estado"
+                                [class.tl-history__estado--aprobado]="
+                                  tStep.estado === 'APROBADO' ||
+                                  tStep.estado === 'COMPLETADO'
+                                "
+                                [class.tl-history__estado--rechazado]="
+                                  tStep.estado === 'RECHAZADO'
+                                "
+                                [class.tl-history__estado--en-curso]="
+                                  tStep.estado === 'EN_CURSO'
+                                "
+                              >
+                                {{ getStepStatusLabel(tStep.estado) }}
+                              </span>
+                            </div>
+                            @if (tStep.revisadoPor) {
+                              <div class="tl-history__reviewer">
+                                <strong>Revisado por:</strong>
+                                {{ tStep.revisadoPor }}
+                                @if (tStep.cargoRevisor) {
+                                  <em>({{ tStep.cargoRevisor }})</em>
+                                }
+                              </div>
+                            }
+                            @if (tStep.fecha) {
+                              <div class="tl-history__date">
+                                {{ formatDateTime(tStep.fecha) }}
+                              </div>
+                            }
+                            @if (tStep.observaciones) {
+                              <div class="tl-history__obs">
+                                <strong>Observaciones:</strong>
+                                {{ tStep.observaciones }}
+                              </div>
+                            }
+                            @if (
+                              tStep.causaciones && tStep.causaciones.length > 0
+                            ) {
+                              <div class="tl-history__causaciones">
+                                @for (c of tStep.causaciones; track c.id) {
+                                  <div
+                                    class="tl-history__causacion"
+                                    [class.tl-history__causacion--rechazo]="
+                                      c.tipo === 'RECHAZO'
+                                    "
+                                    [class.tl-history__causacion--novedad]="
+                                      c.tipo === 'ACEPTACION_CON_NOVEDAD'
+                                    "
+                                  >
+                                    <span class="tl-history__causacion-label"
+                                      >{{
+                                        c.tipo === "RECHAZO"
+                                          ? "Motivo de rechazo"
+                                          : "Novedad"
+                                      }}:</span
+                                    >
+                                    {{ c.motivo }}
+                                    @if (c.observaciones) {
+                                      <span class="tl-history__causacion-obs"
+                                        >— {{ c.observaciones }}</span
+                                      >
+                                    }
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+
+                <div class="tl-body__actions">
+                  <button
+                    class="tl-btn-primary"
+                    (click)="verTramite(tramite); $event.stopPropagation()"
+                  >
+                    <span>Ver detalle completo</span>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+
+    <!-- Pagination -->
+    <div class="seg-pagination">
+      <div class="seg-pagination__info">
+        <span class="seg-pagination__text">
+          Mostrando {{ (currentPage() - 1) * pageSize() + 1 }}–{{
+            currentPage() * pageSize() > filteredTramites().length
+              ? filteredTramites().length
+              : currentPage() * pageSize()
+          }}
+          de {{ filteredTramites().length }}
+        </span>
+        <div class="seg-pagination__size">
+          <label class="seg-pagination__size-label">Registros</label>
+          <select
+            [ngModel]="pageSize()"
+            (ngModelChange)="changePageSize($event)"
+            class="seg-pagination__size-select"
+          >
+            @for (opt of pageSizeOptions; track opt) {
+              <option [ngValue]="opt">{{ opt }}</option>
+            }
+          </select>
+        </div>
+      </div>
+      <div class="seg-pagination__controls">
+        <button
+          class="seg-pagination__btn"
+          (click)="goToPage(1)"
+          [disabled]="currentPage() === 1"
+        >
+          &laquo;
+        </button>
+        <button
+          class="seg-pagination__btn"
+          (click)="goToPage(currentPage() - 1)"
+          [disabled]="currentPage() === 1"
+        >
+          &lsaquo;
+        </button>
+        @for (p of visiblePages; track p) {
+          <button
+            class="seg-pagination__btn"
+            [class.seg-pagination__btn--active]="p === currentPage()"
+            (click)="goToPage(p)"
+          >
+            {{ p }}
+          </button>
+        }
+        <button
+          class="seg-pagination__btn"
+          (click)="goToPage(currentPage() + 1)"
+          [disabled]="currentPage() === totalPages()"
+        >
+          &rsaquo;
+        </button>
+        <button
+          class="seg-pagination__btn"
+          (click)="goToPage(totalPages())"
+          [disabled]="currentPage() === totalPages()"
+        >
+          &raquo;
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- SIN RESULTADOS -->
+  @if (!loading() && tramites().length > 0 && filteredTramites().length === 0) {
+    <div class="seg-empty seg-empty--filter">
+      <div class="seg-empty__visual">
+        <div class="seg-empty__ring seg-empty__ring--outer"></div>
+        <div class="seg-empty__ring seg-empty__ring--inner"></div>
+        <div class="seg-empty__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+      </div>
+      <h3 class="seg-empty__title">Sin resultados</h3>
+      <p class="seg-empty__desc">
+        Ninguna requisición coincide con tu búsqueda o filtro activo.
+      </p>
+    </div>
+  }
+  } <!-- end requisiciones tab -->
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- TAB: SOLICITUDES TESORERÍA                         -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  @if (activeMainTab() === 'solicitudes') {
+
+    <!-- SOLICITUDES STATS -->
+    @if (!loadingSolicitudes() && solicitudes().length > 0) {
+      <section class="seg-stats">
+        <button
+          class="seg-stat seg-stat--all"
+          [class.seg-stat--active]="solActiveFilter() === 'all'"
+          (click)="setSolFilter('all')"
+        >
+          <div class="seg-stat__glow"></div>
+          <div class="seg-stat__icon-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M4 6h16M4 10h16M4 14h16M4 18h7" />
+            </svg>
+          </div>
+          <div class="seg-stat__data">
+            <span class="seg-stat__num">{{ solicitudes().length }}</span>
+            <span class="seg-stat__label">Total</span>
+          </div>
+        </button>
+
+        <button
+          class="seg-stat seg-stat--proceso"
+          [class.seg-stat--active]="solActiveFilter() === 'PENDIENTE'"
+          (click)="setSolFilter('PENDIENTE')"
+        >
+          <div class="seg-stat__glow"></div>
+          <div class="seg-stat__icon-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="seg-stat__data">
+            <span class="seg-stat__num">{{ getSolCountByEstado('PENDIENTE') }}</span>
+            <span class="seg-stat__label">Pendientes</span>
+          </div>
+        </button>
+
+        <button
+          class="seg-stat seg-stat--contab"
+          [class.seg-stat--active]="solActiveFilter() === 'TRAMITE'"
+          (click)="setSolFilter('TRAMITE')"
+        >
+          <div class="seg-stat__glow"></div>
+          <div class="seg-stat__icon-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div class="seg-stat__data">
+            <span class="seg-stat__num">{{ getSolCountByEstado('TRAMITE') + getSolCountByEstado('EN_PROCESO') }}</span>
+            <span class="seg-stat__label">En Trámite</span>
+          </div>
+        </button>
+
+        <button
+          class="seg-stat seg-stat--done"
+          [class.seg-stat--active]="solActiveFilter() === 'REALIZADO'"
+          (click)="setSolFilter('REALIZADO')"
+        >
+          <div class="seg-stat__glow"></div>
+          <div class="seg-stat__icon-box">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div class="seg-stat__data">
+            <span class="seg-stat__num">{{ getSolCountByEstado('REALIZADO') + getSolCountByEstado('COMPLETADO') }}</span>
+            <span class="seg-stat__label">Realizados</span>
+          </div>
+        </button>
+      </section>
+    }
+
+    <!-- SOLICITUDES TOOLBAR -->
+    @if (!loadingSolicitudes() && solicitudes().length > 0) {
+      <div class="seg-toolbar">
+        <div class="seg-search">
+          <svg class="seg-search__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input class="seg-search__input" type="text"
+            placeholder="Buscar por código, solicitante, área o tipo..."
+            (input)="onSolSearch($event)" />
+          <span class="seg-search__count">{{ filteredSolicitudes().length }} resultado{{ filteredSolicitudes().length !== 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+    }
+
+    <!-- SOLICITUDES LOADING -->
+    @if (loadingSolicitudes()) {
+      <div class="seg-loader">
+        <div class="seg-loader__spinner">
+          <div class="seg-loader__ring seg-loader__ring--a"></div>
+          <div class="seg-loader__ring seg-loader__ring--b"></div>
+          <div class="seg-loader__core"></div>
+        </div>
+        <p class="seg-loader__text">Cargando solicitudes&hellip;</p>
+      </div>
+    }
+
+    <!-- SOLICITUDES EMPTY -->
+    @if (!loadingSolicitudes() && solicitudes().length === 0) {
+      <div class="seg-empty">
+        <div class="seg-empty__visual">
+          <div class="seg-empty__ring seg-empty__ring--outer"></div>
+          <div class="seg-empty__ring seg-empty__ring--inner"></div>
+          <div class="seg-empty__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"
+                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+        </div>
+        <h3 class="seg-empty__title">Sin solicitudes</h3>
+        <p class="seg-empty__desc">
+          Las solicitudes de tesorería aprobadas aparecerán aquí con su seguimiento.
+        </p>
+      </div>
+    }
+
+    <!-- SOLICITUDES CARDS -->
+    @if (!loadingSolicitudes() && filteredSolicitudes().length > 0) {
+      <div class="seg-sol-list">
+        @for (sol of paginatedSolicitudes(); track sol.id; let idx = $index) {
+          <article class="seg-sol" [style.--idx]="idx">
+            <div class="seg-sol__stripe"
+              [class.seg-sol__stripe--pendiente]="sol.estado === 'PENDIENTE'"
+              [class.seg-sol__stripe--tramite]="sol.estado === 'TRAMITE' || sol.estado === 'EN_PROCESO'"
+              [class.seg-sol__stripe--realizado]="sol.estado === 'REALIZADO' || sol.estado === 'COMPLETADO'"
+              [class.seg-sol__stripe--rechazado]="sol.estado === 'RECHAZADO_JEFE'"
+            ></div>
+
+            <div class="seg-sol__header">
+              <div class="seg-sol__avatar">
+                <span>{{ (sol.solicitante || 'S').charAt(0).toUpperCase() }}</span>
+              </div>
+              <div class="seg-sol__info">
+                <div class="seg-sol__top">
+                  <span class="seg-sol__code">{{ sol.codigoSolicitud || '—' }}</span>
+                  <span class="seg-sol__badge" [ngClass]="getSolEstadoClass(sol.estado)">
+                    <span class="seg-sol__badge-dot"></span>
+                    {{ getSolEstadoLabel(sol.estado) }}
+                  </span>
+                </div>
+                <div class="seg-sol__meta">
+                  <span class="seg-sol__chip">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    {{ sol.solicitante }}
+                  </span>
+                  <span class="seg-sol__chip">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    {{ sol.areaSolicitante }}
+                  </span>
+                  @if (sol.tipoRequerimiento) {
+                    <span class="seg-sol__chip seg-sol__chip--tipo">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                      </svg>
+                      {{ getSolTipoLabel(sol.tipoRequerimiento) }}
+                    </span>
+                  }
+                  <span class="seg-sol__chip seg-sol__chip--date">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {{ sol.fechaSolicitud }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Semáforo SLA -->
+              <div class="seg-sol__sla">
+                <div class="seg-sol__semaforo" [ngClass]="getSolSemaforoClass(sol)">
+                  <span class="seg-sol__semaforo-dot"></span>
+                </div>
+                <div class="seg-sol__sla-info">
+                  <span class="seg-sol__sla-dias">{{ sol.diasTranscurridos }} día{{ sol.diasTranscurridos !== 1 ? 's' : '' }}</span>
+                  <span class="seg-sol__sla-label">de {{ sol.slaDias }} SLA</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rejection info if applicable -->
+            @if (sol.motivoRechazo) {
+              <div class="seg-sol__rejection">
+                <div class="seg-sol__rejection-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                  </svg>
+                </div>
+                <div class="seg-sol__rejection-body">
+                  <span class="seg-sol__rejection-label">Motivo de rechazo:</span>
+                  <span class="seg-sol__rejection-text">{{ sol.motivoRechazo }}</span>
+                  @if (sol.observacionesRechazo) {
+                    <span class="seg-sol__rejection-obs">{{ sol.observacionesRechazo }}</span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Observaciones -->
+            @if (sol.observaciones) {
+              <div class="seg-sol__obs">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
+                <span>{{ sol.observaciones }}</span>
+              </div>
+            }
+          </article>
+        }
+      </div>
+
+      <!-- SOLICITUDES PAGINATION -->
+      @if (solTotalPages() > 1) {
+        <div class="seg-pagination">
+          <div class="seg-pagination__info">
+            Mostrando {{ (solCurrentPage() - 1) * solPageSize() + 1 }}–{{ solCurrentPage() * solPageSize() > filteredSolicitudes().length ? filteredSolicitudes().length : solCurrentPage() * solPageSize() }}
+            de {{ filteredSolicitudes().length }}
+          </div>
+          <div class="seg-pagination__controls">
+            <button class="seg-pg-btn" [disabled]="solCurrentPage() === 1" (click)="goToSolPage(1)">&laquo;</button>
+            <button class="seg-pg-btn" [disabled]="solCurrentPage() === 1" (click)="goToSolPage(solCurrentPage() - 1)">&lsaquo;</button>
+            @for (p of visibleSolPages; track p) {
+              <button class="seg-pg-btn" [class.seg-pg-btn--active]="p === solCurrentPage()" (click)="goToSolPage(p)">{{ p }}</button>
+            }
+            <button class="seg-pg-btn" [disabled]="solCurrentPage() === solTotalPages()" (click)="goToSolPage(solCurrentPage() + 1)">&rsaquo;</button>
+            <button class="seg-pg-btn" [disabled]="solCurrentPage() === solTotalPages()" (click)="goToSolPage(solTotalPages())">&raquo;</button>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- SOLICITUDES SIN RESULTADOS -->
+    @if (!loadingSolicitudes() && solicitudes().length > 0 && filteredSolicitudes().length === 0) {
+      <div class="seg-empty seg-empty--filter">
+        <div class="seg-empty__visual">
+          <div class="seg-empty__ring seg-empty__ring--outer"></div>
+          <div class="seg-empty__ring seg-empty__ring--inner"></div>
+          <div class="seg-empty__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+        <h3 class="seg-empty__title">Sin resultados</h3>
+        <p class="seg-empty__desc">
+          Ninguna solicitud coincide con tu búsqueda o filtro activo.
+        </p>
+      </div>
+    }
+  } <!-- end solicitudes tab -->
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!-- DETAIL MODAL                                              -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  @if (detailModalOpen() && detailModalTramite(); as tm) {
+    <div class="dm-overlay" (click)="closeDetailModal()">
+      <div class="dm-panel" (click)="$event.stopPropagation()">
+        <!-- Close -->
+        <button class="dm-close" (click)="closeDetailModal()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+
+        <!-- Header -->
+        <div
+          class="dm-header"
+          [class.dm-header--rejected]="isRejected(tm)"
+          [class.dm-header--done]="tm.estadoTramite === 'COMPLETADO'"
+        >
+          <div class="dm-header__icon">
+            @if (isRejected(tm)) {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            } @else if (tm.estadoTramite === "COMPLETADO") {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            } @else {
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+            }
+          </div>
+          <div class="dm-header__text">
+            <h2 class="dm-header__title">Detalle Completo</h2>
+            <p class="dm-header__subtitle">
+              {{ tm.requisicion.numeroRequisicion || "Requisición" }}
+            </p>
+          </div>
+          <span
+            class="dm-header__badge"
+            [class.dm-header__badge--rejected]="isRejected(tm)"
+            [class.dm-header__badge--done]="tm.estadoTramite === 'COMPLETADO'"
+            [class.dm-header__badge--proceso]="
+              !isRejected(tm) && tm.estadoTramite !== 'COMPLETADO'
+            "
+          >
+            {{ getEstadoLabel(tm) }}
+          </span>
+        </div>
+
+        <!-- Rejection Banner (visible if rejected) -->
+        @if (isRejected(tm)) {
+          <div class="dm-rejection-banner">
+            <div class="dm-rejection-banner__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                />
+              </svg>
+            </div>
+            <div class="dm-rejection-banner__content">
+              <h3 class="dm-rejection-banner__title">
+                Esta requisición fue rechazada
+              </h3>
+              @if (getRejectionSteps(tm.id!).length > 0) {
+                @for (rs of getRejectionSteps(tm.id!); track rs.stepIndex) {
+                  <div class="dm-rejection-banner__detail">
+                    <span class="dm-rejection-banner__step"
+                      >Rechazado en: <strong>{{ rs.stepLabel }}</strong></span
+                    >
+                    @if (rs.revisadoPor) {
+                      <span class="dm-rejection-banner__reviewer"
+                        >Por: {{ rs.revisadoPor }}
+                        @if (rs.cargoRevisor) {
+                          <em>({{ rs.cargoRevisor }})</em>
+                        }
+                      </span>
+                    }
+                    @if (rs.fecha) {
+                      <span class="dm-rejection-banner__date"
+                        >Fecha: {{ formatDateTime(rs.fecha) }}</span
+                      >
+                    }
+                    @if (rs.observaciones) {
+                      <p class="dm-rejection-banner__obs">
+                        {{ rs.observaciones }}
+                      </p>
+                    }
+                    @if (rs.causaciones && rs.causaciones.length > 0) {
+                      <div class="dm-rejection-banner__causaciones">
+                        @for (c of rs.causaciones; track c.id) {
+                          <div class="dm-rejection-banner__causacion">
+                            <span class="dm-rejection-banner__causacion-label"
+                              >{{
+                                c.tipo === "RECHAZO"
+                                  ? "Motivo de rechazo"
+                                  : "Novedad"
+                              }}:</span
+                            >
+                            <span
+                              class="dm-rejection-banner__causacion-motivo"
+                              >{{ c.motivo }}</span
+                            >
+                            @if (c.observaciones) {
+                              <span
+                                class="dm-rejection-banner__causacion-obs"
+                                >{{ c.observaciones }}</span
+                              >
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              } @else {
+                <p class="dm-rejection-banner__obs">
+                  No se encontraron detalles del rechazo.
+                </p>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Info Grid -->
+        <div class="dm-info-grid">
+          <div class="dm-info-item">
+            <span class="dm-info-item__label">Solicitante</span>
+            <span class="dm-info-item__value">{{
+              tm.requisicion.solicitante
+            }}</span>
+          </div>
+          <div class="dm-info-item">
+            <span class="dm-info-item__label">Área / Centro de costo</span>
+            <span class="dm-info-item__value">{{
+              tm.requisicion.areaCentroCosto
+            }}</span>
+          </div>
+          <div class="dm-info-item">
+            <span class="dm-info-item__label">Tipo de compra</span>
+            <span class="dm-info-item__value">{{
+              tm.requisicion.tipoCompra || "—"
+            }}</span>
+          </div>
+          <div class="dm-info-item">
+            <span class="dm-info-item__label">Fecha de creación</span>
+            <span class="dm-info-item__value">{{
+              formatDate(tm.fechaCreacion)
+            }}</span>
+          </div>
+          @if (tm.ordenesCargadas && tm.ordenesCargadas.length > 0) {
+            <div class="dm-info-item dm-info-item--highlight">
+              <span class="dm-info-item__label">Valor total OC</span>
+              <span class="dm-info-item__value dm-info-item__value--money">
+                {{ formatCurrency(tm.ordenesCargadas[0].valorTotal) }}
+                <em
+                  >{{ tm.ordenesCargadas.length }} orden{{
+                    tm.ordenesCargadas.length > 1 ? "es" : ""
+                  }}</em
+                >
+              </span>
+            </div>
+          }
+          @if (tm.requisicion.descripcionBreve) {
+            <div class="dm-info-item dm-info-item--full">
+              <span class="dm-info-item__label">Descripción</span>
+              <span class="dm-info-item__value">{{
+                tm.requisicion.descripcionBreve
+              }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Process Timeline -->
+        <div class="dm-section">
+          <h3 class="dm-section__title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+            Recorrido del proceso
+          </h3>
+
+          @if (isTrackingLoading(tm.id!)) {
+            <div class="dm-timeline-loader">
+              <div class="dm-timeline-loader__spinner"></div>
+              <span>Cargando historial del proceso…</span>
+            </div>
+          } @else {
+            <div class="dm-timeline">
+              @for (
+                step of pipelineSteps;
+                track step.key;
+                let i = $index;
+                let last = $last
+              ) {
+                @let trackingSteps = getTrackingSteps(tm.id!);
+                @let tStep = trackingSteps.length > i ? trackingSteps[i] : null;
+                @let stepEstado = tStep ? tStep.estado : getStepStatus(tm, i);
+                @let done =
+                  stepEstado === "COMPLETADO" || stepEstado === "APROBADO";
+                @let active = stepEstado === "EN_CURSO";
+                @let rejected = stepEstado === "RECHAZADO";
+
+                <div
+                  class="dm-step"
+                  [class.dm-step--done]="done"
+                  [class.dm-step--active]="active"
+                  [class.dm-step--rejected]="rejected"
+                  [class.dm-step--pending]="!done && !active && !rejected"
+                >
+                  <div class="dm-step__node-col">
+                    <div class="dm-step__node">
+                      @if (done) {
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      } @else if (rejected) {
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2.5"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      } @else if (active) {
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.8"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span class="dm-step__pulse"></span>
+                      } @else {
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.8"
+                            [attr.d]="step.icon"
+                          />
+                        </svg>
+                      }
+                    </div>
+                    @if (!last) {
+                      <div
+                        class="dm-step__line"
+                        [class.dm-step__line--filled]="done"
+                        [class.dm-step__line--rejected]="rejected"
+                      ></div>
+                    }
+                  </div>
+
+                  <div class="dm-step__body">
+                    <div class="dm-step__header">
+                      <span class="dm-step__name">{{ step.label }}</span>
+                      <span
+                        class="dm-step__tag"
+                        [class.dm-step__tag--done]="done"
+                        [class.dm-step__tag--active]="active"
+                        [class.dm-step__tag--rejected]="rejected"
+                        [class.dm-step__tag--pending]="
+                          !done && !active && !rejected
+                        "
+                      >
+                        @if (done) {
+                          {{
+                            stepEstado === "APROBADO"
+                              ? "Aprobado"
+                              : "Completado"
+                          }}
+                        }
+                        @if (active) {
+                          En curso
+                        }
+                        @if (rejected) {
+                          Rechazado
+                        }
+                        @if (!done && !active && !rejected) {
+                          Pendiente
+                        }
+                      </span>
+                    </div>
+                    <span class="dm-step__desc">{{
+                      getStepDescription(i)
+                    }}</span>
+
+                    <!-- Reviewer info -->
+                    @if (tStep && tStep.revisadoPor && (done || rejected)) {
+                      <div class="dm-step__reviewer">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                        <span>{{ tStep.revisadoPor }}</span>
+                        @if (tStep.cargoRevisor) {
+                          <em>({{ tStep.cargoRevisor }})</em>
+                        }
+                        @if (tStep.fecha) {
+                          <em class="dm-step__date">{{
+                            formatDateTime(tStep.fecha)
+                          }}</em>
+                        }
+                      </div>
+                    }
+
+                    <!-- Observations -->
+                    @if (tStep && tStep.observaciones && (done || rejected)) {
+                      <div class="dm-step__obs">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"
+                          />
+                        </svg>
+                        <span>{{ tStep.observaciones }}</span>
+                      </div>
+                    }
+
+                    <!-- Causaciones -->
+                    @if (
+                      tStep && tStep.causaciones && tStep.causaciones.length > 0
+                    ) {
+                      <div class="dm-step__causaciones">
+                        @for (c of tStep.causaciones; track c.id) {
+                          <div
+                            class="dm-step__causacion"
+                            [class.dm-step__causacion--rechazo]="
+                              c.tipo === 'RECHAZO'
+                            "
+                            [class.dm-step__causacion--novedad]="
+                              c.tipo === 'ACEPTACION_CON_NOVEDAD'
+                            "
+                          >
+                            <span class="dm-step__causacion-type">{{
+                              c.tipo === "RECHAZO"
+                                ? "Motivo de rechazo"
+                                : "Novedad"
+                            }}</span>
+                            <span class="dm-step__causacion-motivo">{{
+                              c.motivo
+                            }}</span>
+                            @if (c.observaciones) {
+                              <span class="dm-step__causacion-obs">{{
+                                c.observaciones
+                              }}</span>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="dm-footer">
+          <button class="dm-btn dm-btn--secondary" (click)="closeDetailModal()">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

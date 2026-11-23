@@ -1,0 +1,100 @@
+<div class="gp-import-backdrop" @gpBackdrop (click)="cerrarOverlay()">
+  <section class="modal-glass gp-import-dialog" @gpPop (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="gp-import-title">
+    <header>
+      <div><h2 id="gp-import-title"><span></span>{{modo() === 'siigo' ? 'Importar SIIGO — ' + titulo : 'Importar datos base estructurados'}}</h2><p>{{modo() === 'siigo' ? 'Movimiento auxiliar de cuenta contable por tercero · Cuenta principal ' + cuentaPuc : 'Carga los cuatro conjuntos de datos base en formato JSON estructurado.'}}</p></div>
+      <button class="gp-import-close" (click)="cerrarOverlay()" [disabled]="loading()" aria-label="Cerrar"><app-gp-icon name="x" [size]="15"/></button>
+    </header>
+    <div class="gp-import-body">
+      <ol *ngIf="step() !== 3" class="gp-import-steps">
+        <li *ngFor="let paso of pasos; let i=index" [class.current]="step() === i+1" [class.done]="step() > i+1"><span class="gp-import-step-number"><app-gp-icon *ngIf="step() > i+1; else numero" name="check" [size]="18"/><ng-template #numero>{{i+1}}</ng-template></span><strong>{{paso}}</strong><small>{{pasoDescripciones[i]}}</small></li>
+      </ol>
+      <ng-container *ngIf="step() === 1">
+        <div class="gp-import-tabs"><button [class.active]="modo() === 'siigo'" [disabled]="loading()" (click)="cambiarModo('siigo')">Cargar Excel SIIGO</button><button [class.active]="modo() === 'estructura'" [disabled]="loading()" (click)="cambiarModo('estructura')">Cargar datos base</button></div>
+        <div *ngIf="modo() === 'siigo'" class="gp-import-upload">
+          <p class="gp-import-puc">Módulo <strong>{{titulo}}</strong> — Cuenta PUC <code>{{cuentaPuc}}</code></p>
+          <div class="gp-import-drop" [class.dragging]="dragActive" [class.busy]="loading()" (dragover)="dragActive = true; $event.preventDefault()" (dragleave)="dragActive = false" (drop)="$event.preventDefault(); drop($event)" (click)="!loading() && fileInput.click()" (keydown.enter)="!loading() && fileInput.click()" role="button" tabindex="0" aria-label="Seleccionar archivo SIIGO">
+            <ng-container *ngIf="!loading(); else procesando"><span class="gp-import-file"><app-gp-icon name="file-spreadsheet" [size]="30"/></span><div><strong>{{dragActive ? 'Suelta el archivo aquí' : 'Arrastra el Excel de SIIGO aquí'}}</strong><p>o <span class="gp-import-select">selecciona el archivo</span></p></div><small>Movimiento auxiliar de cuenta contable por tercero · .xlsx</small></ng-container>
+            <ng-template #procesando><span class="gp-import-spinner"></span><p>{{uploadPct() < 100 ? 'Subiendo archivo…' : 'Procesando en el servidor…'}}</p><progress [value]="uploadPct()" max="100"></progress><small>{{uploadPct()}}%</small></ng-template>
+          </div>
+          <input #fileInput type="file" accept=".xlsx,.xls" hidden (change)="onFileSelected($event)">
+        </div>
+        <div *ngIf="modo() === 'estructura'" class="gp-import-json">
+          <div><strong>Importar datos base estructurados</strong><p>Pega un JSON válido con los cuatro conjuntos de datos: Proveedores, Anticipos, CuentasPorCobrar y CuentasPorPagar.</p></div>
+          <textarea aria-label="Datos base JSON" [(ngModel)]="textoJson" [placeholder]="ejemploJson" [disabled]="loading()"></textarea>
+          <p *ngIf="error()" class="gp-import-error" role="alert">{{error()}}</p>
+          <button class="btn-primary" (click)="importarJson()" [disabled]="loading() || !textoJson.trim()">{{loading() ? 'Importando datos base…' : 'Importar datos base'}}</button>
+        </div>
+      </ng-container>
+      <div *ngIf="step() === 2 && preview()">
+        <div class="gp-import-stats"><span><strong>{{formatoMiles(pvMov())}}</strong> movimientos</span><span><strong>{{formatoMiles(pvProv())}}</strong> proveedores</span><span *ngFor="let mes of periodosCargados()" class="success"><app-gp-icon name="calendar" [size]="14"/>Mes: <strong>{{etiquetaPeriodoMes(mes)}}</strong></span><span *ngIf="facturasOmitidas().length" class="warning" title="Ya tienen pagos aprobados por Gerencia: no se reemplazan"><app-gp-icon name="shield" [size]="14"/><strong>{{facturasOmitidas().length}}</strong> factura(s) aprobada(s) no se reemplazarán</span><span *ngIf="sinCategorias().length" class="warning"><app-gp-icon name="alert" [size]="14"/><strong>{{sinCategorias().length}}</strong> sin categoría — puedes asignarla ahora o después en el módulo</span><span *ngIf="!sinCategorias().length && !periodosOmitidos().length" class="success"><app-gp-icon name="check" [size]="14"/>Todos categorizados</span></div>
+        <div class="gp-import-table"><table><thead><tr><th>NIT</th><th>NOMBRE</th><th class="amount">SALDO</th><th>CATEGORÍA</th></tr></thead><tbody>
+          <tr *ngFor="let p of pvProveedores()" [class.uncategorized]="!pCategoria(p.nit)"><td>{{p.nit}}</td><td>{{p.nombre}}</td><td class="amount" [style.color]="p.saldoFinal < 0 ? 'var(--err-solid)' : 'var(--ok-solid)'">{{fmtCOP(p.saldoFinal < 0 ? -p.saldoFinal : p.saldoFinal)}}</td><td>
+            <select class="field" [attr.aria-label]="'Categoría de '+p.nombre" [ngModel]="pCategoria(p.nit)" (ngModelChange)="cambiarCategoria(p.nit,$event)" [disabled]="loading() || !ctx.tienePermiso('modulos.categorizar')"><option [ngValue]="null" [disabled]="!!p.categoria">— Sin categoría —</option><option *ngIf="pCategoria(p.nit) && !categorias.includes(pCategoria(p.nit)!)" [ngValue]="pCategoria(p.nit)" disabled>{{pCategoria(p.nit)}} (inactiva)</option><option *ngFor="let c of categorias" [ngValue]="c">{{c}}</option></select>
+            <input *ngIf="pCategoria(p.nit) === 'OTROS'" class="field" placeholder="¿Cuál otro? (obligatorio)" [value]="pDetalle(p.nit) ?? ''" (input)="cambiarDetalleEvent(p.nit,$event)" [disabled]="loading() || !ctx.tienePermiso('modulos.categorizar')"/>
+          </td></tr>
+        </tbody></table></div>
+        <p *ngIf="error()" class="gp-import-error" role="alert">{{error()}}</p>
+        <footer><button class="btn-ghost" (click)="step.set(1)" [disabled]="loading()">← Volver</button><button class="btn-primary" (click)="confirmar()" [disabled]="loading() || otrosSinDetalle()">{{loading() ? 'Confirmando…' : 'Importar '+formatoMiles(pvMov())+' movimientos →'}}</button></footer>
+      </div>
+      <div *ngIf="step() === 3" class="gp-import-success" @gpPop>
+        <svg width="88" height="88" viewBox="0 0 88 88" aria-hidden="true">
+          <circle *ngIf="!omitidosResultado().length" cx="44" cy="44" r="40" fill="#DCFCE7" stroke="#16A34A" stroke-width="4"/>
+          <path *ngIf="!omitidosResultado().length" d="M26 44 L38 56 L62 32" fill="none" stroke="#16A34A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle *ngIf="omitidosResultado().length" cx="44" cy="44" r="40" fill="#FEF3C7" stroke="#B45309" stroke-width="4"/>
+          <path *ngIf="omitidosResultado().length" d="M30 40 L44 54 L58 34" fill="none" stroke="#B45309" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div><h2>{{omitidosResultado().length ? 'Importación parcial completada' : '¡Importación exitosa!'}}</h2><p>{{omitidosResultado().length ? 'Algunas facturas no se cargaron porque ya tienen pagos aprobados por Gerencia (escudito)' : 'Los datos están disponibles en el módulo'}}</p></div>
+        <div class="gp-import-stats"><span class="success"><strong>{{formatoMiles(ultimoTotal())}}</strong>movimientos</span><span><strong>{{formatoMiles(ultimoProveedores())}}</strong>proveedores</span><span *ngFor="let mes of cargadosResultado()" class="success"><app-gp-icon name="calendar" [size]="14"/>{{etiquetaPeriodoMes(mes)}}</span></div>
+        <div *ngIf="omitidosResultado().length" class="gp-import-omitidos" role="status">
+          <p class="gp-om-titulo"><app-gp-icon name="shield" [size]="15"/> Facturas no reemplazadas (ya aprobadas)</p>
+          <ul>
+            <li *ngFor="let f of omitidosResultado()">
+              <span class="gp-om-mes gp-om-mes--om"><app-gp-icon name="shield" [size]="13"/>{{f.comprobante || 'Sin comprobante'}}</span>
+              <span class="gp-om-razon"><strong>{{f.nombre}}</strong><small>NIT {{f.nit}} · {{f.motivo}}</small></span>
+            </li>
+          </ul>
+        </div>
+        <button class="btn-primary" (click)="terminar()">Ver datos importados <app-gp-icon name="arrow-right" [size]="16"/></button>
+      </div>
+      <p *ngIf="step() === 1 && modo() === 'siigo' && error()" class="gp-import-error" role="alert">{{error()}}</p>
+    </div>
+  </section>
+</div>
+
+<app-gp-modal *ngIf="modalOmitidos()" [hero]="true" icono="shield" acento="gold"
+                [titulo]="(periodosCargados().length ? 'Importación parcial — facturas ya aprobadas' : 'Importación bloqueada — facturas ya aprobadas')"
+                subtitulo="El resto de la información del archivo sí se reemplaza" ancho="md"
+                (cerrar)="cerrarModalOmitidos()">
+    <div class="gp-om-modal">
+      @if (periodosCargados().length) {
+        <div class="gp-om-grupo gp-om-grupo--ok">
+          <p class="gp-om-label"><app-gp-icon name="check" [size]="14"/> Se cargará en estos meses</p>
+          <ul class="gp-om-lista gp-om-lista--simple">
+            @for (mes of periodosCargados(); track mes) {
+              <li><span class="gp-om-mes gp-om-mes--ok"><app-gp-icon name="calendar" [size]="13"/>{{etiquetaPeriodoMes(mes)}}</span></li>
+            }
+          </ul>
+          <p class="gp-om-nota">{{formatoMiles(pvMov())}} movimientos entrarán al módulo. Si una factura ya estaba cargada y NO está aprobada, se reemplaza con los datos nuevos.</p>
+        </div>
+      }
+      <div class="gp-om-grupo gp-om-grupo--om">
+        <p class="gp-om-label"><app-gp-icon name="ban" [size]="14"/> NO se reemplazará: facturas con pagos aprobados (escudito)</p>
+        <ul class="gp-om-lista">
+          @for (f of facturasOmitidas(); track f.nit + '|' + f.comprobante) {
+            <li class="gp-om-fila">
+              <span class="gp-om-mes gp-om-mes--om"><app-gp-icon name="shield" [size]="13"/>{{f.comprobante || 'Sin comprobante'}}</span>
+              <span class="gp-om-razon"><strong>{{f.nombre}}</strong><small>NIT {{f.nit}} · {{f.motivo}}</small></span>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+    <span pie>
+      <button class="btn-ghost" (click)="descartarPreview()">Volver a elegir archivo</button>
+      @if (periodosCargados().length) {
+        <button class="btn-primary" (click)="modalOmitidos.set(false)">Continuar con la importación</button>
+      } @else {
+        <button class="btn-primary" (click)="cerrarModalOmitidos()">Entendido</button>
+      }
+    </span>
+  </app-gp-modal>

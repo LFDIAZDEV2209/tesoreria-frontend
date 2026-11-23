@@ -1,0 +1,903 @@
+$primary: #213053;
+$primary-dark: #1b2844;
+$accent: #045C94;
+$accent-light: #0a7ac5;
+$gold: #FFB71B;
+$success: #10b981;
+$warning: #f59e0b;
+$danger: #ef4444;
+
+// ── Animaciones de entrada ──
+@keyframes ceFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cePulseRing {
+  0% { box-shadow: 0 0 0 0 rgba($gold, 0.45); }
+  70% { box-shadow: 0 0 0 10px rgba($gold, 0); }
+  100% { box-shadow: 0 0 0 0 rgba($gold, 0); }
+}
+
+.ce-animate {
+  animation: ceFadeUp 0.45s ease both;
+}
+
+.ce-icon-pulse {
+  animation: cePulseRing 2.4s ease-out infinite;
+}
+
+// ── Toast (estilo tp-toast) ──
+.ce-toast {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 280px;
+  max-width: 420px;
+  padding: 0.8rem 1rem;
+  border-radius: 1rem;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  animation: ceToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &--success { background: linear-gradient(135deg, $primary, $accent); }
+  &--error { background: linear-gradient(135deg, $danger, darken($danger, 10%)); }
+  &--warning { background: linear-gradient(135deg, $warning, darken($warning, 10%)); }
+  &--info { background: linear-gradient(135deg, $accent, darken($accent, 10%)); }
+
+  &__text { flex: 1; }
+
+  &__close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    border-radius: 0.5rem;
+    padding: 0.15rem 0.45rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+  }
+}
+
+@keyframes ceToastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* ═══════════════════════════════════════════════
+   KPI CARDS — estilo gestión contable (compact)
+   ═══════════════════════════════════════════════ */
+
+@keyframes ceKpiFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kpi-section-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  animation: ceKpiFadeInUp 0.5s ease-out;
+}
+
+.kpi-card-compact {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.kpi-card-compact::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.kpi-card-compact:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.06);
+}
+
+.kpi-card-compact:hover::before {
+  left: 100%;
+}
+
+.kpi-card-compact:hover .kpi-icon-wrapper-compact {
+  transform: scale(1.08) rotate(3deg);
+}
+
+.kpi-icon-wrapper-compact {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-icon-wrapper-compact svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 2.5;
+}
+
+.kpi-icon-primary {
+  background: linear-gradient(135deg, #045C94 0%, #0572b9 100%);
+  color: white;
+}
+
+.kpi-icon-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.kpi-icon-teal {
+  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 100%);
+  color: white;
+}
+
+.kpi-icon-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.kpi-content-compact {
+  flex: 1;
+  min-width: 0;
+}
+
+.kpi-label-compact {
+  display: block;
+  font-size: 0.688rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(33, 48, 83, 0.6);
+  margin-bottom: 0.375rem;
+}
+
+.kpi-value-wrapper-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.kpi-value-compact {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #213053;
+  letter-spacing: -0.02em;
+}
+
+.kpi-trend-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.688rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.375rem;
+}
+
+.kpi-trend-up {
+  background: rgba(4, 92, 148, 0.1);
+  color: $accent;
+}
+
+.kpi-trend-neutral {
+  background: rgba(100, 116, 139, 0.1);
+  color: #64748b;
+}
+
+.kpi-trend-warning {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+}
+
+/* Variantes de color para KPI cards (left border) */
+.kpi-primary {
+  border-left: 3px solid #045C94;
+}
+
+.kpi-warning {
+  border-left: 3px solid #f59e0b;
+}
+
+.kpi-purple {
+  border-left: 3px solid #8b5cf6;
+}
+
+.kpi-teal {
+  border-left: 3px solid #14B8A6;
+}
+
+// ── Tabla ──
+.ce-table-row {
+  transition: background 0.15s ease;
+  animation: ceFadeIn 0.3s ease both;
+
+  &:hover { background: linear-gradient(135deg, rgba(33, 48, 83, 0.02), rgba(4, 92, 148, 0.04)); }
+}
+
+@keyframes ceFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// ── Banner alerta ──
+.ce-alert {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  animation: ceFadeIn 0.3s ease;
+
+  &--error {
+    background: rgba($danger, 0.08);
+    border: 1px solid rgba($danger, 0.25);
+    color: #7f1d1d;
+  }
+
+  &--warning {
+    background: rgba($warning, 0.08);
+    border: 1px solid rgba($warning, 0.3);
+    color: #78350f;
+
+    .ce-alert__icon {
+      background: rgba($warning, 0.15);
+      color: $warning;
+    }
+  }
+
+  &__list {
+    margin: 0.5rem 0;
+    padding-left: 1.1rem;
+    font-size: 0.8rem;
+
+    li { margin-bottom: 0.15rem; }
+  }
+
+  &__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    background: rgba($danger, 0.15);
+    color: $danger;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    svg { width: 1.25rem; height: 1.25rem; }
+  }
+
+  &__text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+
+    strong { display: block; font-size: 0.95rem; margin-bottom: 0.15rem; }
+  }
+}
+
+// ── Formulario ──
+.ce-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  input {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: $primary;
+    background: #fff;
+    width: 100%;
+
+    &:focus {
+      border-color: $accent;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(4, 92, 148, 0.15);
+    }
+
+    &.ce-input--invalid {
+      border-color: $danger;
+      background-color: #fff8f8;
+    }
+  }
+
+  select {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: $primary;
+    background: #fff;
+    width: 100%;
+
+    &:focus {
+      border-color: $accent;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(4, 92, 148, 0.15);
+    }
+  }
+
+  textarea {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: $primary;
+    background: #fff;
+    width: 100%;
+    resize: vertical;
+    min-height: 72px;
+    font-family: inherit;
+
+    &:focus {
+      border-color: $accent;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(4, 92, 148, 0.15);
+    }
+  }
+}
+
+/* Zona de subida imagen del egreso */
+.ce-upload-zone {
+  border: 2px dashed rgba($accent, 0.25);
+  background: rgba($accent, 0.02);
+  border-radius: 1rem;
+  padding: 1.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &--dragging {
+    border-color: $accent;
+    background: rgba($accent, 0.07);
+  }
+
+  &__icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.875rem;
+    background: linear-gradient(135deg, $accent, $accent-light);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg { width: 1.4rem; height: 1.4rem; }
+  }
+}
+
+.ce-btn-upload {
+  background: linear-gradient(135deg, $accent, $accent-light);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.55rem 1.3rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba($accent, 0.3);
+  transition: transform 0.15s ease;
+
+  &:hover { transform: translateY(-2px); }
+}
+
+.ce-upload-help {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.ce-upload-formats {
+  display: flex;
+  gap: 0.4rem;
+
+  span {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: rgba($primary, 0.55);
+    background: rgba($primary, 0.06);
+    border-radius: 0.375rem;
+    padding: 0.15rem 0.45rem;
+  }
+}
+
+/* Retenciones calculadas */
+.ce-retenciones {
+  margin-top: 1.25rem;
+  border: 1px solid rgba($primary, 0.1);
+  border-radius: 1rem;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to right, $primary-dark, $accent);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.6rem 1rem;
+  }
+
+  &__loading {
+    color: $gold;
+    display: inline-block;
+    animation: ceSpin 1s linear infinite;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f8fafc;
+  }
+
+  &__hint {
+    margin: 0;
+    padding: 0 1rem 0.9rem;
+    background: #f8fafc;
+    font-size: 0.75rem;
+    color: #6b7280;
+
+    &--error {
+      color: #991b1b;
+      font-weight: 700;
+    }
+  }
+}
+
+.ce-retencion {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+
+  &__label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+  }
+
+  &__value {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: $primary;
+  }
+
+  &--neto {
+    border-color: rgba($gold, 0.6);
+    background: linear-gradient(135deg, rgba($gold, 0.12), rgba($gold, 0.04));
+  }
+}
+
+@keyframes ceSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Barra de progreso del análisis */
+.ce-progress-wrap {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.ce-progress-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: $primary;
+}
+
+.ce-progress-track {
+  height: 0.625rem;
+  border-radius: 999px;
+  background: rgba($primary, 0.1);
+  overflow: hidden;
+}
+
+.ce-progress-fill {
+  height: 100%;
+  width: 40%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, $accent, $gold);
+  animation: ceProgressSlide 1.2s ease-in-out infinite;
+}
+
+@keyframes ceProgressSlide {
+  0% { margin-left: -40%; }
+  100% { margin-left: 100%; }
+}
+
+/* Tarjetica de datos extraídos */
+.ce-extract-card {
+  margin-top: 1rem;
+  border: 1px solid rgba($accent, 0.25);
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #fff;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to right, $primary, $accent);
+    padding: 0.7rem 1rem;
+    color: #fff;
+
+    h3 {
+      margin: 0;
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    p {
+      margin: 0.1rem 0 0;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.75);
+      max-width: 320px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__badge {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    background: $gold;
+    color: $primary;
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    padding: 1rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0 1rem 1rem;
+  }
+}
+
+.ce-extract-field {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.625rem;
+  padding: 0.5rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+
+  span {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+  }
+
+  strong {
+    font-size: 0.85rem;
+    color: $primary;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ce-mono { font-family: ui-monospace, monospace; font-size: 0.78rem; }
+}
+
+.ce-btn-apply {
+  flex: 1;
+  background: linear-gradient(135deg, $primary, $accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba($primary, 0.3);
+
+  &:hover { filter: brightness(1.15); }
+}
+
+.ce-btn-discard {
+  background: #fff;
+  color: $danger;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border: 1px solid rgba($danger, 0.35);
+  border-radius: 0.75rem;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+
+  &:hover { background: rgba($danger, 0.06); }
+}
+
+/* Banner advertencia factura ya registrada */
+.ce-alert--warning {
+  background: rgba($warning, 0.08);
+  border: 1px solid rgba($warning, 0.3);
+  color: #78350f;
+
+  .ce-alert__icon {
+    background: rgba($warning, 0.15);
+    color: $warning;
+  }
+}
+
+/* Banner primera y única vez */
+.ce-alert--success {
+  background: rgba($accent, 0.08);
+  border: 1px solid rgba($accent, 0.3);
+  color: $primary;
+
+  .ce-alert__icon {
+    background: rgba($accent, 0.15);
+    color: $accent;
+  }
+}
+
+.ce-alert__list {
+  margin: 0.5rem 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+
+  li { margin-bottom: 0.15rem; }
+}
+
+.ce-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+
+  input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: $warning;
+    cursor: pointer;
+  }
+}
+
+.ce-origen-badge {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  margin-left: 0.4rem;
+  vertical-align: middle;
+
+  &--doc {
+    color: #065f46;
+    background: rgba($success, 0.14);
+    border: 1px solid rgba($success, 0.35);
+  }
+
+  &--sys {
+    color: $accent;
+    background: rgba($accent, 0.1);
+    border: 1px solid rgba($accent, 0.3);
+  }
+}
+
+/* Total a pagar (apartado con el porqué) */
+.ce-total-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.ce-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.25rem;
+  border-bottom: 1px dashed #e5e7eb;
+  font-size: 0.85rem;
+  color: #4b5563;
+
+  strong {
+    font-size: 0.95rem;
+    color: $primary;
+  }
+
+  &--menos strong { color: #b45309; }
+
+  &__left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  &__base {
+    font-size: 0.68rem;
+    color: #6b7280;
+    font-weight: 500;
+  }
+
+  &__input {
+    width: 130px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: $primary;
+    text-align: right;
+    background: #fff;
+
+    &:focus {
+      border-color: $accent;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(4, 92, 148, 0.15);
+    }
+  }
+
+  &--total {
+    border-bottom: none;
+    margin-top: 0.4rem;
+    padding: 0.8rem 1rem;
+    background: linear-gradient(135deg, rgba($accent, 0.1), rgba($accent, 0.04));
+    border: 1px solid rgba($accent, 0.3);
+    border-radius: 0.75rem;
+
+    span { font-weight: 800; color: $primary; }
+
+    strong {
+      font-size: 1.3rem;
+      color: $primary;
+    }
+  }
+}
+
+/* Modal ajuste manual de retenciones */
+.ce-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: ceFadeIn 0.25s ease;
+}
+
+.ce-modal {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: ceFadeUp 0.3s ease;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: linear-gradient(to right, $primary, $accent);
+    padding: 0.9rem 1.1rem;
+    color: #fff;
+
+    h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 800;
+    }
+
+    p {
+      margin: 0.15rem 0 0;
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+  }
+
+  &__close {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #fff;
+    border-radius: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+  &__body {
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  &__hint {
+    margin: 0;
+    font-size: 0.72rem;
+    color: #6b7280;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0 1.1rem 1.1rem;
+
+    .ce-btn-apply:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}

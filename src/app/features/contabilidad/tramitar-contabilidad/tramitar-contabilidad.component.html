@@ -1,0 +1,1651 @@
+﻿<!-- ═══════════════════════════════════════════════════════════════════════
+  TRAMITAR CONTABILIDAD — Proceso en 2 pasos
+  Paso 1: Requisición de Compra
+  Paso 2: Cargo de Egreso + OCR + Asociar OC a Proveedores
+  ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Success Toast -->
+<div
+  *ngIf="successMessage()"
+  class="fixed top-6 right-6 z-[100] animate-slide-in"
+>
+  <div
+    class="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-2xl shadow-emerald-500/30"
+  >
+    <div
+      class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 13l4 4L19 7"
+        />
+      </svg>
+    </div>
+    <span class="font-semibold">{{ successMessage() }}</span>
+  </div>
+</div>
+
+<!-- Error Toast -->
+<div
+  *ngIf="errorMessage()"
+  class="fixed top-6 right-6 z-[100] animate-slide-in"
+>
+  <div
+    class="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow-2xl shadow-red-500/30"
+  >
+    <div
+      class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </div>
+    <span class="font-semibold">{{ errorMessage() }}</span>
+    <button
+      (click)="errorMessage.set('')"
+      class="ml-2 hover:bg-white/20 rounded-full p-1 transition"
+    >
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div
+  class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3 page-animate"
+>
+  <!-- ═══ LOADING ═══ -->
+  <div *ngIf="loading()" class="flex items-center justify-center min-h-[60vh]">
+    <div class="text-center">
+      <div
+        class="w-12 h-12 border-4 border-[#045C94]/20 border-t-[#045C94] rounded-full animate-spin mx-auto"
+      ></div>
+      <p class="text-sm text-[#213053]/60 mt-4 font-medium">
+        Cargando registro contable...
+      </p>
+    </div>
+  </div>
+
+  <div *ngIf="!loading() && registro()">
+    <!-- ═══ HEADER ═══ -->
+    <div
+      class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white shadow-2xl rounded-2xl mb-5"
+    >
+      <div class="px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg"
+            >
+              <svg
+                class="w-7 h-7 text-[#FFB71B]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p
+                class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-semibold mb-0.5"
+              >
+                Tramitar Contabilidad
+              </p>
+              <h1 class="text-xl font-bold tracking-tight">
+                {{
+                  registro()!.numeroDocumento ||
+                    registro()!.ordenCompra ||
+                    "Registro Contable"
+                }}
+              </h1>
+              <p class="text-white/80 text-xs">
+                {{
+                  registro()!.proveedorTercero || registro()!.proveedorNombre
+                }}
+                — {{ registro()!.nitIdentificacion }}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white/15 text-white"
+            >
+              {{ getEstadoLabel(registro()!.estado) }}
+            </span>
+            <button
+              (click)="goBack()"
+              class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all backdrop-blur-sm border border-white/20"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- ═══ STEP INDICATOR ═══ -->
+    <div class="mb-5 px-2">
+      <div class="flex items-center justify-center gap-4">
+        <ng-container *ngFor="let step of formSections; trackBy: trackByNum">
+          <button
+            (click)="goToSection(step.num)"
+            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300"
+            [ngClass]="activeSection() === step.num
+              ? 'bg-gradient-to-r from-[#213053] to-[#045C94] text-white shadow-lg shadow-[#045C94]/25'
+              : activeSection() > step.num
+                ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+          >
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+              [ngClass]="activeSection() === step.num
+                ? 'bg-white/20 text-white'
+                : activeSection() > step.num
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-300 text-white'"
+            >
+              <svg *ngIf="activeSection() > step.num" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span *ngIf="activeSection() <= step.num">{{ step.num + 1 }}</span>
+            </span>
+            {{ step.title }}
+          </button>
+          <div *ngIf="step.num < formSections.length - 1" class="w-8 h-0.5 rounded-full"
+            [ngClass]="activeSection() > step.num ? 'bg-emerald-400' : 'bg-gray-300'"></div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- ═══ CONTENT ═══ -->
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- ══ PASO 1: REQUISICIÓN DE COMPRA ══ -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div *ngIf="activeSection() === 0"
+        class="p-4 md:p-6 bg-[#f7f8fb]"
+      >
+        <app-paso1-requisicion
+          *ngIf="tramiteAsociado(); else sinRequisicionAsociada"
+          [tramite]="tramiteAsociado()!"
+          [solicitud]="solicitudAsociada()"
+          (completed)="confirmarPasoRequisicion()"
+        ></app-paso1-requisicion>
+
+        <ng-template #sinRequisicionAsociada>
+          <div
+            class="p-8 rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white"
+          >
+            <div class="flex items-start gap-4">
+              <div
+                class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center"
+              >
+                <svg
+                  class="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-[#213053] mb-2">
+                  Requisición de Compra
+                </h3>
+                <p class="text-sm text-amber-800">
+                  No se encontró una requisición asociada para este registro.
+                </p>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+
+        <!-- Continuar al Paso 2 -->
+        <div class="flex justify-end mt-6">
+          <button (click)="confirmarPasoRequisicion()" type="button"
+            class="flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#045C94] to-[#213053] shadow-lg shadow-[#045C94]/25 hover:shadow-xl hover:translate-y-[-1px] active:translate-y-0 transition-all group">
+            Continuar al Paso 2
+            <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- ══ PASO 2: CARGA DE EGRESO + OCR + ASOCIAR PROVEEDORES ══ -->
+      <!-- ══════════════════════════════════════════════════ -->
+      <div *ngIf="activeSection() === 1" class="p-8">
+        <div class="flex items-center gap-3 mb-6">
+          <div
+            class="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 to-[#045C94] flex items-center justify-center shadow-lg shadow-blue-500/20 section-icon-bounce"
+          >
+            <svg
+              class="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-[#213053]">Cargo de Egreso</h3>
+            <p class="text-sm text-gray-500">
+              Carga el documento de egreso para extraer las líneas contables
+              mediante OCR
+            </p>
+          </div>
+        </div>
+
+        <!-- ═══ UPLOAD ZONE ═══ -->
+        <div
+          class="upload-zone rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#045C94]/50 bg-gradient-to-br from-blue-50 to-gray-50 transition-all p-6 mb-6 text-center cursor-pointer"
+          [class.upload-zone-active]="isDragging()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+        >
+          <input
+            type="file"
+            id="docsInput"
+            class="hidden"
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png,.tiff,.tif,.doc,.docx,.xls,.xlsx"
+            (change)="onFileSelected($event)"
+          />
+          <label
+            for="docsInput"
+            class="flex flex-col items-center gap-3 cursor-pointer w-full"
+          >
+            <div
+              class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-[#045C94] flex items-center justify-center shadow-lg"
+              [class.animate-bounce]="isDragging()"
+            >
+              <svg
+                class="w-7 h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-base font-bold text-[#045C94]">
+                {{
+                  isDragging()
+                    ? "Suelta los archivos aquí"
+                    : "Arrastra el documento de egreso aquí"
+                }}
+              </p>
+              <p class="text-xs text-gray-500 mt-1">
+                O haz clic para seleccionar archivos (PDF, JPG, PNG, TIFF, Excel, Word)
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Scanning Status -->
+        <div
+          *ngIf="isScanning()"
+          class="flex items-center gap-3 p-4 rounded-xl bg-blue-50 border border-blue-200 mb-6"
+        >
+          <div
+            class="w-8 h-8 rounded-full border-4 border-blue-200 border-t-blue-500 animate-spin"
+          ></div>
+          <div>
+            <p class="text-sm font-bold text-blue-800">
+              Escaneando documento de egreso...
+            </p>
+            <p class="text-xs text-blue-600">
+              Extrayendo líneas contables mediante Textract
+            </p>
+          </div>
+        </div>
+
+        <!-- Documents Grid -->
+        <div *ngIf="documentosCargadosSection1().length > 0" class="mb-6">
+          <h4 class="text-sm font-bold text-[#213053] mb-3">
+            Documentos cargados ({{ documentosCargadosSection1().length }})
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div
+              *ngFor="let doc of documentosCargadosSection1(); trackBy: trackById"
+              class="relative p-4 rounded-xl border-2 transition-all"
+              [ngClass]="{
+                'bg-green-50 border-green-200':
+                  doc.estadoEscaneo === 'completado',
+                'bg-yellow-50 border-yellow-200':
+                  doc.estadoEscaneo === 'escaneando',
+                'bg-red-50 border-red-200': doc.estadoEscaneo === 'error',
+                'bg-gray-50 border-gray-200': doc.estadoEscaneo === 'pendiente',
+              }"
+            >
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex items-start gap-3 flex-1 min-w-0">
+                  <div
+                    class="w-9 h-9 rounded-lg bg-white flex items-center justify-center flex-shrink-0 shadow-sm"
+                  >
+                    <svg
+                      class="w-4 h-4 text-red-500"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"
+                      />
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 truncate">
+                      {{ doc.nombreArchivo }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      {{ (doc.tamanoArchivo / 1024).toFixed(0) }} KB
+                    </p>
+                  </div>
+                </div>
+                <button
+                  (click)="borrarDocumento(doc.id)"
+                  class="flex-shrink-0 ml-2 p-1 hover:bg-white/80 rounded-lg transition"
+                  type="button"
+                >
+                  <svg
+                    class="w-4 h-4 text-gray-400 hover:text-red-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-2 h-2 rounded-full"
+                    [ngClass]="{
+                      'bg-green-500': doc.estadoEscaneo === 'completado',
+                      'bg-yellow-500 animate-pulse':
+                        doc.estadoEscaneo === 'escaneando',
+                      'bg-red-500': doc.estadoEscaneo === 'error',
+                      'bg-gray-400': doc.estadoEscaneo === 'pendiente',
+                    }"
+                  ></div>
+                  <span
+                    class="text-xs font-semibold"
+                    [ngClass]="{
+                      'text-green-700': doc.estadoEscaneo === 'completado',
+                      'text-yellow-700': doc.estadoEscaneo === 'escaneando',
+                      'text-red-700': doc.estadoEscaneo === 'error',
+                      'text-gray-600': doc.estadoEscaneo === 'pendiente',
+                    }"
+                  >
+                    {{
+                      doc.estadoEscaneo === "completado"
+                        ? "✓ Completado"
+                        : doc.estadoEscaneo === "escaneando"
+                          ? "Escaneando..."
+                          : doc.estadoEscaneo === "error"
+                            ? "Error"
+                            : "Pendiente"
+                    }}
+                  </span>
+                </div>
+                <span
+                  *ngIf="doc.estadoEscaneo === 'completado'"
+                  class="text-xs font-semibold"
+                  [ngClass]="
+                    (doc.confianzaOCR || 0) > 50
+                      ? 'text-emerald-600'
+                      : 'text-amber-600'
+                  "
+                >
+                  {{ doc.confianzaOCR || 0 }}% confianza
+                </span>
+              </div>
+              <div
+                *ngIf="doc.estadoEscaneo === 'escaneando'"
+                class="w-full h-1 bg-white/50 rounded-full overflow-hidden mt-2"
+              >
+                <div
+                  class="h-full bg-yellow-500 rounded-full w-1/2 animate-pulse"
+                ></div>
+              </div>
+              <div
+                *ngIf="doc.estadoEscaneo === 'completado'"
+                class="mt-2 text-xs text-gray-600"
+              >
+                <span class="font-semibold">Tipo:</span>
+                {{ doc.ocrData?.tipoDocumento || "Sin clasificar" }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ ESPERANDO RESULTADOS OCR ═══ -->
+        <div
+          *ngIf="documentosCargadosSection1().length > 0 && isScanning()"
+          class="mb-6 p-6 rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-white animate-pulse"
+        >
+          <div class="flex items-center gap-4">
+            <div
+              class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center"
+            >
+              <div
+                class="w-6 h-6 border-3 border-amber-300 border-t-amber-600 rounded-full animate-spin"
+              ></div>
+            </div>
+            <div>
+              <h4 class="text-base font-bold text-amber-800">
+                Esperando resultados de Textract...
+              </h4>
+              <p class="text-sm text-amber-600 mt-1">
+                Los datos del egreso (empresa, NIT, fecha, cuentas contables,
+                débito, crédito) se llenarán automáticamente cuando el escaneo
+                finalice.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ ERROR DEL OCR ═══ -->
+        <div
+          *ngIf="errorMessage() && !isScanning()"
+          class="mb-6 p-4 rounded-2xl border-2 border-red-200 bg-red-50"
+        >
+          <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            <div>
+              <h4 class="text-sm font-bold text-red-800">Error al procesar el documento</h4>
+              <p class="text-xs text-red-600 mt-1">{{ errorMessage() }}</p>
+              <p class="text-xs text-red-500 mt-1">Revisa la consola del navegador (F12) para más detalles.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ AVISO OCR PARCIAL ═══ -->
+        <div
+          *ngIf="documentosCargadosSection1().length > 0 && !isScanning() && ocrResult() && ocrResult()!.confianzaOCR < 40"
+          class="mb-6 p-4 rounded-2xl border-2 border-amber-200 bg-amber-50"
+        >
+          <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+              <h4 class="text-sm font-bold text-amber-800">Extracción incompleta</h4>
+              <p class="text-xs text-amber-600 mt-1">
+                El documento se procesó pero no se pudieron extraer todos los datos del egreso automáticamente (confianza: {{ ocrResult()!.confianzaOCR }}%).
+                Algunos campos pueden mostrar datos de la solicitud original. Verifique y corrija manualmente si es necesario.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ DATOS PRINCIPALES DEL EGRESO ═══ -->
+        <div
+          *ngIf="egresosDisponibles().length > 0"
+          class="mb-6 animate-slide-in"
+        >
+          <h4
+            class="text-sm font-bold text-[#213053] mb-4 flex items-center gap-2"
+          >
+            <svg
+              class="w-5 h-5 text-[#045C94]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Datos Principales del Egreso
+          </h4>
+
+          <!-- ── Egreso Selector Tabs ── -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button
+              *ngFor="let egreso of egresosDisponibles(); let ei = index; trackBy: trackById"
+              type="button"
+              (click)="selectEgreso(egreso.id)"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all duration-200"
+              [ngClass]="selectedEgresoId() === egreso.id
+                ? 'border-[#045C94] bg-[#045C94]/10 text-[#045C94] shadow-md shadow-[#045C94]/10'
+                : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'"
+            >
+              <div class="w-6 h-6 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                [ngClass]="selectedEgresoId() === egreso.id ? 'bg-[#045C94]' : 'bg-gray-400'">
+                {{ ei + 1 }}
+              </div>
+              <span>{{ egreso.numeroEgreso || egreso.nombre }}</span>
+              <span class="text-xs px-1.5 py-0.5 rounded-md"
+                [ngClass]="selectedEgresoId() === egreso.id ? 'bg-[#045C94]/20 text-[#045C94]' : 'bg-gray-100 text-gray-500'">
+                {{ formatCurrency(egreso.debito) }}
+              </span>
+            </button>
+          </div>
+
+          <!-- ── Selected Egreso: Datos Principales (Débito / Crédito cards) ── -->
+          <div *ngIf="selectedEgresoId()" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- CARD 1: Línea de Débito -->
+            <div
+              class="rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 overflow-hidden hover:shadow-lg transition-all"
+            >
+              <div
+                class="bg-emerald-100 px-5 py-3 flex items-center justify-between border-b border-emerald-200"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white font-bold text-sm"
+                  >
+                    1
+                  </div>
+                  <div>
+                    <p
+                      class="text-xs font-bold text-emerald-600 uppercase tracking-wider"
+                    >
+                      Línea 1
+                    </p>
+                    <p class="text-sm font-bold text-emerald-700">Débito</p>
+                  </div>
+                </div>
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-700"
+                >
+                  {{
+                    formatCurrency(
+                      ocrResult()?.debito || registro()?.valorBruto || 0
+                    )
+                  }}
+                </span>
+              </div>
+              <div class="p-5 space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <p
+                      class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+                    >
+                      Nombre de Empresa
+                    </p>
+                    <p class="text-sm font-semibold text-[#213053]">
+                      {{ getEmpresaDisplay() }}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+                    >
+                      NIT
+                    </p>
+                    <p class="text-sm font-semibold text-[#213053]">
+                      {{ getNitDisplay() }}
+                    </p>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <p
+                      class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+                    >
+                      N° Egreso
+                    </p>
+                    <p class="text-sm font-bold text-[#045C94]">
+                      {{ getNumeroEgresoDisplay() }}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+                    >
+                      Fecha
+                    </p>
+                    <p class="text-sm font-semibold text-[#213053]">
+                      {{ getFechaDisplay() }}
+                    </p>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-white border border-emerald-100">
+                  <p
+                    class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    Cuenta Contable
+                  </p>
+                  <p
+                    class="text-sm font-mono font-semibold text-emerald-700 mb-3"
+                  >
+                    {{ getCuentaLineaDisplay(0) }}
+                  </p>
+                  <button
+                    type="button"
+                    (click)="abrirModalCuentaContable(0)"
+                    class="w-full px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 transition-all"
+                  >
+                    {{ getCuentaLineaDisplay(0) ? "Corregir" : "Asignar" }}
+                    Cuenta Contable
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 2: Línea de Crédito -->
+            <div
+              class="rounded-2xl border-2 border-rose-200 bg-rose-50/50 overflow-hidden hover:shadow-lg transition-all"
+            >
+              <div
+                class="bg-rose-100 px-5 py-3 flex items-center justify-between border-b border-rose-200"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-8 h-8 rounded-lg bg-rose-500 flex items-center justify-center text-white font-bold text-sm"
+                  >
+                    2
+                  </div>
+                  <div>
+                    <p
+                      class="text-xs font-bold text-rose-600 uppercase tracking-wider"
+                    >
+                      Línea 2
+                    </p>
+                    <p class="text-sm font-bold text-rose-700">Crédito</p>
+                  </div>
+                </div>
+                <span
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-200 text-rose-700"
+                >
+                  {{
+                    formatCurrency(
+                      ocrResult()?.credito || registro()?.valorNetoPagar || 0
+                    )
+                  }}
+                </span>
+              </div>
+              <div class="p-5 space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <p
+                      class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+                    >
+                      Nombre de Empresa
+                    </p>
+                    <p class="text-sm font-semibold text-[#213053]">
+                      {{ getEmpresaDisplay() }}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+                    >
+                      NIT
+                    </p>
+                    <p class="text-sm font-semibold text-[#213053]">
+                      {{ getNitDisplay() }}
+                    </p>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <p
+                      class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+                    >
+                      N° Egreso
+                    </p>
+                    <p class="text-sm font-bold text-[#045C94]">
+                      {{ getNumeroEgresoDisplay() }}
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+                    >
+                      Fecha
+                    </p>
+                    <p class="text-sm font-semibold text-[#213053]">
+                      {{ getFechaDisplay() }}
+                    </p>
+                  </div>
+                </div>
+                <div class="p-3 rounded-lg bg-white border border-rose-100">
+                  <p
+                    class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1"
+                  >
+                    Cuenta Contable
+                  </p>
+                  <p class="text-sm font-mono font-semibold text-rose-700 mb-3">
+                    {{ getCuentaLineaDisplay(1) }}
+                  </p>
+                  <button
+                    type="button"
+                    (click)="abrirModalCuentaContable(1)"
+                    class="w-full px-3 py-2 rounded-lg bg-rose-500 text-white text-xs font-semibold hover:bg-rose-600 transition-all"
+                  >
+                    {{ getCuentaLineaDisplay(1) ? "Corregir" : "Asignar" }}
+                    Cuenta Contable
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <div
+          *ngIf="modalCuentaVisible()"
+          class="fixed inset-0 z-[120] bg-black/40 backdrop-blur-[1px] flex items-center justify-center p-4"
+        >
+          <div
+            class="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+          >
+            <div
+              class="px-5 py-4 bg-gradient-to-r from-[#213053] to-[#045C94] text-white flex items-center justify-between"
+            >
+              <div>
+                <p
+                  class="text-xs uppercase tracking-wider text-[#FFB71B] font-semibold"
+                >
+                  Asignación de Cuenta
+                </p>
+                <p class="text-sm font-bold">
+                  Seleccione una cuenta contable para la línea
+                  {{ (modalCuentaLineaIndex() ?? 0) + 1 }}
+                </p>
+              </div>
+              <button
+                type="button"
+                (click)="cerrarModalCuentaContable()"
+                class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div class="p-5">
+              <input
+                type="text"
+                [value]="modalCuentaBusqueda()"
+                (input)="buscarCuentaModal($event)"
+                class="w-full px-3 py-2.5 rounded-lg bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] transition-all mb-3"
+                placeholder="Buscar por código o nombre de cuenta..."
+              />
+
+              <div
+                class="max-h-[360px] overflow-y-auto rounded-lg border border-gray-200"
+              >
+                <table class="w-full text-xs">
+                  <thead class="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th
+                        class="px-3 py-2 text-left font-bold text-gray-500 uppercase"
+                      >
+                        Código
+                      </th>
+                      <th
+                        class="px-3 py-2 text-left font-bold text-gray-500 uppercase"
+                      >
+                        Nombre
+                      </th>
+                      <th
+                        class="px-3 py-2 text-left font-bold text-gray-500 uppercase"
+                      >
+                        Tipo
+                      </th>
+                      <th
+                        class="px-3 py-2 text-center font-bold text-gray-500 uppercase"
+                      >
+                        Acción
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let c of modalCuentasFiltradas()"
+                      class="border-t border-gray-100 hover:bg-blue-50 cursor-pointer"
+                      (click)="seleccionarCuentaDesdeModal(c)"
+                    >
+                      <td
+                        class="px-3 py-2 font-mono font-semibold text-[#213053]"
+                      >
+                        {{ c.codigo }}
+                      </td>
+                      <td class="px-3 py-2 text-gray-700">{{ c.nombre }}</td>
+                      <td class="px-3 py-2 text-gray-700">{{ c.tipo }}</td>
+                      <td class="px-3 py-2 text-center">
+                        <span
+                          class="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 font-semibold"
+                          >Seleccionar</span
+                        >
+                      </td>
+                    </tr>
+                    <tr *ngIf="modalCuentasFiltradas().length === 0">
+                      <td
+                        colspan="4"
+                        class="px-3 py-6 text-center text-gray-500"
+                      >
+                        No se encontraron cuentas contables con ese criterio.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+          <!-- Vista previa del documento -->
+          <div *ngIf="selectedEgresoId()"
+            class="border border-gray-200 rounded-2xl overflow-hidden bg-white flex flex-col mb-6"
+          >
+            <div
+              class="bg-gradient-to-r from-gray-100 to-gray-50 px-5 py-3 border-b border-gray-200 flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+              <p
+                class="text-xs font-bold text-gray-600 uppercase tracking-wider"
+              >
+                Vista previa del documento
+              </p>
+            </div>
+            <div class="flex-1 min-h-[300px] bg-gray-100">
+              <iframe
+                *ngIf="pdfPreviewUrl()"
+                [src]="pdfPreviewUrl()!"
+                class="w-full h-full min-h-[300px] border-0"
+              ></iframe>
+
+              <!-- Vista previa de datos OCR para Excel/Word -->
+              <div
+                *ngIf="!pdfPreviewUrl() && ocrRawData() && (ocrRawData()!.tables.length || ocrRawData()!.plainText)"
+                class="w-full h-full min-h-[300px] max-h-[500px] overflow-auto p-4 bg-white"
+              >
+                <!-- Tablas extraídas -->
+                <div *ngIf="ocrRawData()!.tables.length">
+                  <div *ngFor="let table of ocrRawData()!.tables; let ti = index" class="mb-4">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                      Tabla {{ ti + 1 }} ({{ table.length }} filas)
+                    </p>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                      <table class="w-full text-xs border-collapse">
+                        <thead *ngIf="table.length > 0">
+                          <tr class="bg-gradient-to-r from-[#213053] to-[#045C94]">
+                            <th *ngFor="let cell of table[0]" class="px-3 py-2 text-left text-white font-semibold text-[10px] uppercase tracking-wider border-r border-white/10 last:border-r-0">
+                              {{ cell }}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of table.slice(1); let ri = index"
+                              class="border-t border-gray-100"
+                              [ngClass]="ri % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
+                            <td *ngFor="let cell of row" class="px-3 py-1.5 text-gray-700 border-r border-gray-100 last:border-r-0">
+                              {{ cell }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Texto plano si no hay tablas -->
+                <div *ngIf="!ocrRawData()!.tables.length && ocrRawData()!.plainText">
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Contenido del documento</p>
+                  <pre class="text-xs text-gray-700 whitespace-pre-wrap font-mono bg-gray-50 rounded-lg p-3 border border-gray-200 max-h-[400px] overflow-auto">{{ ocrRawData()!.plainText }}</pre>
+                </div>
+
+                <!-- Pares clave-valor -->
+                <div *ngIf="ocrRawData()!.keyValuePairs.length" class="mt-4">
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Datos detectados</p>
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <div *ngFor="let kv of ocrRawData()!.keyValuePairs" class="bg-gray-50 rounded-lg px-3 py-2 border border-gray-200">
+                      <p class="text-[10px] font-semibold text-gray-400 uppercase">{{ kv.key }}</p>
+                      <p class="text-xs font-semibold text-[#213053]">{{ kv.value }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sin datos disponibles -->
+              <div
+                *ngIf="!pdfPreviewUrl() && !(ocrRawData() && (ocrRawData()!.tables.length || ocrRawData()!.plainText))"
+                class="w-full h-full min-h-[300px] flex items-center justify-center text-gray-400"
+              >
+                <div class="text-center">
+                  <svg
+                    class="w-12 h-12 mx-auto mb-2 text-gray-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <p class="text-xs" *ngIf="documentosCargadosSection1().length === 0">Sin vista previa disponible</p>
+                  <p class="text-xs font-semibold" *ngIf="documentosCargadosSection1().length > 0 && isScanning()">
+                    Procesando documento...
+                  </p>
+                  <p class="text-xs font-semibold" *ngIf="documentosCargadosSection1().length > 0 && !isScanning()">
+                    No se pudo extraer contenido del documento
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ TABLA EDITABLE DE LÍNEAS DEL EGRESO (solo aparece después del OCR) ═══ -->
+        <div
+          *ngIf="selectedEgresoId() && lineasEgreso().length > 0"
+          class="mb-6 border border-gray-300 rounded-xl overflow-hidden bg-white animate-slide-in"
+        >
+          <div
+            class="bg-gradient-to-r from-gray-50 to-white px-6 py-3 border-b border-gray-200 flex items-center justify-between"
+          >
+            <div class="flex items-center gap-2">
+              <svg
+                class="w-5 h-5 text-[#045C94]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <h4 class="text-sm font-bold text-[#213053]">
+                Líneas del Egreso
+                <span class="text-xs font-normal text-gray-500"
+                  >(datos extraídos por OCR — edite si es necesario)</span
+                >
+              </h4>
+            </div>
+            <button
+              (click)="agregarLinea()"
+              class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#045C94]/10 text-[#045C94] text-xs font-semibold hover:bg-[#045C94]/20 transition"
+              type="button"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Agregar línea
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-100 border-b-2 border-gray-300">
+                  <th class="px-2 py-2.5 text-center text-xs font-bold text-gray-600 uppercase w-10">#</th>
+                  <th class="px-2 py-2.5 text-left text-xs font-bold text-gray-600 uppercase">Cuenta contable</th>
+                  <th class="px-2 py-2.5 text-left text-xs font-bold text-gray-600 uppercase">Tercero</th>
+                  <th class="px-2 py-2.5 text-left text-xs font-bold text-gray-600 uppercase">Detalle</th>
+                  <th class="px-2 py-2.5 text-left text-xs font-bold text-gray-600 uppercase">Descripción</th>
+                  <th class="px-2 py-2.5 text-right text-xs font-bold text-gray-600 uppercase w-28">Débito</th>
+                  <th class="px-2 py-2.5 text-right text-xs font-bold text-gray-600 uppercase w-28">Crédito</th>
+                  <th class="px-2 py-2.5 text-center text-xs font-bold text-gray-600 uppercase w-10"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let linea of lineasEgreso(); let i = index; trackBy: trackByIndex"
+                  class="border-b border-gray-200 hover:bg-blue-50/30"
+                >
+                  <td class="px-2 py-1.5 text-center text-gray-500 font-semibold text-xs">{{ linea.numero }}</td>
+                  <td class="px-1 py-1">
+                    <input type="text" [value]="linea.cuentaContable"
+                      (change)="actualizarLineaCampo(i, 'cuentaContable', $event)"
+                      class="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs font-mono text-[#213053] focus:outline-none focus:ring-1 focus:ring-[#045C94]/40 focus:border-[#045C94] focus:bg-white transition" />
+                    <button type="button" (click)="abrirModalCuentaContable(i)"
+                      class="mt-1 w-full px-2 py-1 rounded-md bg-[#045C94]/10 text-[#045C94] text-[11px] font-semibold hover:bg-[#045C94]/20 transition">
+                      Buscar en catálogo
+                    </button>
+                  </td>
+                  <td class="px-1 py-1">
+                    <input type="text" [value]="linea.tercero"
+                      (change)="actualizarLineaCampo(i, 'tercero', $event)"
+                      class="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#045C94]/40 focus:border-[#045C94] focus:bg-white transition" />
+                  </td>
+                  <td class="px-1 py-1">
+                    <input type="text" [value]="linea.detalle"
+                      (change)="actualizarLineaCampo(i, 'detalle', $event)"
+                      class="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-[#045C94]/40 focus:border-[#045C94] focus:bg-white transition" />
+                  </td>
+                  <td class="px-1 py-1">
+                    <input type="text" [value]="linea.descripcion"
+                      (change)="actualizarLineaCampo(i, 'descripcion', $event)"
+                      class="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#045C94]/40 focus:border-[#045C94] focus:bg-white transition" />
+                  </td>
+                  <td class="px-1 py-1">
+                    <input type="number" [value]="linea.debito" step="0.01" min="0"
+                      (change)="actualizarLineaCampo(i, 'debito', $event)"
+                      class="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-right font-semibold text-[#213053] focus:outline-none focus:ring-1 focus:ring-[#045C94]/40 focus:border-[#045C94] focus:bg-white transition" />
+                  </td>
+                  <td class="px-1 py-1">
+                    <input type="number" [value]="linea.credito" step="0.01" min="0"
+                      (change)="actualizarLineaCampo(i, 'credito', $event)"
+                      class="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs text-right font-semibold text-[#213053] focus:outline-none focus:ring-1 focus:ring-[#045C94]/40 focus:border-[#045C94] focus:bg-white transition" />
+                  </td>
+                  <td class="px-1 py-1 text-center">
+                    <button (click)="eliminarLinea(i)"
+                      class="p-1 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition"
+                      type="button" title="Eliminar línea">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="bg-gray-50 border-t-2 border-gray-300">
+                  <td colspan="5" class="px-3 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Total</td>
+                  <td class="px-2 py-3 text-right font-bold text-[#213053] text-sm">{{ formatCurrency(totalDebito()) }}</td>
+                  <td class="px-2 py-3 text-right font-bold text-[#213053] text-sm">{{ formatCurrency(totalCredito()) }}</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td colspan="8" class="px-3 py-2">
+                    <div class="flex items-center justify-end gap-2">
+                      <span *ngIf="totalDebito() === totalCredito() && totalDebito() > 0"
+                        class="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Asiento cuadrado
+                      </span>
+                      <span *ngIf="totalDebito() !== totalCredito() && lineasEgreso().length > 0"
+                        class="text-xs font-bold text-red-600 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Diferencia: {{ formatCurrency(totalDebito() - totalCredito()) }}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Manual fields -->
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6"
+          [formGroup]="form"
+        >
+          <div>
+            <label
+              class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+              >Número de Egreso *</label
+            >
+            <input
+              type="text"
+              formControlName="numeroEgreso"
+              class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all"
+              placeholder="Ej: CC-2-20260105"
+            />
+            <p
+              *ngIf="
+                form.get('numeroEgreso')?.touched &&
+                form.get('numeroEgreso')?.invalid
+              "
+              class="text-xs text-red-500 mt-1"
+            >
+              Requerido
+            </p>
+          </div>
+          <div
+            class="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col justify-center"
+          >
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5"
+            >
+              Cuenta Contable Referencia
+            </p>
+            <p class="text-sm font-mono font-semibold text-[#213053] break-all">
+              {{ getCuentaContablePrincipal() || "Sin referencia detectada" }}
+            </p>
+            <p class="text-xs text-gray-500 mt-2">
+              Se toma automáticamente desde el OCR, la primera línea del egreso
+              o el registro actual.
+            </p>
+            <button
+              type="button"
+              (click)="abrirModalCuentaContable(0)"
+              class="mt-3 self-start px-3 py-2 rounded-lg bg-[#045C94]/10 text-[#045C94] text-xs font-semibold hover:bg-[#045C94]/20 transition-all"
+            >
+              Corregir cuenta principal
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- ═══ PROVEEDORES Y ASOCIACIÓN DE EGRESO (Estilo Tesorería) ═══ -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <div class="my-8 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+        <div class="ct-providers-section">
+          <!-- Section header -->
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20 section-icon-bounce">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-[#213053]">Asociar Egreso a Proveedores</h3>
+              <p class="text-sm text-gray-500">Seleccione las órdenes de compra por proveedor para vincular al egreso</p>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="ct-kpi-card" [class.ct-kpi-card--active]="egresosDisponibles().length > 0">
+              <div class="ct-kpi-card__icon ct-kpi-card__icon--primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                </svg>
+              </div>
+              <div class="ct-kpi-card__body">
+                <span class="ct-kpi-card__label">Egresos Cargados</span>
+                <div class="flex items-end gap-1.5">
+                  <span class="ct-kpi-card__value ct-kpi-card__value--mono">{{ egresosDisponibles().length }}</span>
+                  <span class="text-sm text-gray-400 font-medium">documento{{ egresosDisponibles().length !== 1 ? 's' : '' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="ct-kpi-card">
+              <div class="ct-kpi-card__icon ct-kpi-card__icon--blue">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <div class="ct-kpi-card__body">
+                <span class="ct-kpi-card__label">Total Débito</span>
+                <span class="ct-kpi-card__value">{{ formatCurrency(totalDebitoEgresos()) }}</span>
+              </div>
+            </div>
+            <div class="ct-kpi-card">
+              <div class="ct-kpi-card__icon ct-kpi-card__icon--gold">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="ct-kpi-card__body">
+                <span class="ct-kpi-card__label">Total Crédito</span>
+                <span class="ct-kpi-card__value">{{ formatCurrency(totalCreditoEgresos()) }}</span>
+              </div>
+            </div>
+            <div class="ct-kpi-card" [class.ct-kpi-card--active]="ocsSeleccionadas().length > 0">
+              <div class="ct-kpi-card__icon" [ngClass]="ocsSeleccionadas().length === tramites().length && tramites().length > 0 ? 'ct-kpi-card__icon--success' : 'ct-kpi-card__icon--accent'">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <div class="ct-kpi-card__body">
+                <span class="ct-kpi-card__label">OCs Asociadas</span>
+                <div class="flex items-end gap-1.5">
+                  <span class="ct-kpi-card__value ct-kpi-card__value--accent">{{ ocsSeleccionadas().length }}</span>
+                  <span class="text-sm text-gray-400 font-medium">/ {{ tramites().length }}</span>
+                </div>
+                <div class="mt-1.5 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-700 ease-out"
+                    [ngClass]="ocsSeleccionadas().length === tramites().length && tramites().length > 0 ? 'bg-emerald-500' : 'bg-[#045C94]'"
+                    [style.width.%]="tramites().length > 0 ? (ocsSeleccionadas().length / tramites().length) * 100 : 0"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk Assign Egreso Banner -->
+          <div *ngIf="egresosDisponibles().length > 0" class="ct-bulk-assign-bar mb-4">
+            <div class="ct-bulk-assign-bar__left">
+              <div class="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-[#213053]">Asignar un egreso a todos los proveedores</p>
+                <p class="text-xs text-gray-400">Seleccione un egreso y haga clic en "Asignar a todos"</p>
+              </div>
+            </div>
+            <div class="ct-bulk-assign-bar__right">
+              <select class="ct-egreso-select" #bulkEgresoSelect>
+                <option value="">— Seleccionar egreso —</option>
+                <option *ngFor="let e of egresosDisponibles(); trackBy: trackById" [value]="e.id">
+                  {{ e.numeroEgreso || e.nombre }} · {{ formatCurrency(e.debito) }}
+                </option>
+              </select>
+              <button type="button"
+                class="ct-bulk-assign-btn"
+                (click)="asignarEgresoATodos(bulkEgresoSelect.value)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Asignar a todos
+              </button>
+            </div>
+          </div>
+
+          <!-- No egresos warning -->
+          <div *ngIf="egresosDisponibles().length === 0 && documentosCargadosSection1().length > 0"
+            class="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 mb-4 text-xs text-amber-700">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Los documentos están siendo escaneados. Una vez completados, podrá asignarlos a los proveedores.
+          </div>
+
+          <!-- Provider Table -->
+          <div class="ct-table-section">
+            <div class="ct-table-header">
+              <div class="ct-table-header__left">
+                <div class="ct-table-header__icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-base font-bold text-[#213053]">Proveedores y Órdenes de Compra</h2>
+                  <p class="text-xs text-gray-400">Asocie cada egreso al proveedor correspondiente</p>
+                </div>
+              </div>
+              <div class="ct-table-header__right">
+                <span class="ct-table-header__count"
+                  [ngClass]="totalProveedoresConEgreso === proveedoresAgrupados().length && proveedoresAgrupados().length > 0 ? 'ct-table-header__count--done' : ''">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="w-4 h-4">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  {{ totalProveedoresConEgreso }}/{{ proveedoresAgrupados().length }} con egreso
+                </span>
+              </div>
+            </div>
+
+            <!-- Column headers -->
+            <div class="ct-col-headers">
+              <div class="ct-col ct-col--num">#</div>
+              <div class="ct-col ct-col--proveedor">PROVEEDOR</div>
+              <div class="ct-col ct-col--ocs">OCs</div>
+              <div class="ct-col ct-col--valor">VALOR TOTAL</div>
+              <div class="ct-col ct-col--egreso">EGRESO</div>
+              <div class="ct-col ct-col--estado">ESTADO</div>
+            </div>
+
+            <!-- Provider rows -->
+            <div class="ct-providers-list">
+              <ng-container *ngFor="let grupo of proveedoresAgrupados(); let idx = index; trackBy: trackByIndex">
+                <div class="ct-provider-row-wrapper"
+                  [class.ct-provider-row-wrapper--expanded]="isProveedorExpanded(idx)"
+                  [class.ct-provider-row-wrapper--asociado]="isProveedorAllOCsSelected(grupo.nombre)">
+
+                  <!-- Main row -->
+                  <div class="ct-provider-row" (click)="toggleProveedorExpand(idx)">
+                    <div class="ct-cell ct-cell--num">
+                      <span class="ct-cell__num-badge">{{ idx + 1 }}</span>
+                    </div>
+                    <div class="ct-cell ct-cell--proveedor">
+                      <div class="ct-proveedor-info">
+                        <div class="ct-proveedor-avatar" [class.ct-proveedor-avatar--asociado]="isProveedorAllOCsSelected(grupo.nombre)">
+                          {{ getProveedorInitialContable(grupo.nombre) }}
+                          <div *ngIf="isProveedorAllOCsSelected(grupo.nombre)" class="ct-proveedor-avatar__check">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <div>
+                          <div class="ct-proveedor-nombre">{{ grupo.nombre }}</div>
+                          <div class="ct-proveedor-nit">{{ grupo.nit || 'Sin NIT' }}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="ct-cell ct-cell--ocs">
+                      <span class="ct-oc-count-badge">{{ grupo.ordenes.length }}</span>
+                    </div>
+                    <div class="ct-cell ct-cell--valor ct-cell--currency">
+                      {{ formatCurrency(grupo.valorTotal) }}
+                    </div>
+                    <!-- Egreso asignado column -->
+                    <div class="ct-cell ct-cell--egreso">
+                      <span *ngIf="getEgresoAsignado(grupo.nombre) as egreso" class="ct-egreso-chip ct-egreso-chip--sm">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        {{ egreso.numeroEgreso || egreso.nombre | slice:0:14 }}
+                      </span>
+                      <span *ngIf="!getEgresoAsignado(grupo.nombre)" class="ct-egreso-chip ct-egreso-chip--pending">—</span>
+                    </div>
+                    <div class="ct-cell ct-cell--estado">
+                      <span class="ct-estado-badge"
+                        [class.ct-estado-badge--asociado]="!!getEgresoAsignado(grupo.nombre) && isProveedorAllOCsSelected(grupo.nombre)"
+                        [class.ct-estado-badge--parcial]="!!getEgresoAsignado(grupo.nombre) && !isProveedorAllOCsSelected(grupo.nombre)"
+                        [class.ct-estado-badge--pendiente]="!getEgresoAsignado(grupo.nombre)">
+                        <svg *ngIf="!!getEgresoAsignado(grupo.nombre) && isProveedorAllOCsSelected(grupo.nombre)" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        {{ !!getEgresoAsignado(grupo.nombre) && isProveedorAllOCsSelected(grupo.nombre) ? 'Completo' : !!getEgresoAsignado(grupo.nombre) ? 'Parcial' : 'Pendiente' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Expanded detail panel -->
+                  <div *ngIf="isProveedorExpanded(idx)" class="ct-detail-panel">
+                    <!-- Egreso selector for this provider -->
+                    <div class="ct-egreso-assign-bar" (click)="$event.stopPropagation()">
+                      <div class="ct-egreso-assign-bar__left">
+                        <svg class="w-4 h-4 text-[#045C94] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span class="text-sm font-semibold text-[#213053]">Egreso asignado:</span>
+                        <span *ngIf="getEgresoAsignado(grupo.nombre) as egreso" class="ct-egreso-chip">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                          </svg>
+                          {{ egreso.numeroEgreso || egreso.nombre }}
+                        </span>
+                        <span *ngIf="!getEgresoAsignado(grupo.nombre)" class="text-xs text-gray-400 italic">Sin egreso asignado</span>
+                      </div>
+                      <div class="ct-egreso-assign-bar__right">
+                        <ng-container *ngIf="egresosDisponibles().length > 0">
+                          <select class="ct-egreso-select ct-egreso-select--sm"
+                            [value]="getEgresoAsignadoId(grupo.nombre) || ''"
+                            (change)="asignarEgresoAProveedor(grupo.nombre, $any($event.target).value)">
+                            <option value="">— Sin egreso —</option>
+                            <option *ngFor="let e of egresosDisponibles(); trackBy: trackById" [value]="e.id">
+                              {{ e.numeroEgreso || e.nombre }} · {{ formatCurrency(e.debito) }}
+                            </option>
+                          </select>
+                        </ng-container>
+                        <span *ngIf="egresosDisponibles().length === 0" class="text-xs text-amber-600 italic">Cargue egresos en el paso anterior</span>
+                      </div>
+                    </div>
+
+                    <!-- Select all for this provider -->
+                    <div class="ct-select-all-bar" (click)="toggleSelectProveedorOCs(grupo.nombre); $event.stopPropagation()">
+                      <div class="ct-checkbox-wrapper">
+                        <div class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-300"
+                          [ngClass]="isProveedorAllOCsSelected(grupo.nombre)
+                            ? 'bg-[#045C94] border-[#045C94] shadow-md shadow-[#045C94]/30'
+                            : isProveedorSomeOCsSelected(grupo.nombre) ? 'bg-[#045C94]/40 border-[#045C94]' : 'border-gray-300 bg-white'">
+                          <svg *ngIf="isProveedorAllOCsSelected(grupo.nombre)" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                          </svg>
+                          <svg *ngIf="isProveedorSomeOCsSelected(grupo.nombre) && !isProveedorAllOCsSelected(grupo.nombre)" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <rect x="4" y="11" width="16" height="2" rx="1" />
+                          </svg>
+                        </div>
+                      </div>
+                      <span class="text-sm font-semibold text-[#213053]">
+                        {{ isProveedorAllOCsSelected(grupo.nombre) ? 'Desasociar todas las OCs' : 'Asociar egreso a todas las OCs de ' + grupo.nombre }}
+                      </span>
+                      <span class="ml-auto text-xs text-gray-400">
+                        {{ getProveedorSeleccionadasCount(grupo.nombre) }} de {{ grupo.ordenes.length }}
+                      </span>
+                    </div>
+
+                    <!-- Individual OC rows -->
+                    <div class="ct-oc-table">
+                      <div class="ct-oc-table__header">
+                        <span class="ct-oc-table__th" style="width: 40px"></span>
+                        <span class="ct-oc-table__th" style="flex: 1">N° OC</span>
+                        <span class="ct-oc-table__th" style="flex: 1">Requisición</span>
+                        <span class="ct-oc-table__th" style="flex: 1; text-align: right">Valor</span>
+                      </div>
+                      <div *ngFor="let t of grupo.ordenes; trackBy: trackByNumeroOC"
+                        class="ct-oc-row"
+                        [class.ct-oc-row--selected]="isOcSeleccionadaPerProveedor(t.ordenCompra?.numeroOC || '', grupo.nombre)"
+                        (click)="toggleOCPerProveedor(t, grupo.nombre); $event.stopPropagation()">
+                        <div class="ct-oc-row__check">
+                          <div class="w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
+                            [ngClass]="isOcSeleccionadaPerProveedor(t.ordenCompra?.numeroOC || '', grupo.nombre)
+                              ? 'bg-[#045C94] border-[#045C94]'
+                              : 'border-gray-300 bg-white'">
+                            <svg *ngIf="isOcSeleccionadaPerProveedor(t.ordenCompra?.numeroOC || '', grupo.nombre)" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <span class="ct-oc-row__num font-mono font-bold text-[#213053]">{{ t.ordenCompra?.numeroOC || '—' }}</span>
+                        <span class="ct-oc-row__req text-gray-600">{{ t.requisicion.numeroRequisicion || '—' }}</span>
+                        <span class="ct-oc-row__val font-bold text-[#213053] text-right">{{ formatCurrency((t.ordenCompra?.valorAntesIva || 0) + (t.ordenCompra?.valorIva || 0)) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- Empty state -->
+              <div *ngIf="proveedoresAgrupados().length === 0 && tramites().length === 0" class="ct-empty-state">
+                <div class="ct-empty-state__icon">
+                  <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-bold text-gray-500 mb-1">Sin proveedores disponibles</p>
+                <p class="text-xs text-gray-400">No se encontraron órdenes de compra para esta solicitud</p>
+                <div class="flex gap-2 max-w-md mx-auto mt-4">
+                  <input type="text"
+                    [value]="ordenCompraSeleccionada()"
+                    (input)="actualizarOC($event)"
+                    class="flex-1 px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all"
+                    placeholder="Ingrese N° de OC manualmente" />
+                  <button type="button" (click)="asociarOrdenCompra()"
+                    class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm font-bold shadow-lg shadow-amber-500/20 hover:shadow-xl transition-all">
+                    Asociar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comparison Summary -->
+          <div *ngIf="ocsSeleccionadas().length > 0" class="ct-comparison-section mt-6">
+            <div class="ct-comparison-card" [ngClass]="asociacionGlobalCoincide() ? 'ct-comparison-card--match' : 'ct-comparison-card--mismatch'">
+              <div class="ct-comparison-card__header">
+                <div class="ct-comparison-card__icon">
+                  <svg *ngIf="asociacionGlobalCoincide()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <svg *ngIf="!asociacionGlobalCoincide()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-bold" [ngClass]="asociacionGlobalCoincide() ? 'text-emerald-800' : 'text-red-800'">
+                    {{ asociacionGlobalCoincide() ? '¡Valores coinciden!' : 'Diferencia detectada' }}
+                  </p>
+                  <p class="text-xs mt-0.5" [ngClass]="asociacionGlobalCoincide() ? 'text-emerald-600' : 'text-red-600'">
+                    Total OCs: {{ formatCurrency(totalValorOCsSeleccionadas()) }} — Egreso: {{ formatCurrency(debitoManual()) }}
+                    <span *ngIf="!asociacionGlobalCoincide()"> — Diferencia: {{ formatCurrency(diferenciaGlobalAsociacion()) }}</span>
+                  </p>
+                </div>
+              </div>
+              <div class="ct-comparison-bars mt-4">
+                <div class="ct-bar-row">
+                  <span class="text-[11px] font-semibold text-gray-500 w-20">Total OCs</span>
+                  <div class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-[#045C94] rounded-full transition-all" [style.width.%]="100"></div>
+                  </div>
+                  <span class="text-xs font-bold text-[#213053] w-28 text-right">{{ formatCurrency(totalValorOCsSeleccionadas()) }}</span>
+                </div>
+                <div class="ct-bar-row mt-2">
+                  <span class="text-[11px] font-semibold text-gray-500 w-20">Egreso</span>
+                  <div class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
+                    <div class="h-full rounded-full transition-all"
+                      [ngClass]="asociacionGlobalCoincide() ? 'bg-emerald-500' : 'bg-amber-500'"
+                      [style.width.%]="totalValorOCsSeleccionadas() > 0 ? ((debitoManual() / totalValorOCsSeleccionadas()) * 100) : 0"></div>
+                  </div>
+                  <span class="text-xs font-bold text-[#213053] w-28 text-right">{{ formatCurrency(debitoManual()) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Observations ── -->
+        <div class="mt-6 mb-6" [formGroup]="form">
+          <label class="block text-xs font-bold text-gray-500 uppercase tracking-[0.15em] mb-2">Observaciones</label>
+          <textarea
+            formControlName="observaciones"
+            rows="3"
+            class="w-full px-5 py-4 rounded-2xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all resize-none"
+            placeholder="Novedades, comentarios sobre la asociación..."
+          ></textarea>
+        </div>
+
+        <!-- ── Actions ── -->
+        <div class="flex gap-3 justify-between items-center">
+          <button (click)="prevSection()" type="button"
+            class="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            ← Paso 1
+          </button>
+          <div class="flex gap-3">
+            <button (click)="submitForm()" type="button" [disabled]="loading() || isScanning() || hayDiferencias()"
+              class="flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:translate-y-[-1px] active:translate-y-0 transition-all disabled:opacity-60 disabled:cursor-not-allowed group">
+              <svg *ngIf="!loading()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <div *ngIf="loading()" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              {{ loading() ? 'Guardando...' : 'Guardar Registro' }}
+            </button>
+            <button (click)="enviarATesoreria()" type="button" [disabled]="loading() || isScanning() || hayDiferencias()"
+              class="flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#045C94] to-[#213053] shadow-lg shadow-[#045C94]/25 hover:shadow-xl hover:translate-y-[-1px] active:translate-y-0 transition-all disabled:opacity-60 disabled:cursor-not-allowed group">
+              <svg *ngIf="!loading()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+              <div *ngIf="loading()" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              {{ loading() ? 'Enviando...' : 'Guardar y Enviar a Tesorería' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

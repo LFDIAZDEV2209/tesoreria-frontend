@@ -1,0 +1,267 @@
+<div class="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/10 text-[#FFB71B] border border-white/10 backdrop-blur-sm">
+            <span>🛡️</span>
+            <span>Gerencia Financiera</span>
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight text-white">Histórico de Aprobados</h1>
+          <p class="text-slate-300 text-sm">Registro auditable y consulta histórica de aprobaciones presupuestales</p>
+        </div>
+
+        <!-- Quick counters -->
+        <div class="flex items-center gap-3">
+          <div class="bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-white/10 text-right">
+            <span class="block text-[11px] uppercase tracking-wider text-slate-300 font-semibold">Total registros</span>
+            <span class="text-xl font-bold text-[#FFB71B] tabular-nums">{{ totalRegistros() | number }}</span>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-white/10 text-right">
+            <span class="block text-[11px] uppercase tracking-wider text-slate-300 font-semibold">Monto en página</span>
+            <span class="text-xl font-bold text-white tabular-nums">{{ formatear(sumaMontoFiltrado()) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros Section -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+          <span>🔍</span> Filtros de búsqueda
+        </h2>
+        <button *ngIf="hayFiltrosActivos()"
+                (click)="limpiarFiltros()"
+                class="text-xs text-rose-600 hover:text-rose-700 font-semibold underline transition-colors">
+          Limpiar todos los filtros
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
+        <!-- Búsqueda tercero -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Tercero (NIT o Razón)</label>
+          <input type="text"
+                 placeholder="Ej. 900123456 o Alimentos SAS"
+                 [value]="filtroTexto()"
+                 (input)="onInputTexto($any($event.target).value)"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+
+        <!-- Módulo -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Módulo</label>
+          <select [ngModel]="filtroModulo()"
+                  (ngModelChange)="filtroModulo.set($event); onFiltroChange()"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all bg-white">
+            <option *ngFor="let m of modulosDisponibles" [value]="m.id">{{ m.label }}</option>
+          </select>
+        </div>
+
+        <!-- Estado -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Estado</label>
+          <select [ngModel]="filtroEstado()"
+                  (ngModelChange)="filtroEstado.set($event); onFiltroChange()"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all bg-white">
+            <option *ngFor="let e of estadosDisponibles" [value]="e.id">{{ e.label }}</option>
+          </select>
+        </div>
+
+        <!-- Orden -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Orden</label>
+          <select [ngModel]="filtroOrden()"
+                  (ngModelChange)="filtroOrden.set($event); onFiltroChange()"
+                  class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all bg-white">
+            <option value="desc">Más reciente primero</option>
+            <option value="asc">Más antiguo primero</option>
+          </select>
+        </div>
+
+        <!-- Fecha Desde -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Aprobado desde</label>
+          <input type="date"
+                 [ngModel]="filtroDesde()"
+                 (ngModelChange)="filtroDesde.set($event); onFiltroChange()"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+
+        <!-- Fecha Hasta -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Aprobado hasta</label>
+          <input type="date"
+                 [ngModel]="filtroHasta()"
+                 (ngModelChange)="filtroHasta.set($event); onFiltroChange()"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+
+        <!-- Monto Mín -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Monto mínimo</label>
+          <input type="number"
+                 placeholder="$ 0"
+                 [ngModel]="filtroMontoMin()"
+                 (ngModelChange)="filtroMontoMin.set($event); onFiltroChange()"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+
+        <!-- Monto Máx -->
+        <div>
+          <label class="block font-medium text-slate-600 mb-1">Monto máximo</label>
+          <input type="number"
+                 placeholder="Sin límite"
+                 [ngModel]="filtroMontoMax()"
+                 (ngModelChange)="filtroMontoMax.set($event); onFiltroChange()"
+                 class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#045C94]/20 focus:border-[#045C94] transition-all" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+            <tr>
+              <th class="px-5 py-3">Fecha Aprobación</th>
+              <th class="px-4 py-3">Tercero</th>
+              <th class="px-4 py-3">Módulo</th>
+              <th class="px-4 py-3">Comprobante</th>
+              <th class="px-4 py-3 text-right">Monto</th>
+              <th class="px-4 py-3 text-center">Estado</th>
+              <th class="px-4 py-3">Aprobado por</th>
+              <th class="px-4 py-3 text-center">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-100">
+            <!-- Loading Skeleton -->
+            <tr *ngIf="cargando()" class="animate-pulse">
+              <td colspan="8" class="p-8 text-center text-slate-400">
+                <div class="flex flex-col items-center justify-center gap-3">
+                  <div class="w-8 h-8 border-3 border-[#045C94] border-t-transparent rounded-full animate-spin"></div>
+                  <span class="text-xs font-medium">Consultando histórico de aprobaciones…</span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Empty State -->
+            <tr *ngIf="!cargando() && items().length === 0">
+              <td colspan="8" class="p-12 text-center">
+                <div class="max-w-sm mx-auto space-y-2">
+                  <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-2xl flex items-center justify-center mx-auto text-xl font-bold">
+                    📋
+                  </div>
+                  <h3 class="text-sm font-bold text-slate-800">No se encontraron aprobaciones</h3>
+                  <p class="text-xs text-slate-500">
+                    {{ hayFiltrosActivos() ? 'No hay registros que coincidan con los filtros seleccionados.' : 'Aún no se han registrado aprobaciones en el sistema.' }}
+                  </p>
+                  <button *ngIf="hayFiltrosActivos()"
+                          (click)="limpiarFiltros()"
+                          class="mt-2 inline-flex items-center px-3 py-1.5 text-xs font-semibold text-[#045C94] bg-sky-50 rounded-lg hover:bg-sky-100 transition-colors">
+                    Limpiar filtros
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Rows -->
+            <tr *ngFor="let row of items()" class="hover:bg-slate-50/70 transition-colors">
+              <!-- Fecha -->
+              <td class="px-5 py-3 whitespace-nowrap text-xs text-slate-600 font-mono">
+                {{ formatearFecha(row.fechaAprobacion) }}
+              </td>
+
+              <!-- Tercero -->
+              <td class="px-4 py-3">
+                <div class="max-w-[220px]">
+                  <p class="font-medium text-slate-900 text-xs truncate" [title]="row.nombre">{{ row.nombre || 'Sin nombre' }}</p>
+                  <p class="text-[11px] font-mono text-slate-400">{{ row.nit || 'Sin NIT' }}</p>
+                </div>
+              </td>
+
+              <!-- Módulo -->
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium border"
+                      [ngClass]="moduloColorClass(row.modulo)">
+                  {{ row.modulo || 'General' }}
+                </span>
+              </td>
+
+              <!-- Comprobante -->
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span *ngIf="row.comprobante" class="font-mono text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                  {{ row.comprobante }}
+                </span>
+                <span *ngIf="!row.comprobante" class="text-slate-300 text-xs">—</span>
+              </td>
+
+              <!-- Monto -->
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <span class="text-xs font-bold text-slate-900 tabular-nums">
+                  {{ formatear(row.monto) }}
+                </span>
+              </td>
+
+              <!-- Estado -->
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase"
+                      [ngClass]="estadoColorClass(row.estado)">
+                  {{ row.estado || 'APROBADO' }}
+                </span>
+              </td>
+
+              <!-- Aprobado por -->
+              <td class="px-4 py-3 whitespace-nowrap text-xs text-slate-600">
+                {{ row.aprobadoPor || 'Sistema' }}
+              </td>
+
+              <!-- Acciones (Estructura preparada para anular/abrir) -->
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                <span class="text-slate-400 text-xs" title="Solo lectura / Auditoría">Auditoría</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Bar -->
+      <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-600">
+        <div class="flex items-center gap-3">
+          <span>Registros por página:</span>
+          <select [ngModel]="size" (ngModelChange)="cambiarSize($event)"
+                  class="px-2 py-1 bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#045C94]">
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+          <span class="text-slate-400">|</span>
+          <span>Mostrando <strong>{{ items().length }}</strong> de <strong>{{ totalRegistros() | number }}</strong> aprobaciones</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button (click)="cambiarPagina(-1)"
+                  [disabled]="page === 0 || cargando()"
+                  class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors">
+            ← Anterior
+          </button>
+          <span class="px-3 py-1 font-semibold text-slate-700">
+            Página {{ page + 1 }} de {{ totalPaginas() }}
+          </span>
+          <button (click)="cambiarPagina(1)"
+                  [disabled]="page + 1 >= totalPaginas() || cargando()"
+                  class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed font-medium transition-colors">
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

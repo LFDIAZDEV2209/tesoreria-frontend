@@ -1,0 +1,118 @@
+<section class="anual space-y-4 min-w-0" aria-label="Consolidado de todos los meses" [attr.aria-busy]="loading()" @gpStagger>
+
+  <!-- ═══ Banner del consolidado (lenguaje Control de Bancos) ═══ -->
+  <div class="anual-hero gp-item">
+    <span class="anual-hero__glow anual-hero__glow--a" aria-hidden="true"></span>
+    <span class="anual-hero__glow anual-hero__glow--b" aria-hidden="true"></span>
+    <span class="anual-hero__icono" aria-hidden="true"><app-gp-icon name="calendar-days" [size]="22"/></span>
+    <div class="anual-hero__txt">
+      <span class="anual-hero__eyebrow">Consolidado · {{etiquetaModulo()}}</span>
+      <h2>Todos los meses</h2>
+      <p>{{ctx.nombreEmpresa()}} · Importes en COP por tercero y mes cargado</p>
+    </div>
+    <div class="anual-hero__acciones">
+      <span *ngIf="tercerosTotal()" class="anual-chip" aria-live="polite">
+        <i aria-hidden="true"></i>{{mesesCargados()}} {{mesesCargados() === 1 ? 'mes' : 'meses'}} cargados
+      </span>
+      <button type="button" class="anual-btn-refrescar" (click)="cargar()" [disabled]="loading() || !ctx.empresaId()">
+        <app-gp-icon name="refresh" [size]="15" [class.girando]="loading()"/>Actualizar
+      </button>
+      <button type="button" class="anual-btn-oro" (click)="exportar()" [disabled]="!terceros() || loading() || exportando()">
+        <app-gp-icon [name]="exportando() ? 'clock' : 'download'" [size]="15"/>{{exportando() ? 'Exportando…' : 'Exportar Excel'}}
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ KPIs del consolidado ═══ -->
+  <div *ngIf="tercerosTotal()" class="anual-kpis gp-item">
+    <app-gp-kpi label="Total general" [value]="totalGeneral()" [destacado]="true" [sub]="etiquetaMedida()" icon="balance"></app-gp-kpi>
+    <app-gp-kpi label="Promedio por mes" [value]="promedioMes()" icon="sigma" [sub]="etiquetaMedida() + ' por mes'"></app-gp-kpi>
+    <app-gp-kpi label="Mejor mes" [value]="mejorMes()?.valor ?? 0" variante="success" icon="trending" [sub]="mejorMesEtiqueta()"></app-gp-kpi>
+    <app-gp-kpi label="Terceros con movimientos" tipo="conteo" [value]="terceros()" variante="warning" icon="users"
+                [sub]="mesesCargados() + (mesesCargados() === 1 ? ' mes' : ' meses')"></app-gp-kpi>
+  </div>
+
+  <!-- ═══ Filtros del consolidado ═══ -->
+  <div class="anual-filtros card gp-item">
+    <app-gp-filtros class="anual-filtros__busqueda" [categorias]="categorias()" [categoria]="categoria()"
+                    [busqueda]="busqueda()" [mostrarFechas]="false"
+                    (cambio)="onFiltro($event)" (limpiarEvent)="limpiarFiltros()"/>
+    <label *ngIf="anios().length > 1" class="anual-campo">
+      <span>Año</span>
+      <select class="field" [ngModel]="anio()" (ngModelChange)="seleccionarAnio($event)">
+        <option [ngValue]="null">Todos los años</option>
+        <option *ngFor="let a of anios()" [ngValue]="a">{{a}}</option>
+      </select>
+    </label>
+    <div class="anual-campo">
+      <span id="anualMedidaLabel">Importe</span>
+      <div class="anual-seg" role="group" aria-labelledby="anualMedidaLabel">
+        <button *ngFor="let m of tiposMedida" type="button" [class.activo]="medida() === m"
+                [attr.aria-pressed]="medida() === m" (click)="medida.set(m)">{{etiquetaMedidaDe(m)}}</button>
+      </div>
+    </div>
+    <span *ngIf="tercerosTotal()" class="anual-filtros__meta" aria-live="polite" role="status">
+      {{terceros()}}<ng-container *ngIf="hayFiltros()"> de {{tercerosTotal()}}</ng-container>
+      {{terceros() === 1 && !hayFiltros() ? 'tercero' : 'terceros'}} · {{mesesCargados()}} {{mesesCargados() === 1 ? 'mes' : 'meses'}}
+    </span>
+  </div>
+
+  <!-- ═══ Estados ═══ -->
+  <app-gp-skeleton *ngIf="loading()" tipo="table" class="gp-item"/>
+  <div *ngIf="error()" class="gp-item">
+    <app-gp-error-state [mensaje]="error()!" (reintentar)="cargar()"></app-gp-error-state>
+  </div>
+  <div *ngIf="!loading() && !error() && !tercerosTotal()" class="gp-item">
+    <app-gp-empty-state icono="calendar" [titulo]="ctx.empresaId() ? 'Sin movimientos en este periodo' : 'Selecciona una empresa'"
+                        descripcion="La vista mensual sigue disponible para consultar o cargar información."
+                        [pista]="ctx.empresaId() ? (ctx.nombreEmpresa() ?? '') : ''" iconoPista="building"/>
+  </div>
+  <div *ngIf="!loading() && !error() && tercerosTotal() && !terceros()" class="gp-item">
+    <app-gp-empty-state icono="search" titulo="Sin resultados"
+                        descripcion="Ningún tercero coincide con los filtros aplicados. Ajusta la búsqueda o la categoría.">
+      <button acciones type="button" class="btn-secondary" (click)="limpiarFiltros()">Limpiar filtros</button>
+    </app-gp-empty-state>
+  </div>
+
+  <!-- ═══ Tabla por tercero y mes (columna resaltada al pasar el cursor) ═══ -->
+  <div *ngIf="!loading() && !error() && terceros()" class="card anual-tabla-card gp-item" @gpPop>
+    <div class="anual-scroll-wrap" [class.al-fin]="alFin()">
+      <div #scrollTabla class="anual-scroll scroll-thin" [class.desplazado]="desplazado()" tabindex="0" role="region"
+           aria-label="Tabla por mes; desplázate horizontalmente para consultar todos los periodos" (scroll)="onScrollTabla($event)">
+        <table class="anual-tabla">
+          <caption class="sr-only">{{medida()}} por tercero y mes, en pesos colombianos</caption>
+          <thead>
+            <tr>
+              <th scope="col" class="anual-tercero anual-sticky">Tercero</th>
+              <th scope="col" *ngFor="let mes of meses(); let i = index" [class.col-hover]="mesHover() === i"
+                  [title]="etiqueta(mes)" (mouseenter)="entrarMes(i)" (mouseleave)="salirMes()">{{etiqueta(mes)}}</th>
+              <th scope="col" class="anual-total-col">Total general</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let fila of filasFiltradas(); let idx = index" class="anual-fila" [style.animation-delay.ms]="retardoFila(idx)">
+              <th scope="row" class="anual-sticky anual-tercero-fila">
+                <span class="anual-nombre">{{fila.nombre || 'Sin nombre'}}</span>
+                <small>{{fila.nit || 'Sin NIT'}}<ng-container *ngIf="fila.seccion || fila.categoria"> · {{fila.seccion || fila.categoria}}</ng-container></small>
+              </th>
+              <td *ngFor="let mes of meses(); let i = index" [class.col-hover]="mesHover() === i"
+                  [class.anual-neg]="valor(fila.valores[mes]) < 0"
+                  (mouseenter)="entrarMes(i)" (mouseleave)="salirMes()">{{cp(valor(fila.valores[mes]))}}</td>
+              <td class="anual-total-col" [class.anual-neg]="valor(fila.totalAnio) < 0">{{cp(valor(fila.totalAnio))}}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" class="anual-sticky">Total por mes</th>
+              <td *ngFor="let mes of meses(); let i = index" [class.col-hover]="mesHover() === i"
+                  (mouseenter)="entrarMes(i)" (mouseleave)="salirMes()">{{cp(valor(totalesMesFiltrados()[mes]))}}</td>
+              <td class="anual-total-col">{{cp(valor(totalFiltrado()))}}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <span class="anual-fade" aria-hidden="true"></span>
+    </div>
+  </div>
+
+</section>

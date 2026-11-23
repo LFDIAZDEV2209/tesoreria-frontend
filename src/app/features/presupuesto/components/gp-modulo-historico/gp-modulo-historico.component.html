@@ -1,0 +1,8 @@
+@for(foto of consultas;track foto){
+  <p class="gp-snapshot-status">Información conservada al consolidar {{foto.historico.periodo}} · Solo lectura</p>
+  @if(modulo==='pagos-proyectados' || modulo==='otros-pagos'){
+    <app-pagos-proyectados-page [modoHistorico]="true" [fechaHistorica]="foto.historico.generadoEn" />
+  }@else{
+    <app-modulo-page [modoHistorico]="true" />
+  }
+}

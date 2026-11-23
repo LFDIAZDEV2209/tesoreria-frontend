@@ -1,0 +1,24 @@
+<main class="hist-page">
+  <a class="hist-back" routerLink="/presupuesto/historicos" [queryParams]="{empresaId:ctx.empresaId()}">← Históricos</a>
+  <p *ngIf="!ctx.empresaId()" class="hist-card">Selecciona una empresa para consultar sus históricos.</p>
+  <p *ngIf="cargando()" role="status">Cargando la fotografía conservada…</p>
+  <p *ngIf="error()" role="alert" class="hist-error">{{ error() }}</p>
+  <ng-container *ngIf="datos() as d">
+    <nav class="hist-tabs" aria-label="Meses del gestor histórico">
+      <a *ngIf="anterior() as mes" [routerLink]="['/presupuesto/historicos',mes.id]" [queryParams]="{empresaId:d.historico.empresaId}">← {{etiqueta(mes.periodo)}}</a>
+      <strong>{{etiqueta(d.historico.periodo)}}</strong>
+      <a *ngIf="siguiente() as mes" [routerLink]="['/presupuesto/historicos',mes.id]" [queryParams]="{empresaId:d.historico.empresaId}">{{etiqueta(mes.periodo)}} →</a>
+    </nav>
+    <header class="hist-readonly"><strong>Consulta histórica – {{ etiqueta(d.historico.periodo) }}</strong><p>{{ d.historico.empresaNombre }} · Solo lectura</p><span class="hist-muted">Generado el {{ d.historico.generadoEn | date:'dd/MM/yyyy HH:mm':'-0500' }} por {{ d.historico.usuarioNombre }}. Se muestran los datos y cálculos guardados en ese momento.</span></header>
+    <nav class="hist-tabs" aria-label="Vista histórica"><button [class.active]="pestana === 'presupuesto'" (click)="pestana = 'presupuesto'">Presupuesto</button><button *ngFor="let m of modulos" [class.active]="pestana === m.id" (click)="pestana=m.id">{{m.nombre}}</button><button [class.active]="pestana === 'registros'" (click)="verRegistros()">Registros conservados</button><a class="hist-back" routerLink="/presupuesto/historicos/comparar" [queryParams]="{empresaId:d.historico.empresaId,origen:d.historico.id}">Comparar con otro período</a></nav>
+    <app-historico-presupuesto *ngIf="pestana === 'presupuesto'" [consulta]="d" />
+    @if(pestana!=='presupuesto' && pestana!=='registros'){
+      <app-gp-periodo-historico [modulo]="pestana" [periodo]="d.historico.periodo" [empresaId]="d.historico.empresaId" [historicoId]="d.historico.id" />
+    }
+    <section *ngIf="pestana === 'registros'" class="hist-card">
+      <form (ngSubmit)="cargarRegistros(true)"><label>Sección<select name="seccion" [(ngModel)]="seccion" (ngModelChange)="cargarRegistros(true)"><option *ngFor="let s of d.secciones | keyvalue" [value]="s.key">{{ secciones[s.key] || s.key }} ({{ s.value }})</option></select></label><label>Buscar<input name="busqueda" [(ngModel)]="busqueda" placeholder="Nombre, NIT, factura o concepto"></label><button type="submit">Buscar</button></form>
+      <p *ngIf="cargandoRegistros()" role="status">Cargando registros…</p>
+      <ng-container *ngIf="registros() as r"><div class="hist-table"><table><caption>{{ secciones[seccion] }} · {{ r.totalElements }} registros</caption><thead><tr><th *ngFor="let c of columnas()">{{ campo(c) }}</th></tr></thead><tbody><tr *ngFor="let row of r.content"><td *ngFor="let c of columnas()" class="hist-values">{{ texto(row[c]) }}</td></tr></tbody></table></div><p *ngIf="!r.content.length" class="hist-empty">No hay registros para esta selección.</p><nav class="hist-pagination" aria-label="Páginas de registros históricos"><span>Página {{ r.totalPages ? r.page + 1 : 0 }} de {{ r.totalPages }}</span><button [disabled]="r.page === 0" (click)="cambiarPagina(-1)">Anterior</button><button [disabled]="r.page + 1 >= r.totalPages" (click)="cambiarPagina(1)">Siguiente</button></nav></ng-container>
+    </section>
+  </ng-container>
+</main>

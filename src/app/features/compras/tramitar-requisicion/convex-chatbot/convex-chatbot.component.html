@@ -1,0 +1,132 @@
+<!-- Floating Bubble -->
+<div class="convex-wrapper">
+  <!-- Bubble Button -->
+  <button
+    class="convex-bubble"
+    [class.open]="isOpen()"
+    (click)="toggleChat()"
+    [@bubblePulse]="bubbleState()"
+  >
+    @if (!isOpen()) {
+      <!-- Chat icon -->
+      <div class="bubble-icon-wrapper">
+        <svg class="bubble-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <span class="bubble-label">ConveX</span>
+      </div>
+      @if (unreadCount() > 0) {
+        <span class="unread-badge">{{ unreadCount() }}</span>
+      }
+    } @else {
+      <!-- Close icon -->
+      <svg class="close-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    }
+  </button>
+
+  <!-- Chat Panel -->
+  @if (isOpen()) {
+    <div class="convex-panel" @chatPanel>
+      <!-- Header -->
+      <div class="convex-header">
+        <div class="header-left">
+          <div class="avatar-container">
+            <div class="avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+              </svg>
+            </div>
+            <span class="status-dot"></span>
+          </div>
+          <div class="header-info">
+            <h3 class="header-title">ConveX</h3>
+            <p class="header-subtitle">Conversiones y Análisis</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <div class="header-badge">En línea</div>
+        </div>
+      </div>
+
+      <!-- Messages Area -->
+      <div class="convex-messages" #messagesContainer>
+        @for (msg of messages(); track msg.timestamp) {
+          <div
+            class="message-row"
+            [class.user]="msg.from === 'user'"
+            [class.bot]="msg.from === 'bot'"
+            @messageIn
+          >
+            @if (msg.from === 'bot') {
+              <div class="msg-avatar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+                </svg>
+              </div>
+            }
+            <div class="msg-bubble" [innerHTML]="formatMessage(msg.text)"></div>
+          </div>
+        }
+
+        <!-- Typing indicator -->
+        @if (isTyping()) {
+          <div class="message-row bot" @messageIn>
+            <div class="msg-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+              </svg>
+            </div>
+            <div class="msg-bubble typing-bubble">
+              <div class="typing-dots">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Quick Actions -->
+      @if (messages().length <= 3) {
+        <div class="quick-actions">
+          @for (action of quickActions; track action.label) {
+            <button class="quick-btn" (click)="onQuickAction(action)">
+              <span class="quick-icon">{{ action.icon }}</span>
+              <span>{{ action.label }}</span>
+            </button>
+          }
+        </div>
+      }
+
+      <!-- Input Area -->
+      <div class="convex-input">
+        <div class="input-wrapper">
+          <input
+            type="text"
+            placeholder="Escribe tu consulta..."
+            [ngModel]="userInput()"
+            (ngModelChange)="userInput.set($event)"
+            (keydown)="onKeydown($event)"
+            class="chat-input"
+          />
+          <button
+            class="send-btn"
+            [class.active]="userInput().trim().length > 0"
+            (click)="sendMessage()"
+            [disabled]="!userInput().trim()"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/>
+            </svg>
+          </button>
+        </div>
+        <p class="input-hint">ConveX · Conversiones y análisis de productos</p>
+      </div>
+    </div>
+  }
+</div>

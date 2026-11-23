@@ -1,0 +1,188 @@
+<div class="dynamic-section" [formGroup]="formGroup">
+  <!-- Header -->
+  <div class="dynamic-section__header">
+    <div class="dynamic-section__header-icon" style="background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.04)); color: #6366f1;">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+    </div>
+    <div class="dynamic-section__header-text">
+      <p class="dynamic-section__header-title">Datos de Mantenimiento</p>
+      <p class="dynamic-section__header-subtitle">Complete la información del activo y el tipo de mantenimiento requerido</p>
+    </div>
+  </div>
+
+  <!-- ═══ TIPO DE ACTIVO ═══ -->
+  <div class="sub-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏗️</span> Tipo de Activo</p>
+    <div class="option-chips">
+      <div *ngFor="let tipo of tiposActivo"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('tipoActivo')?.value === tipo"
+           (click)="selectOption('tipoActivo', tipo)">
+        <span class="option-chip__dot"></span>
+        {{ tipo }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Datos del activo -->
+  <div class="form-row form-row--3" style="margin-top: 20px;">
+    <div class="form-group">
+      <label class="form-label">Código del Activo</label>
+      <input type="text" formControlName="codigoActivo" placeholder="Si existe..." class="form-input" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nombre del Activo</label>
+      <input type="text" formControlName="nombreActivo" placeholder="Nombre del activo" class="form-input" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ubicación Exacta</label>
+      <input type="text" formControlName="ubicacionExacta" placeholder="Ubicación del activo" class="form-input" />
+    </div>
+  </div>
+
+  <div class="form-row form-row--1">
+    <div class="form-group">
+      <label class="form-label">Marca / Modelo (si aplica)</label>
+      <input type="text" formControlName="marcaModelo" placeholder="Ej: Samsung / Galaxy S24" class="form-input" />
+    </div>
+  </div>
+
+  <!-- ═══ TIPO DE MANTENIMIENTO ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🔧</span> Tipo de Mantenimiento</p>
+    <div class="option-chips">
+      <div *ngFor="let tipo of tiposMantenimiento"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('tipoMantenimiento')?.value === tipo"
+           (click)="selectOption('tipoMantenimiento', tipo)">
+        <span class="option-chip__dot"></span>
+        {{ tipo }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DESCRIPCIÓN / DETALLE ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📝</span> Descripción del Problema</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Falla Detectada</label>
+        <input type="text" formControlName="fallaDetectada" placeholder="Describa la falla" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Síntoma / Daño Observado</label>
+        <input type="text" formControlName="sintomaObservado" placeholder="Síntoma observado" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Detalle del Problema</label>
+        <textarea formControlName="detalleProblema" rows="3" placeholder="Describa a detalle el problema encontrado..." class="form-textarea"></textarea>
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">¿Equipo Detenido?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('equipoDetenido')?.value"
+             (click)="toggleBoolean('equipoDetenido')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('equipoDetenido')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Equipo detenido</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('equipoDetenido')?.value">
+            {{ formGroup.get('equipoDetenido')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nivel de Criticidad</label>
+        <div class="criticidad-options">
+          <div class="criticidad-badge criticidad-badge--alta"
+               [class.criticidad-badge--selected]="formGroup.get('nivelCriticidad')?.value === 'ALTA'"
+               (click)="selectOption('nivelCriticidad', 'ALTA')">
+            <span class="criticidad-badge__indicator criticidad-badge__indicator--alta"></span>
+            Alta
+          </div>
+          <div class="criticidad-badge criticidad-badge--media"
+               [class.criticidad-badge--selected]="formGroup.get('nivelCriticidad')?.value === 'MEDIA'"
+               (click)="selectOption('nivelCriticidad', 'MEDIA')">
+            <span class="criticidad-badge__indicator criticidad-badge__indicator--media"></span>
+            Media
+          </div>
+          <div class="criticidad-badge criticidad-badge--baja"
+               [class.criticidad-badge--selected]="formGroup.get('nivelCriticidad')?.value === 'BAJA'"
+               (click)="selectOption('nivelCriticidad', 'BAJA')">
+            <span class="criticidad-badge__indicator criticidad-badge__indicator--baja"></span>
+            Baja
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PRIORIDAD / TIEMPO ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">⏱️</span> Prioridad / Tiempo</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Fecha Requerida</label>
+        <input type="date" formControlName="fechaRequerida" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Franja Horaria Sugerida</label>
+        <input type="text" formControlName="franjaHoraria" placeholder="Ej: 8:00 AM - 12:00 PM" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Impacto Operativo</label>
+        <div class="option-chips">
+          <div *ngFor="let imp of nivelesImpacto"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('impactoOperativo')?.value === imp.value"
+               (click)="selectOption('impactoOperativo', imp.value)">
+            <span class="option-chip__dot"></span>
+            {{ imp.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ IMPACTO PRESUPUESTAL ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">💰</span> Impacto Presupuestal</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">¿Requiere Compra?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('requiereCompra')?.value"
+             (click)="toggleBoolean('requiereCompra')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('requiereCompra')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Requiere compra</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('requiereCompra')?.value">
+            {{ formGroup.get('requiereCompra')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Presupuesto Estimado (opcional)</label>
+        <input type="number" formControlName="presupuestoEstimado" placeholder="$ 0" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Centro de Costos</label>
+        <input type="text" formControlName="centroCostos" placeholder="Centro de costos" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Proyecto (si aplica)</label>
+        <input type="text" formControlName="proyecto" placeholder="Nombre del proyecto" class="form-input" />
+      </div>
+    </div>
+  </div>
+</div>

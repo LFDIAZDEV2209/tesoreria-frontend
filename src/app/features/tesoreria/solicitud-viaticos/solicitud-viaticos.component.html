@@ -1,0 +1,340 @@
+<!-- ═══ TOAST ═══ -->
+<div *ngIf="showSuccess()"
+  class="fixed top-5 right-5 z-[9999] flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl shadow-2xl animate-slideIn">
+  <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+    </svg>
+  </div>
+  <div>
+    <p class="font-bold text-sm">¡Solicitud de viáticos registrada!</p>
+    <p class="text-xs text-white/80">Se ha enviado correctamente</p>
+  </div>
+</div>
+
+<div class="viaticos-page">
+  <!-- ═══ HEADER ═══ -->
+  <div class="viaticos-header">
+    <div class="viaticos-header__pattern"></div>
+    <div class="viaticos-header__content">
+      <div class="viaticos-header__icon">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+            d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+        </svg>
+      </div>
+      <div>
+        <p class="viaticos-header__eyebrow">Módulo Tesorería</p>
+        <h1 class="viaticos-header__title">Solicitud de Viáticos</h1>
+        <p class="viaticos-header__subtitle">Complete la información para registrar su solicitud de viáticos</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN LAYOUT (content + sidebar) ═══ -->
+  <div class="viaticos-layout">
+
+    <!-- ═══ LEFT: FORM CONTENT ═══ -->
+    <div class="viaticos-content">
+
+      <!-- ── INFORMACIÓN DE LA EMPRESA ── -->
+      <div class="viaticos-card">
+        <div class="viaticos-card__header">
+          <span class="viaticos-card__header-icon">🏢</span>
+          <h2 class="viaticos-card__header-title">Información de la Empresa</h2>
+        </div>
+        <div class="viaticos-card__body" [formGroup]="empresaForm">
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label class="form-label">Tipo de Empresa *</label>
+              <select formControlName="tipoEmpresa" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let tipo of tiposEmpresa" [value]="tipo">{{ tipo }}</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Nombre de la Empresa *</label>
+              <input type="text" formControlName="nombreEmpresa" class="form-input"
+                placeholder="Ej: Bancolombia S.A.">
+            </div>
+            <div class="form-field">
+              <label class="form-label">NIT *</label>
+              <input type="text" formControlName="nit" class="form-input"
+                placeholder="Ej: 890903938-3">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Centro de Costo *</label>
+              <input type="text" formControlName="centroCosto" class="form-input"
+                placeholder="Ej: CC-400 Operaciones">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Área / Dependencia *</label>
+              <input type="text" formControlName="areaDependencia" class="form-input"
+                placeholder="Ej: Dirección Financiera">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Ciudad *</label>
+              <select formControlName="ciudad" class="form-select">
+                <option value="">Seleccionar...</option>
+                <option *ngFor="let c of ciudades" [value]="c">{{ c }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── INFORMACIÓN DEL SOLICITANTE ── -->
+      <div class="viaticos-card">
+        <div class="viaticos-card__header">
+          <span class="viaticos-card__header-icon">👤</span>
+          <h2 class="viaticos-card__header-title">Información del Solicitante</h2>
+        </div>
+        <div class="viaticos-card__body" [formGroup]="solicitanteForm">
+          <div class="form-grid-2">
+            <div class="form-field">
+              <label class="form-label">Nombre Completo *</label>
+              <input type="text" formControlName="nombreCompleto" class="form-input"
+                placeholder="Nombre y apellidos">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Cargo *</label>
+              <input type="text" formControlName="cargo" class="form-input"
+                placeholder="Cargo o posición">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Correo Electrónico *</label>
+              <input type="email" formControlName="correoElectronico" class="form-input"
+                placeholder="correo&#64;empresa.com">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Teléfono / Ext. *</label>
+              <input type="text" formControlName="telefonoExt" class="form-input"
+                placeholder="3101234567 / Ext. 201">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ÍTEMS DE GASTO ── -->
+      <div class="viaticos-card">
+        <div class="viaticos-card__header" style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span class="viaticos-card__header-icon">💰</span>
+            <div>
+              <h2 class="viaticos-card__header-title" style="margin: 0;">Ítems de Gasto</h2>
+              <p class="viaticos-card__header-sub">Agregue uno o más conceptos de gasto</p>
+            </div>
+          </div>
+          <button type="button" class="btn-add-item" (click)="openModal()">
+            + Agregar Ítem
+          </button>
+        </div>
+        <div class="viaticos-card__body">
+          <!-- Empty state -->
+          <div *ngIf="items().length === 0" class="empty-state">
+            <div class="empty-state__icon">📦</div>
+            <p class="empty-state__text">Sin ítems. Agregue el primer concepto.</p>
+          </div>
+
+          <!-- Items table -->
+          <div *ngIf="items().length > 0" class="items-table-wrapper">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Fecha</th>
+                  <th>Concepto</th>
+                  <th class="text-right">Base</th>
+                  <th class="text-right">IVA</th>
+                  <th class="text-right">Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of items()">
+                  <td>
+                    <span class="badge-tipo">{{ item.tipoViatico }}</span>
+                  </td>
+                  <td>{{ item.fechaGasto }}</td>
+                  <td>{{ item.conceptoDetallado }}</td>
+                  <td class="text-right">{{ formatCurrency(item.valorBase) }}</td>
+                  <td class="text-right">{{ formatCurrency(item.valorIva) }}</td>
+                  <td class="text-right font-semibold">{{ formatCurrency(item.valorTotal) }}</td>
+                  <td>
+                    <button type="button" class="btn-remove" (click)="removeItem(item.id)" title="Eliminar">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-right font-semibold">Totales:</td>
+                  <td class="text-right font-semibold">{{ formatCurrency(subtotalBase()) }}</td>
+                  <td class="text-right font-semibold">{{ formatCurrency(totalIva()) }}</td>
+                  <td class="text-right font-bold text-lg" style="color: #045C94;">{{ formatCurrency(totalItems()) }}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SOPORTES DOCUMENTALES ── -->
+      <div class="viaticos-card">
+        <div class="viaticos-card__header">
+          <span class="viaticos-card__header-icon">📎</span>
+          <h2 class="viaticos-card__header-title">Soportes Documentales</h2>
+        </div>
+        <div class="viaticos-card__body">
+          <!-- Soporte Principal -->
+          <div class="form-field">
+            <label class="form-label form-label--required">Soporte Principal * (obligatorio)</label>
+            <div class="file-upload-area">
+              <input type="file" (change)="onSoportePrincipalChange($event)" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+              <span *ngIf="!soportePrincipal()">Ningún archivo seleccionado</span>
+              <div *ngIf="soportePrincipal()" class="file-selected">
+                <span>{{ soportePrincipal()!.name }}</span>
+                <button type="button" class="btn-remove-file" (click)="removeSoportePrincipal()">×</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Soportes Adicionales -->
+          <div class="form-field" style="margin-top: 16px;">
+            <label class="form-label">Soportes Adicionales</label>
+            <div class="file-upload-area">
+              <input type="file" multiple (change)="onSoportesAdicionalesChange($event)"
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+              <span *ngIf="soportesAdicionales().length === 0">Ningún archivo seleccionado</span>
+            </div>
+            <div *ngIf="soportesAdicionales().length > 0" class="files-list">
+              <div *ngFor="let file of soportesAdicionales(); let i = index" class="file-item">
+                <span>{{ file.name }}</span>
+                <button type="button" class="btn-remove-file" (click)="removeSoporteAdicional(i)">×</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── OBSERVACIONES ── -->
+      <div class="viaticos-card">
+        <div class="viaticos-card__header">
+          <span class="viaticos-card__header-icon">📝</span>
+          <h2 class="viaticos-card__header-title">Observaciones</h2>
+        </div>
+        <div class="viaticos-card__body">
+          <textarea class="form-textarea" rows="4" placeholder="Escriba observaciones adicionales..."
+            [ngModel]="observaciones()" (ngModelChange)="observaciones.set($event)" maxlength="2000"></textarea>
+          <p class="char-count">{{ observaciones().length }} / 2000</p>
+        </div>
+      </div>
+
+      <!-- ── ACTION BUTTONS ── -->
+      <div class="viaticos-actions">
+        <button type="button" class="btn-cancel" (click)="onCancel()">Cancelar</button>
+        <button type="button" class="btn-submit" [disabled]="!canSubmit() || isSubmitting()" (click)="onSubmit()">
+          <span *ngIf="!isSubmitting()">Enviar Solicitud</span>
+          <span *ngIf="isSubmitting()" class="flex items-center gap-2">
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Enviando...
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ RIGHT SIDEBAR ═══ -->
+    <div class="viaticos-sidebar">
+
+      <!-- Resumen en Tiempo Real -->
+      <div class="sidebar-card sidebar-card--summary">
+        <div class="sidebar-card__header">
+          <div class="sidebar-card__icon-box">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div>
+            <p class="sidebar-card__eyebrow">EN TIEMPO REAL</p>
+            <h3 class="sidebar-card__title">Resumen</h3>
+          </div>
+        </div>
+        <div class="sidebar-card__body">
+          <div *ngIf="items().length === 0" class="sidebar-empty">
+            Agregue ítems para ver el resumen
+          </div>
+          <div *ngIf="items().length > 0" class="summary-content">
+            <div class="summary-row">
+              <span>Ítems de gasto</span>
+              <span class="font-semibold">{{ items().length }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Subtotal base</span>
+              <span>{{ formatCurrency(subtotalBase()) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Total IVA</span>
+              <span>{{ formatCurrency(totalIva()) }}</span>
+            </div>
+            <hr class="summary-divider">
+            <div class="summary-row summary-row--total">
+              <span>Total General</span>
+              <span class="text-xl font-bold" style="color: #045C94;">{{ formatCurrency(totalItems()) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checklist -->
+      <div class="sidebar-card sidebar-card--checklist">
+        <div class="sidebar-card__header">
+          <div class="sidebar-card__icon-box">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+          <div>
+            <p class="sidebar-card__eyebrow">VERIFICACIÓN</p>
+            <h3 class="sidebar-card__title">Checklist</h3>
+          </div>
+        </div>
+        <div class="sidebar-card__body">
+          <div class="checklist-item" [class.checklist-item--done]="empresaCompleta()">
+            <span class="checklist-dot"></span>
+            <span>Empresa completada</span>
+          </div>
+          <div class="checklist-item" [class.checklist-item--done]="solicitanteCompleto()">
+            <span class="checklist-dot"></span>
+            <span>Solicitante completado</span>
+          </div>
+          <div class="checklist-item" [class.checklist-item--done]="tieneItems()">
+            <span class="checklist-dot"></span>
+            <span>Al menos 1 ítem de gasto</span>
+          </div>
+          <div class="checklist-item" [class.checklist-item--done]="tieneSoportePrincipal()">
+            <span class="checklist-dot"></span>
+            <span>Soporte principal adjunto</span>
+          </div>
+          <div class="checklist-item" [class.checklist-item--done]="totalMayorCero()">
+            <span class="checklist-dot"></span>
+            <span>Total mayor a $0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<app-item-gasto-modal *ngIf="showModal()" (close)="closeModal()" (addItem)="addItem($any($event))">
+</app-item-gasto-modal>

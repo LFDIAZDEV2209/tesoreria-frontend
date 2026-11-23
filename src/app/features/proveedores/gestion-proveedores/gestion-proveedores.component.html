@@ -1,0 +1,3264 @@
+<!-- ═══════════════════════════════════════════════════════════════════════
+     GESTIÓN DE PROVEEDORES — Redesigned Template
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Success Toast -->
+<div
+  *ngIf="successMessage()"
+  class="fixed top-6 right-6 z-[100] animate-slide-in"
+>
+  <div
+    class="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-2xl shadow-emerald-500/30"
+  >
+    <div
+      class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M5 13l4 4L19 7"
+        />
+      </svg>
+    </div>
+    <span class="font-semibold">{{ successMessage() }}</span>
+  </div>
+</div>
+
+<!-- Error Toast -->
+<div
+  *ngIf="errorMessage()"
+  class="fixed top-6 right-6 z-[100] animate-slide-in"
+>
+  <div
+    class="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white shadow-2xl shadow-red-500/30"
+  >
+    <div
+      class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+    >
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </div>
+    <span class="font-semibold">{{ errorMessage() }}</span>
+    <button
+      (click)="errorMessage.set('')"
+      class="ml-2 hover:bg-white/20 rounded-full p-1 transition"
+    >
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="proveedores-page">
+  <!-- ═══ HEADER ═══ -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">
+          <svg
+            class="w-7 h-7 text-[#FFB71B]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+            />
+          </svg>
+        </div>
+        <div>
+          <p class="header-subtitle">Bandeja de Entrada</p>
+          <h1 class="header-title">Gestión de Proveedores</h1>
+          <p class="header-desc">
+            Administra la información de tus proveedores
+          </p>
+        </div>
+      </div>
+      <button (click)="openCreateModal()" class="btn-new-proveedor group">
+        <svg
+          class="w-4 h-4 group-hover:rotate-90 transition-transform duration-300"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M12 4v16m8-8H4"
+          />
+        </svg>
+        Nuevo Proveedor
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ STATS CARDS ═══ -->
+  <section class="kpi-section-compact">
+    <div class="kpi-card-compact kpi-primary">
+      <div class="kpi-icon-wrapper-compact kpi-icon-primary">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Total Proveedores</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ stats().totalProveedores }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Total</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-teal">
+      <div class="kpi-icon-wrapper-compact kpi-icon-teal">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Activos</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{
+            stats().proveedoresActivos
+          }}</span>
+          <span class="kpi-trend-compact kpi-trend-up">Operando</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-danger">
+      <div class="kpi-icon-wrapper-compact kpi-icon-danger">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Inactivos</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{
+            stats().proveedoresInactivos
+          }}</span>
+          <span class="kpi-badge-compact kpi-badge-danger">Pausado</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-indigo">
+      <div class="kpi-icon-wrapper-compact kpi-icon-indigo">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Nuevos este Mes</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ stats().proveedoresMes }}</span>
+          <span class="kpi-badge-compact kpi-badge-info">Recientes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TABLE PANEL ═══ -->
+  <div class="table-panel">
+    <!-- ── Toolbar ── -->
+    <div class="table-toolbar">
+      <div class="toolbar-top">
+        <div class="toolbar-left">
+          <h2 class="toolbar-title">
+            <svg
+              class="w-5 h-5 text-[#045C94]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 10h16M4 14h16M4 18h16"
+              />
+            </svg>
+            Bandeja de Proveedores
+          </h2>
+          <span class="toolbar-count"
+            >{{ filteredProveedores().length }} resultado{{
+              filteredProveedores().length !== 1 ? "s" : ""
+            }}</span
+          >
+        </div>
+
+        <div class="toolbar-actions">
+          <!-- Search Input -->
+          <div class="search-box">
+            <svg
+              class="search-box__icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Buscar por nombre, NIT, banco..."
+              [value]="searchTerm()"
+              (input)="onSearch($event)"
+              class="search-box__input"
+            />
+            <button
+              *ngIf="searchTerm()"
+              (click)="searchTerm.set(''); currentPage.set(1)"
+              class="search-box__clear"
+            >
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Toggle Advanced Filters -->
+          <button
+            (click)="toggleFilters()"
+            class="btn-filter"
+            [class.btn-filter--active]="
+              showFilters() || activeFilterCount() > 0
+            "
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
+            </svg>
+            Filtros
+            <span *ngIf="activeFilterCount() > 0" class="filter-badge">{{
+              activeFilterCount()
+            }}</span>
+          </button>
+
+          <!-- Refresh -->
+          <button
+            (click)="refreshData()"
+            class="btn-refresh"
+            title="Actualizar datos"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Advanced Filters Panel ── -->
+      <div *ngIf="showFilters()" class="filters-panel">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label class="filter-label">Estado</label>
+            <select
+              (change)="onFilterChange($event)"
+              [value]="filterEstado()"
+              class="filter-select"
+            >
+              <option value="TODOS">Todos los estados</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="INACTIVO">Inactivo</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Banco</label>
+            <select
+              (change)="onBancoFilterChange($event)"
+              [value]="filterBanco()"
+              class="filter-select"
+            >
+              <option value="TODOS">Todos los bancos</option>
+              <option *ngFor="let b of bancos" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Forma de Pago</label>
+            <select
+              (change)="onFormaPagoFilterChange($event)"
+              [value]="filterFormaPago()"
+              class="filter-select"
+            >
+              <option value="TODOS">Todas las formas</option>
+              <option *ngFor="let fp of formasPago" [value]="fp.value">
+                {{ fp.icon }} {{ fp.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label">Concepto</label>
+            <select
+              (change)="onConceptoFilterChange($event)"
+              [value]="filterConcepto()"
+              class="filter-select"
+            >
+              <option value="TODOS">Todos los conceptos</option>
+              <option *ngFor="let c of conceptos" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+        </div>
+
+        <button
+          *ngIf="activeFilterCount() > 0"
+          (click)="clearAllFilters()"
+          class="btn-clear-filters"
+        >
+          <svg
+            class="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+          Limpiar filtros
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ LOADING ═══ -->
+    <div *ngIf="loading()" class="loading-container">
+      <div class="loading-spinner">
+        <div class="spinner-ring"></div>
+        <div class="spinner-ring spinner-ring--inner"></div>
+      </div>
+      <p class="loading-text">Cargando proveedores...</p>
+    </div>
+
+    <!-- ═══ DESKTOP TABLE ═══ -->
+    <div *ngIf="!loading()" class="hidden md:block">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="th-cell th-left">#</th>
+              <th class="th-cell th-left">Proveedor</th>
+              <th class="th-cell th-left">NIT</th>
+              <th class="th-cell th-left">Banco / Cuenta</th>
+              <th class="th-cell th-left">Forma de Pago</th>
+              <th class="th-cell th-left">Concepto</th>
+              <th class="th-cell th-center">Estado</th>
+              <th class="th-cell th-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="
+                let p of paginatedProveedores();
+                trackBy: trackById;
+                let i = index
+              "
+              class="data-row"
+              [style.animation-delay]="i * 0.03 + 's'"
+            >
+              <!-- # -->
+              <td class="td-cell">
+                <span class="row-number">{{
+                  (currentPage() - 1) * pageSize() + i + 1
+                }}</span>
+              </td>
+              <!-- Proveedor -->
+              <td class="td-cell">
+                <div class="proveedor-cell">
+                  <div class="proveedor-avatar">
+                    {{ p.nombreProveedor.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <span class="proveedor-name">{{ p.nombreProveedor }}</span>
+                    <p class="proveedor-email">
+                      {{ p.correoElectronico || "—" }}
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <!-- NIT -->
+              <td class="td-cell">
+                <span class="nit-text">{{ p.nit || "—" }}</span>
+              </td>
+              <!-- Banco / Cuenta -->
+              <td class="td-cell">
+                <div>
+                  <span class="banco-text">{{ p.banco || "—" }}</span>
+                  <p class="cuenta-text">{{ p.numeroCuenta || "—" }}</p>
+                </div>
+              </td>
+              <!-- Forma de Pago -->
+              <td class="td-cell">
+                <span class="forma-pago-chip">
+                  {{ getFormaPagoIcon(p.formaPago || "") }}
+                  {{ getFormaPagoLabel(p.formaPago || "") }}
+                </span>
+              </td>
+              <!-- Concepto -->
+              <td class="td-cell">
+                <span class="concepto-text">{{ p.concepto || "—" }}</span>
+              </td>
+              <!-- Estado -->
+              <td class="td-cell td-center">
+                <span
+                  class="estado-badge"
+                  [ngClass]="
+                    p.estado === 'ACTIVO' ? 'estado-activo' : 'estado-inactivo'
+                  "
+                >
+                  <span
+                    class="estado-dot"
+                    [ngClass]="
+                      p.estado === 'ACTIVO' ? 'dot-activo' : 'dot-inactivo'
+                    "
+                  ></span>
+                  {{ p.estado }}
+                </span>
+              </td>
+              <!-- Acciones -->
+              <td class="td-cell td-center">
+                <div class="action-buttons">
+                  <button
+                    (click)="openDetail(p)"
+                    class="action-btn action-btn--view"
+                    title="Ver detalle"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    (click)="openEditModal(p)"
+                    class="action-btn action-btn--edit"
+                    title="Editar"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    (click)="toggleEstado(p)"
+                    class="action-btn action-btn--toggle"
+                    [title]="p.estado === 'ACTIVO' ? 'Desactivar' : 'Activar'"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    (click)="deleteProveedor(p)"
+                    class="action-btn action-btn--delete"
+                    title="Eliminar"
+                  >
+                    <svg
+                      class="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="filteredProveedores().length === 0" class="empty-state">
+        <div class="empty-state__icon">
+          <svg
+            class="w-12 h-12"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+            />
+          </svg>
+        </div>
+        <p class="empty-state__title">No se encontraron proveedores</p>
+        <p class="empty-state__desc">
+          Ajusta los filtros o registra un nuevo proveedor
+        </p>
+        <button
+          *ngIf="activeFilterCount() > 0"
+          (click)="clearAllFilters()"
+          class="empty-state__btn"
+        >
+          Limpiar filtros
+        </button>
+      </div>
+
+      <!-- ── Pagination ── -->
+      <div *ngIf="filteredProveedores().length > 0" class="pagination-bar">
+        <div class="pagination-info">
+          <span
+            >Mostrando <b>{{ (currentPage() - 1) * pageSize() + 1 }}</b> -
+            <b>{{
+              currentPage() * pageSize() > filteredProveedores().length
+                ? filteredProveedores().length
+                : currentPage() * pageSize()
+            }}</b>
+            de <b>{{ filteredProveedores().length }}</b>
+          </span>
+          <div class="page-size-selector">
+            <label>Filas:</label>
+            <select
+              [value]="pageSize()"
+              (change)="onPageSizeChange($event)"
+              class="page-size-select"
+            >
+              <option *ngFor="let size of pageSizeOptions" [value]="size">
+                {{ size }}
+              </option>
+            </select>
+          </div>
+        </div>
+        <div class="pagination-controls">
+          <button
+            (click)="goToPage(1)"
+            [disabled]="currentPage() === 1"
+            class="page-btn"
+            title="Primera página"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+              />
+            </svg>
+          </button>
+          <button
+            (click)="goToPage(currentPage() - 1)"
+            [disabled]="currentPage() === 1"
+            class="page-btn"
+            title="Anterior"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <button
+            *ngFor="let pg of getPageNumbers()"
+            (click)="goToPage(pg)"
+            class="page-num"
+            [class.page-num--active]="pg === currentPage()"
+          >
+            {{ pg }}
+          </button>
+
+          <button
+            (click)="goToPage(currentPage() + 1)"
+            [disabled]="currentPage() === totalPages()"
+            class="page-btn"
+            title="Siguiente"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+          <button
+            (click)="goToPage(totalPages())"
+            [disabled]="currentPage() === totalPages()"
+            class="page-btn"
+            title="Última página"
+          >
+            <svg
+              class="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 5l7 7-7 7M5 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MOBILE CARDS ═══ -->
+    <div *ngIf="!loading()" class="md:hidden">
+      <div class="mobile-cards-list">
+        <div
+          *ngFor="let p of paginatedProveedores(); trackBy: trackById"
+          class="bg-white rounded-lg shadow-md p-4 animate-fade-in"
+        >
+          <div class="flex items-start justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2 flex-1">
+              <div
+                class="w-10 h-10 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+              >
+                {{ p.nombreProveedor.charAt(0).toUpperCase() }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-900 truncate text-sm">
+                  {{ p.nombreProveedor }}
+                </p>
+                <p class="text-xs text-gray-500 truncate">
+                  {{ p.nit || "Sin NIT" }}
+                </p>
+              </div>
+            </div>
+            <span
+              class="px-2 py-1 rounded text-xs font-semibold"
+              [ngClass]="{
+                'bg-green-100 text-green-700': p.estado === 'ACTIVO',
+                'bg-red-100 text-red-700': p.estado !== 'ACTIVO',
+              }"
+            >
+              {{ p.estado === "ACTIVO" ? "✅" : "❌" }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <div class="bg-gray-50 rounded p-2">
+              <p class="text-xs text-gray-600 font-semibold">Banco</p>
+              <p
+                class="text-xs text-gray-900 font-bold truncate"
+                [title]="p.banco || 'N/A'"
+              >
+                {{ p.banco || "—" }}
+              </p>
+            </div>
+            <div class="bg-gray-50 rounded p-2">
+              <p class="text-xs text-gray-600 font-semibold">Forma Pago</p>
+              <p
+                class="text-xs text-gray-900 font-bold truncate"
+                [title]="getFormaPagoLabel(p.formaPago || '')"
+              >
+                {{ getFormaPagoLabel(p.formaPago || "") || "—" }}
+              </p>
+            </div>
+            <div class="bg-gray-50 rounded p-2">
+              <p class="text-xs text-gray-600 font-semibold">Concepto</p>
+              <p
+                class="text-xs text-gray-900 font-bold truncate"
+                [title]="p.concepto || 'N/A'"
+              >
+                {{ p.concepto || "—" }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button
+              (click)="openEditModal(p)"
+              class="flex-1 px-3 py-2 bg-[#045C94] hover:bg-[#0572b9] text-white rounded-lg text-xs font-semibold transition shadow-md"
+            >
+              ✏️ Editar
+            </button>
+            <button
+              (click)="toggleEstado(p)"
+              [ngClass]="{
+                'bg-red-600 hover:bg-red-700': p.estado === 'ACTIVO',
+                'bg-green-600 hover:bg-green-700': p.estado !== 'ACTIVO',
+              }"
+              class="flex-1 px-3 py-2 text-white rounded-lg text-xs font-semibold transition shadow-md"
+            >
+              {{ p.estado === "ACTIVO" ? "🚫 Desha." : "✅ Activ." }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Pagination -->
+      <div *ngIf="filteredProveedores().length > 0" class="mobile-pagination">
+        <button
+          (click)="goToPage(currentPage() - 1)"
+          [disabled]="currentPage() === 1"
+          class="page-btn"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+        </button>
+        <span class="mobile-page-info"
+          >{{ currentPage() }} / {{ totalPages() }}</span
+        >
+        <button
+          (click)="goToPage(currentPage() + 1)"
+          [disabled]="currentPage() === totalPages()"
+          class="page-btn"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CREATE/EDIT MODAL — Multi-step wizard
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div
+  *ngIf="showModal()"
+  class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+>
+  <div
+    class="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-sm animate-fade-in"
+    (click)="closeModal()"
+  ></div>
+
+  <div
+    class="relative w-full max-w-6xl xl:max-w-7xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-scale-in"
+  >
+    <!-- Modal Header -->
+    <div
+      class="relative bg-gradient-to-r from-[#213053] to-[#045C94] px-8 py-6"
+    >
+      <div
+        class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L2c+PC9zdmc+')] opacity-30"
+      ></div>
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center"
+          >
+            <svg
+              class="w-5 h-5 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+              />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">
+              {{ editMode() ? "Editar Proveedor" : "Nuevo Proveedor" }}
+            </h2>
+            <p class="text-sm text-white/60">
+              {{
+                editMode()
+                  ? "Modifica la información"
+                  : "Registra un nuevo proveedor"
+              }}
+            </p>
+          </div>
+        </div>
+        <button
+          (click)="closeModal()"
+          class="p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-all duration-200"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Step Indicator -->
+      <div class="relative flex items-center justify-center mt-6 gap-0">
+        <div class="flex items-center gap-0">
+          <div class="flex items-center">
+            <div
+              class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300"
+              [class]="
+                currentStep() >= 1
+                  ? 'bg-[#FFB71B] text-[#213053]'
+                  : 'bg-white/10 text-white/50'
+              "
+            >
+              <span
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                [class]="
+                  currentStep() >= 1 ? 'bg-[#213053] text-white' : 'bg-white/20'
+                "
+                >1</span
+              >
+              <span class="text-xs font-semibold hidden sm:inline"
+                >Información</span
+              >
+            </div>
+            <div
+              class="w-8 h-0.5 mx-1"
+              [class]="currentStep() >= 2 ? 'bg-[#FFB71B]' : 'bg-white/20'"
+            ></div>
+          </div>
+          <div class="flex items-center">
+            <div
+              class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300"
+              [class]="
+                currentStep() >= 2
+                  ? 'bg-[#FFB71B] text-[#213053]'
+                  : 'bg-white/10 text-white/50'
+              "
+            >
+              <span
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                [class]="
+                  currentStep() >= 2 ? 'bg-[#213053] text-white' : 'bg-white/20'
+                "
+                >2</span
+              >
+              <span class="text-xs font-semibold hidden sm:inline">Pago</span>
+            </div>
+            <div
+              class="w-8 h-0.5 mx-1"
+              [class]="currentStep() >= 3 ? 'bg-[#FFB71B]' : 'bg-white/20'"
+            ></div>
+          </div>
+          <div class="flex items-center">
+            <div
+              class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300"
+              [class]="
+                currentStep() >= 3
+                  ? 'bg-[#FFB71B] text-[#213053]'
+                  : 'bg-white/10 text-white/50'
+              "
+            >
+              <span
+                class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                [class]="
+                  currentStep() >= 3 ? 'bg-[#213053] text-white' : 'bg-white/20'
+                "
+                >3</span
+              >
+              <span class="text-xs font-semibold hidden sm:inline"
+                >Adjuntos</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-8 overflow-y-auto" style="max-height: calc(90vh - 240px)">
+      <form [formGroup]="proveedorForm">
+        <!-- STEP 1 -->
+        <div *ngIf="currentStep() === 1" class="space-y-5 animate-fade-in">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-[#045C94]/10 flex items-center justify-center"
+            >
+              <svg
+                class="w-4 h-4 text-[#045C94]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#213053]">Información del Proveedor</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="md:col-span-2">
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Nombre del Proveedor *</label
+              >
+              <input
+                formControlName="nombreProveedor"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Nombre o razón social del proveedor"
+              />
+              <p
+                *ngIf="
+                  proveedorForm.controls['nombreProveedor'].touched &&
+                  proveedorForm.controls['nombreProveedor'].invalid
+                "
+                class="text-xs text-red-500 mt-1"
+              >
+                El nombre es requerido (mín. 3 caracteres)
+              </p>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >NIT *</label
+              >
+              <input
+                formControlName="nit"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Ej: 900.123.456-7"
+              />
+              <p
+                *ngIf="
+                  proveedorForm.controls['nit'].touched &&
+                  proveedorForm.controls['nit'].invalid
+                "
+                class="text-xs text-red-500 mt-1"
+              >
+                El NIT es requerido
+              </p>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Teléfono</label
+              >
+              <input
+                formControlName="telefono"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Ej: 3001234567"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Correo Electrónico</label
+              >
+              <input
+                formControlName="correoElectronico"
+                type="email"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="proveedor&#64;empresa.com"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Dirección</label
+              >
+              <input
+                formControlName="direccion"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Dirección del proveedor"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Representante Legal</label
+              >
+              <input
+                formControlName="nombreRepresentanteLegal"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Nombre completo"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Cédula Rep. Legal</label
+              >
+              <input
+                formControlName="cedulaRepresentanteLegal"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Ej: 1234567890"
+              />
+            </div>
+          </div>
+
+          <!-- ── Información Tributaria (Retención en la Fuente) ── -->
+          <div class="mt-6 pt-5 border-t border-gray-200">
+            <div class="flex items-center gap-2 mb-4">
+              <div
+                class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center"
+              >
+                <svg
+                  class="w-4 h-4 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-[#213053]">Información Tributaria</h3>
+                <p class="text-xs text-gray-400">
+                  Datos para cálculo de retención en la fuente
+                </p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label
+                  class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                  >Tipo de Persona *</label
+                >
+                <select
+                  formControlName="tipoPersona"
+                  class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200 appearance-none cursor-pointer"
+                >
+                  <option *ngFor="let tp of tiposPersona" [value]="tp.value">
+                    {{ tp.icon }} {{ tp.label }}
+                  </option>
+                </select>
+                <p class="text-[10px] text-gray-400 mt-1">
+                  Determina la tarifa de retención en la fuente aplicable
+                </p>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                  >Tipo de Contribuyente</label
+                >
+                <select
+                  formControlName="tipoContribuyente"
+                  class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200 appearance-none cursor-pointer"
+                >
+                  <option value="">Seleccione tipo</option>
+                  <option
+                    *ngFor="let tc of tiposContribuyente"
+                    [value]="tc.value"
+                  >
+                    {{ tc.label }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                  >Tipo de Retención</label
+                >
+                <div class="relative">
+                  <input
+                    type="hidden"
+                    formControlName="configuracionRetencionId"
+                  />
+                  <input type="hidden" formControlName="conceptoRetencion" />
+                  <button
+                    type="button"
+                    (click)="toggleRetencionDropdown()"
+                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200 text-left flex items-center justify-between gap-2"
+                  >
+                    <span class="truncate">{{
+                      getSelectedRetencionDisplay()
+                    }}</span>
+                    <svg
+                      class="w-4 h-4 text-gray-500 transition-transform"
+                      [class]="showRetencionDropdown() ? 'rotate-180' : ''"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-1">
+                  Se usará como tipo preferido para retención en este proveedor
+                </p>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                  >Actividad Económica (CIIU)</label
+                >
+                <input
+                  formControlName="actividadEconomica"
+                  type="text"
+                  class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                  placeholder="Ej: 4711 - Comercio al por menor"
+                />
+              </div>
+
+              <!-- Tabla de configuraciones de retención a ancho completo -->
+              <div *ngIf="showRetencionDropdown()" class="md:col-span-2">
+                <div
+                  class="mt-2 w-full rounded-xl border border-gray-200 bg-white shadow-2xl overflow-hidden"
+                >
+                  <!-- Botón limpiar -->
+                  <div
+                    class="p-4 border-b border-gray-100 flex flex-wrap items-center gap-3"
+                  >
+                    <input type="search" aria-label="Buscar configuración de retención" placeholder="Buscar concepto, operación o tarifa…"
+                      class="min-w-0 flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                      [value]="busquedaRetencion()" (input)="busquedaRetencion.set($any($event.target).value)" />
+                    <button
+                      type="button"
+                      (click)="clearRetencionSelection()"
+                      class="px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition"
+                    >
+                      ✕ Limpiar selección
+                    </button>
+                    <span class="text-sm text-gray-500">
+                      ({{ retencionesFiltradas().length }} opciones)
+                    </span>
+                  </div>
+
+                  <!-- Tabla -->
+                  <div class="max-h-[65vh] overflow-y-auto sm:overflow-x-auto">
+                    <table class="w-full text-base">
+                      <thead
+                        class="sticky top-0 bg-gray-50 border-b border-gray-200"
+                      >
+                        <tr>
+                          <th
+                            class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider"
+                          >
+                            #
+                          </th>
+                          <th
+                            class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider"
+                          >
+                            Concepto de Retención
+                          </th>
+                          <th
+                            class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider"
+                          >
+                            Tipo de Operación
+                          </th>
+                          <th
+                            class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider"
+                          >
+                            Tipo de Persona
+                          </th>
+                          <th
+                            class="px-6 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wider"
+                          >
+                            Base Mín. (UVT)
+                          </th>
+                          <th
+                            class="px-6 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wider"
+                          >
+                            Tarifa (%)
+                          </th>
+                          <th
+                            class="px-6 py-4 text-center text-sm font-bold text-gray-700 uppercase tracking-wider"
+                          >
+                            Seleccionar
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          *ngFor="
+                            let config of retencionesFiltradas();
+                            let i = index
+                          "
+                          class="border-b border-gray-50 hover:bg-blue-50 transition cursor-pointer"
+                        >
+                          <td class="px-6 py-4 text-gray-600 font-semibold">
+                            {{ i + 1 }}
+                          </td>
+                          <td class="px-6 py-4 text-gray-700 text-sm">
+                            <span
+                              class="inline-block px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 font-semibold text-sm"
+                            >
+                              {{
+                                getTipoRetencionLabel(config.conceptoRetencion)
+                              }}
+                            </span>
+                          </td>
+                          <td
+                            class="px-6 py-4 text-gray-700 font-medium text-sm"
+                          >
+                            {{
+                              getTipoOperacionRetencionLabel(
+                                config.tipoOperacion
+                              )
+                            }}
+                          </td>
+                          <td class="px-6 py-4">
+                            <span
+                              class="inline-block px-3 py-1.5 rounded-lg text-sm font-semibold"
+                              [ngClass]="{
+                                'bg-blue-100 text-blue-700':
+                                  config.tipoPersona === 'PERSONA_JURIDICA',
+                                'bg-green-100 text-green-700':
+                                  config.tipoPersona ===
+                                  'PERSONA_NATURAL_DECLARANTE',
+                                'bg-yellow-100 text-yellow-700':
+                                  config.tipoPersona ===
+                                  'PERSONA_NATURAL_NO_DECLARANTE',
+                              }"
+                            >
+                              {{
+                                getTipoPersonaRetencionLabel(config.tipoPersona)
+                              }}
+                            </span>
+                          </td>
+                          <td
+                            class="px-6 py-4 text-right text-gray-700 font-semibold text-sm"
+                          >
+                            {{ config.baseMinimaUvt | number: "1.2-2" }}
+                          </td>
+                          <td
+                            class="px-6 py-4 text-right text-blue-600 font-bold text-lg"
+                          >
+                            {{ config.tarifaRetencion }}%
+                          </td>
+                          <td class="px-6 py-4 text-center">
+                            <button
+                              type="button"
+                              (click)="selectRetencion(config)"
+                              class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm transition shadow-md active:shadow-lg"
+                            >
+                              Elegir
+                            </button>
+                          </td>
+                        </tr>
+                        <tr
+                          *ngIf="retencionesFiltradas().length === 0"
+                          class="border-b border-gray-50"
+                        >
+                          <td
+                            colspan="7"
+                            class="px-6 py-12 text-center text-gray-500"
+                          >
+                            <p class="text-base">
+                              No hay configuraciones de retención que coincidan.
+                            </p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-end">
+                <div class="w-full space-y-3">
+                  <label class="flex items-center gap-3 cursor-pointer group">
+                    <div class="relative">
+                      <input
+                        type="checkbox"
+                        formControlName="responsableIva"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer-checked:bg-[#045C94] transition-colors duration-300"
+                      ></div>
+                      <div
+                        class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform duration-300"
+                      ></div>
+                    </div>
+                    <span
+                      class="text-xs font-semibold text-gray-600 group-hover:text-[#213053] transition"
+                      >Responsable de IVA</span
+                    >
+                  </label>
+                  <label class="flex items-center gap-3 cursor-pointer group">
+                    <div class="relative">
+                      <input
+                        type="checkbox"
+                        formControlName="autorretenedor"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer-checked:bg-amber-500 transition-colors duration-300"
+                      ></div>
+                      <div
+                        class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform duration-300"
+                      ></div>
+                    </div>
+                    <span
+                      class="text-xs font-semibold text-gray-600 group-hover:text-[#213053] transition"
+                      >Autorretenedor</span
+                    >
+                    <span class="text-[10px] text-amber-500 font-medium"
+                      >(No aplica rete fuente)</span
+                    >
+                  </label>
+                  <label class="flex items-center gap-3 cursor-pointer group">
+                    <div class="relative">
+                      <input
+                        type="checkbox"
+                        formControlName="sujetoRetencion"
+                        class="sr-only peer"
+                      />
+                      <div
+                        class="w-10 h-5 bg-gray-200 rounded-full peer-checked:bg-emerald-500 transition-colors duration-300"
+                      ></div>
+                      <div
+                        class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-md peer-checked:translate-x-5 transition-transform duration-300"
+                      ></div>
+                    </div>
+                    <span
+                      class="text-xs font-semibold text-gray-600 group-hover:text-[#213053] transition"
+                      >Sujeto a Retención en la Fuente</span
+                    >
+                  </label>
+                </div>
+              </div>
+            </div>
+            <!-- ReteICA -->
+            <div class="mt-4">
+              <label class="block text-xs font-semibold text-gray-600 mb-1.5">
+                Tarifa ReteICA (%)
+              </label>
+              <div class="relative">
+                <input
+                  type="number"
+                  formControlName="reteIca"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  placeholder="Ej: 0.414"
+                  class="w-full md:w-1/2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-[#045C94] focus:ring-2 focus:ring-[#045C94]/20 outline-none transition-all duration-200 placeholder:text-gray-300"
+                />
+                <p class="text-[10px] text-gray-400 mt-1">
+                  Porcentaje de retención de ICA aplicable al proveedor (dejar vacío si no aplica)
+                </p>
+              </div>
+            </div>
+            <!-- Info box -->
+            <div
+              class="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200/60"
+            >
+              <div class="flex items-start gap-2">
+                <svg
+                  class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p class="text-[11px] text-amber-700 leading-relaxed">
+                  <b>Retención en la Fuente:</b> El sistema calculará
+                  automáticamente la retención cuando el trámite pase a
+                  contabilidad, basándose en el tipo de persona, el concepto del
+                  pago y la tabla de retención vigente (UVT 2026: $52.374). Si
+                  el proveedor es <b>autorretenedor</b>, no se aplicará
+                  retención.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── ReteICA (Retención de Industria y Comercio) ── -->
+          <div class="mt-6 pt-5 border-t border-gray-200">
+            <div class="flex items-center gap-2 mb-4">
+              <div
+                class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center"
+              >
+                <svg
+                  class="w-4 h-4 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-[#213053]">ReteICA — Retención de Industria y Comercio</h3>
+                <p class="text-xs text-gray-400">
+                  Tarifa municipal aplicable al proveedor
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <!-- Municipio -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Municipio ReteICA
+                </label>
+                <select
+                  class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-400 focus:bg-white transition-all duration-200 appearance-none cursor-pointer"
+                  [value]="reteicaMunicipioFilter()"
+                  (change)="onReteicaMunicipioChange($any($event.target).value)"
+                >
+                  <option value="">Seleccione municipio</option>
+                  <option *ngFor="let m of reteicaMunicipios()" [value]="m">{{ m }}</option>
+                </select>
+                <p class="text-[10px] text-gray-400 mt-1">
+                  Filtra las tarifas vigentes del municipio seleccionado
+                </p>
+              </div>
+
+              <!-- Tarifa seleccionada -->
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                  Tarifa ReteICA
+                </label>
+                <div class="relative">
+                  <input type="hidden" formControlName="reteicaTarifaId" />
+                  <button
+                    type="button"
+                    (click)="toggleReteicaDropdown()"
+                    [disabled]="!reteicaMunicipioFilter()"
+                    class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-400 focus:bg-white transition-all duration-200 text-left flex items-center justify-between gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span class="truncate">{{ getSelectedReteicaDisplay() }}</span>
+                    <svg
+                      class="w-4 h-4 text-gray-500 transition-transform"
+                      [class]="showReteicaDropdown() ? 'rotate-180' : ''"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-1">
+                  Seleccione primero un municipio para ver las tarifas disponibles
+                </p>
+              </div>
+
+              <!-- Tabla de tarifas ReteICA -->
+              <div *ngIf="showReteicaDropdown() && reteicaMunicipioFilter()" class="md:col-span-2">
+                <div class="mt-2 w-full rounded-xl border border-gray-200 bg-white shadow-2xl overflow-hidden">
+                  <!-- Botón limpiar -->
+                  <div class="p-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
+                    <input type="search" aria-label="Buscar tarifa ReteICA" placeholder="Buscar actividad, código CIIU o tarifa…"
+                      class="min-w-0 flex-1 px-3 py-2 rounded-lg border border-gray-300 text-sm"
+                      [value]="busquedaReteica()" (input)="busquedaReteica.set($any($event.target).value)" />
+                    <button
+                      type="button"
+                      (click)="clearReteicaSelection()"
+                      class="px-4 py-2 text-sm rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold transition"
+                    >
+                      ✕ Limpiar selección
+                    </button>
+                    <span class="text-sm text-gray-500">
+                      ({{ reteicaTarifasFiltradas().length }} tarifas en {{ reteicaMunicipioFilter() }})
+                    </span>
+                  </div>
+
+                  <!-- Cargando -->
+                  <div *ngIf="loadingReteicaTarifas()" class="p-8 text-center text-gray-500">
+                    Cargando tarifas ReteICA...
+                  </div>
+
+                  <!-- Tabla -->
+                  <div *ngIf="!loadingReteicaTarifas()" class="max-h-[50vh] overflow-y-auto sm:overflow-x-auto">
+                    <table class="w-full text-base">
+                      <thead class="sticky top-0 bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">#</th>
+                          <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Actividad Económica</th>
+                          <th class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">Código CIIU</th>
+                          <th class="px-6 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wider">Tarifa (por mil)</th>
+                          <th class="px-6 py-4 text-center text-sm font-bold text-gray-700 uppercase tracking-wider">Seleccionar</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          *ngFor="let tarifa of reteicaTarifasFiltradas(); let i = index"
+                          class="border-b border-gray-50 hover:bg-indigo-50 transition cursor-pointer"
+                        >
+                          <td class="px-6 py-4 text-gray-600 font-semibold">{{ i + 1 }}</td>
+                          <td class="px-6 py-4 text-gray-700 text-sm">
+                            <span class="inline-block px-3 py-1.5 rounded-lg bg-indigo-100 text-indigo-700 font-semibold text-sm">
+                              {{ tarifa.actividadEconomica }}
+                            </span>
+                          </td>
+                          <td class="px-6 py-4 text-gray-700 font-medium text-sm font-mono">
+                            {{ tarifa.codigoActividad || '—' }}
+                          </td>
+                          <td class="px-6 py-4 text-right">
+                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200">
+                              <span class="text-indigo-700 font-bold text-lg">{{ tarifa.tarifaPorMil }}</span>
+                              <span class="text-indigo-500 font-semibold text-xs">por mil</span>
+                            </span>
+                          </td>
+                          <td class="px-6 py-4 text-center">
+                            <button
+                              type="button"
+                              (click)="selectReteica(tarifa)"
+                              class="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white font-bold text-sm transition shadow-md active:shadow-lg"
+                            >
+                              Elegir
+                            </button>
+                          </td>
+                        </tr>
+                        <tr *ngIf="reteicaTarifasFiltradas().length === 0" class="border-b border-gray-50">
+                          <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            <p class="text-base">No hay tarifas vigentes que coincidan en este municipio.</p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Info box ReteICA -->
+            <div class="mt-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200/60">
+              <div class="flex items-start gap-2">
+                <svg
+                  class="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p class="text-[11px] text-indigo-700 leading-relaxed">
+                  <b>ReteICA:</b> La tarifa de Retención de Industria y Comercio
+                  depende del municipio donde opera el proveedor y su actividad
+                  económica. Seleccione el municipio para ver las tarifas vigentes
+                  disponibles.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div *ngIf="currentStep() === 2" class="space-y-5 animate-fade-in">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-[#045C94]/10 flex items-center justify-center"
+            >
+              <svg
+                class="w-4 h-4 text-[#045C94]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                />
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#213053]">Datos de Pago</h3>
+          </div>
+          <div>
+            <label
+              class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3"
+              >Forma de Pago *</label
+            >
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <label
+                *ngFor="let fp of formasPago"
+                class="relative cursor-pointer group"
+              >
+                <input
+                  type="radio"
+                  formControlName="formaPago"
+                  [value]="fp.value"
+                  class="sr-only peer"
+                />
+                <div
+                  class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-300 peer-checked:border-[#045C94] peer-checked:bg-[#045C94]/5 peer-checked:shadow-lg peer-checked:shadow-[#045C94]/10 border-gray-200 hover:border-[#045C94]/40 hover:bg-gray-50"
+                >
+                  <span
+                    class="text-2xl group-hover:scale-110 transition-transform duration-200"
+                    >{{ fp.icon }}</span
+                  >
+                  <span class="text-xs font-semibold text-[#213053]">{{
+                    fp.label
+                  }}</span>
+                </div>
+                <div
+                  class="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#045C94] text-white flex items-center justify-center scale-0 peer-checked:scale-100 transition-transform duration-200"
+                >
+                  <svg
+                    class="w-3 h-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="3"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                </div>
+              </label>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Banco *</label
+              >
+              <select
+                formControlName="banco"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200 appearance-none cursor-pointer"
+              >
+                <option value="">Seleccione un banco</option>
+                <option *ngFor="let b of bancos" [value]="b">{{ b }}</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Número de Cuenta *</label
+              >
+              <input
+                formControlName="numeroCuenta"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Ej: 12345678901"
+              />
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Concepto *</label
+              >
+              <select
+                formControlName="concepto"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200 appearance-none cursor-pointer"
+              >
+                <option value="">Seleccione un concepto</option>
+                <option *ngFor="let c of conceptos" [value]="c">{{ c }}</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Condiciones de Pago</label
+              >
+              <input
+                formControlName="condicionesPago"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Ej: 30 días, Contado, Crédito"
+              />
+            </div>
+            <div class="md:col-span-2">
+              <label
+                class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+                >Número de Comprobante</label
+              >
+              <input
+                formControlName="numeroComprobante"
+                type="text"
+                class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] focus:bg-white transition-all duration-200"
+                placeholder="Ej: COMP-2026-001"
+              />
+            </div>
+          </div>
+
+          <!-- Cuentas Bancarias Adicionales -->
+          <div class="mt-6 pt-5 border-t border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                  </svg>
+                </div>
+                <h4 class="text-sm font-bold text-[#213053]">Cuentas Bancarias Adicionales</h4>
+                <span class="text-[10px] text-gray-400">(Opcional)</span>
+              </div>
+              <button type="button"
+                      (click)="addCuentaBancaria()"
+                      class="flex items-center gap-1 px-3 py-1.5 bg-[#045C94]/10 text-[#045C94] rounded-lg text-xs font-semibold hover:bg-[#045C94]/20 transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Agregar cuenta
+              </button>
+            </div>
+
+            <div *ngIf="cuentasBancarias().length === 0" class="text-center py-4 text-xs text-gray-400">
+              No se han agregado cuentas adicionales. La cuenta principal es la registrada arriba.
+            </div>
+
+            <div *ngFor="let cuenta of cuentasBancarias(); let i = index; trackBy: trackByIndex"
+                 class="relative bg-gray-50 rounded-xl p-4 mb-3 border border-gray-100 hover:border-[#045C94]/20 transition-colors">
+              <button type="button"
+                      (click)="removeCuentaBancaria(i)"
+                      class="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-colors"
+                      title="Eliminar cuenta">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pr-8">
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Banco</label>
+                  <select [value]="cuenta.banco"
+                          (change)="updateCuentaBancaria(i, 'banco', $any($event.target).value)"
+                          class="w-full px-3 py-2 rounded-lg bg-white border border-gray-200 text-xs text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] transition-all appearance-none cursor-pointer">
+                    <option value="">Seleccione</option>
+                    <option *ngFor="let b of bancos" [value]="b">{{ b }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Número de Cuenta</label>
+                  <input [value]="cuenta.numeroCuenta"
+                         (input)="updateCuentaBancaria(i, 'numeroCuenta', $any($event.target).value)"
+                         type="text"
+                         class="w-full px-3 py-2 rounded-lg bg-white border border-gray-200 text-xs text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] transition-all"
+                         placeholder="Ej: 12345678901"/>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Tipo Cuenta</label>
+                  <select [value]="cuenta.tipoCuenta || 'AHORROS'"
+                          (change)="updateCuentaBancaria(i, 'tipoCuenta', $any($event.target).value)"
+                          class="w-full px-3 py-2 rounded-lg bg-white border border-gray-200 text-xs text-[#213053] focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] transition-all appearance-none cursor-pointer">
+                    <option *ngFor="let t of tiposCuenta" [value]="t.value">{{ t.label }}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div *ngIf="currentStep() === 3" class="space-y-5 animate-fade-in">
+          <div class="flex items-center gap-2 mb-4">
+            <div
+              class="w-8 h-8 rounded-lg bg-[#045C94]/10 flex items-center justify-center"
+            >
+              <svg
+                class="w-4 h-4 text-[#045C94]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                />
+              </svg>
+            </div>
+            <h3 class="font-bold text-[#213053]">Documentos Adjuntos</h3>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- RUT -->
+            <div
+              class="file-upload-card rounded-xl border-2 border-dashed transition-all duration-300 p-5"
+              [class]="
+                rutFile()
+                  ? 'border-emerald-300 bg-emerald-50/50'
+                  : 'border-gray-200 hover:border-[#045C94]/40 bg-gray-50/50'
+              "
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop($event, 'rut')"
+            >
+              <div class="flex flex-col items-center gap-3 text-center">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300"
+                  [class]="
+                    rutFile()
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : 'bg-[#045C94]/10 text-[#045C94]'
+                  "
+                >
+                  <svg
+                    *ngIf="!rutFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="rutFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#213053]">RUT</p>
+                  <p *ngIf="!rutFile()" class="text-xs text-gray-400 mt-1">
+                    Arrastra o haz clic para subir
+                  </p>
+                  <p
+                    *ngIf="rutFile()"
+                    class="text-xs text-emerald-600 mt-1 font-medium"
+                  >
+                    {{ rutFile()!.name }}
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  class="hidden"
+                  #rutInput
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  (change)="onFileSelected($event, 'rut')"
+                />
+                <button
+                  *ngIf="!rutFile()"
+                  type="button"
+                  (click)="rutInput.click()"
+                  class="px-4 py-1.5 rounded-lg bg-[#045C94]/10 text-[#045C94] text-xs font-semibold hover:bg-[#045C94]/20 transition-colors duration-200"
+                >
+                  Seleccionar
+                </button>
+                <button
+                  *ngIf="rutFile()"
+                  type="button"
+                  (click)="removeFile('rut')"
+                  class="px-4 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors duration-200"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+            <!-- Cámara de Comercio -->
+            <div
+              class="file-upload-card rounded-xl border-2 border-dashed transition-all duration-300 p-5"
+              [class]="
+                camaraFile()
+                  ? 'border-emerald-300 bg-emerald-50/50'
+                  : 'border-gray-200 hover:border-[#045C94]/40 bg-gray-50/50'
+              "
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop($event, 'camara')"
+            >
+              <div class="flex flex-col items-center gap-3 text-center">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300"
+                  [class]="
+                    camaraFile()
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : 'bg-[#045C94]/10 text-[#045C94]'
+                  "
+                >
+                  <svg
+                    *ngIf="!camaraFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="camaraFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#213053]">
+                    Cámara de Comercio
+                  </p>
+                  <p *ngIf="!camaraFile()" class="text-xs text-gray-400 mt-1">
+                    Arrastra o haz clic para subir
+                  </p>
+                  <p
+                    *ngIf="camaraFile()"
+                    class="text-xs text-emerald-600 mt-1 font-medium"
+                  >
+                    {{ camaraFile()!.name }}
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  class="hidden"
+                  #camaraInput
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  (change)="onFileSelected($event, 'camara')"
+                />
+                <button
+                  *ngIf="!camaraFile()"
+                  type="button"
+                  (click)="camaraInput.click()"
+                  class="px-4 py-1.5 rounded-lg bg-[#045C94]/10 text-[#045C94] text-xs font-semibold hover:bg-[#045C94]/20 transition-colors duration-200"
+                >
+                  Seleccionar
+                </button>
+                <button
+                  *ngIf="camaraFile()"
+                  type="button"
+                  (click)="removeFile('camara')"
+                  class="px-4 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors duration-200"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+            <!-- CC Representante -->
+            <div
+              class="file-upload-card rounded-xl border-2 border-dashed transition-all duration-300 p-5"
+              [class]="
+                ccFile()
+                  ? 'border-emerald-300 bg-emerald-50/50'
+                  : 'border-gray-200 hover:border-[#045C94]/40 bg-gray-50/50'
+              "
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop($event, 'cc')"
+            >
+              <div class="flex flex-col items-center gap-3 text-center">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300"
+                  [class]="
+                    ccFile()
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : 'bg-[#045C94]/10 text-[#045C94]'
+                  "
+                >
+                  <svg
+                    *ngIf="!ccFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="ccFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#213053]">
+                    CC Rep. Legal
+                  </p>
+                  <p *ngIf="!ccFile()" class="text-xs text-gray-400 mt-1">
+                    Arrastra o haz clic para subir
+                  </p>
+                  <p
+                    *ngIf="ccFile()"
+                    class="text-xs text-emerald-600 mt-1 font-medium"
+                  >
+                    {{ ccFile()!.name }}
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  class="hidden"
+                  #ccInput
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  (change)="onFileSelected($event, 'cc')"
+                />
+                <button
+                  *ngIf="!ccFile()"
+                  type="button"
+                  (click)="ccInput.click()"
+                  class="px-4 py-1.5 rounded-lg bg-[#045C94]/10 text-[#045C94] text-xs font-semibold hover:bg-[#045C94]/20 transition-colors duration-200"
+                >
+                  Seleccionar
+                </button>
+                <button
+                  *ngIf="ccFile()"
+                  type="button"
+                  (click)="removeFile('cc')"
+                  class="px-4 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors duration-200"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+            <!-- Cert Bancario -->
+            <div
+              class="file-upload-card rounded-xl border-2 border-dashed transition-all duration-300 p-5"
+              [class]="
+                certFile()
+                  ? 'border-emerald-300 bg-emerald-50/50'
+                  : 'border-gray-200 hover:border-[#045C94]/40 bg-gray-50/50'
+              "
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop($event, 'cert')"
+            >
+              <div class="flex flex-col items-center gap-3 text-center">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300"
+                  [class]="
+                    certFile()
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : 'bg-[#045C94]/10 text-[#045C94]'
+                  "
+                >
+                  <svg
+                    *ngIf="!certFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="certFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#213053]">
+                    Cert. Bancario
+                  </p>
+                  <p *ngIf="!certFile()" class="text-xs text-gray-400 mt-1">
+                    Arrastra o haz clic para subir
+                  </p>
+                  <p
+                    *ngIf="certFile()"
+                    class="text-xs text-emerald-600 mt-1 font-medium"
+                  >
+                    {{ certFile()!.name }}
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  class="hidden"
+                  #certInput
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  (change)="onFileSelected($event, 'cert')"
+                />
+                <button
+                  *ngIf="!certFile()"
+                  type="button"
+                  (click)="certInput.click()"
+                  class="px-4 py-1.5 rounded-lg bg-[#045C94]/10 text-[#045C94] text-xs font-semibold hover:bg-[#045C94]/20 transition-colors duration-200"
+                >
+                  Seleccionar
+                </button>
+                <button
+                  *ngIf="certFile()"
+                  type="button"
+                  (click)="removeFile('cert')"
+                  class="px-4 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors duration-200"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+            <!-- RUT Representante Legal -->
+            <div
+              class="file-upload-card rounded-xl border-2 border-dashed transition-all duration-300 p-5"
+              [class]="
+                rutRepresentanteFile()
+                  ? 'border-emerald-300 bg-emerald-50/50'
+                  : 'border-gray-200 hover:border-[#045C94]/40 bg-gray-50/50'
+              "
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop($event, 'rutRepresentante')"
+            >
+              <div class="flex flex-col items-center gap-3 text-center">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300"
+                  [class]="
+                    rutRepresentanteFile()
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : 'bg-[#045C94]/10 text-[#045C94]'
+                  "
+                >
+                  <svg
+                    *ngIf="!rutRepresentanteFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="rutRepresentanteFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#213053]">
+                    RUT Representante Legal
+                  </p>
+                  <p *ngIf="!rutRepresentanteFile()" class="text-xs text-gray-400 mt-1">
+                    Arrastra o haz clic para subir
+                  </p>
+                  <p
+                    *ngIf="rutRepresentanteFile()"
+                    class="text-xs text-emerald-600 mt-1 font-medium"
+                  >
+                    {{ rutRepresentanteFile()!.name }}
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  class="hidden"
+                  #rutRepInput
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  (change)="onFileSelected($event, 'rutRepresentante')"
+                />
+                <button
+                  *ngIf="!rutRepresentanteFile()"
+                  type="button"
+                  (click)="rutRepInput.click()"
+                  class="px-4 py-1.5 rounded-lg bg-[#045C94]/10 text-[#045C94] text-xs font-semibold hover:bg-[#045C94]/20 transition-colors duration-200"
+                >
+                  Seleccionar
+                </button>
+                <button
+                  *ngIf="rutRepresentanteFile()"
+                  type="button"
+                  (click)="removeFile('rutRepresentante')"
+                  class="px-4 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors duration-200"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+            <!-- Estados Financieros -->
+            <div
+              class="file-upload-card rounded-xl border-2 border-dashed transition-all duration-300 p-5"
+              [class]="
+                estadosFinancierosFile()
+                  ? 'border-emerald-300 bg-emerald-50/50'
+                  : 'border-gray-200 hover:border-[#045C94]/40 bg-gray-50/50'
+              "
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop($event, 'estadosFinancieros')"
+            >
+              <div class="flex flex-col items-center gap-3 text-center">
+                <div
+                  class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300"
+                  [class]="
+                    estadosFinancierosFile()
+                      ? 'bg-emerald-100 text-emerald-600'
+                      : 'bg-[#045C94]/10 text-[#045C94]'
+                  "
+                >
+                  <svg
+                    *ngIf="!estadosFinancierosFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                  <svg
+                    *ngIf="estadosFinancierosFile()"
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-[#213053]">
+                    Estados Financieros
+                  </p>
+                  <p *ngIf="!estadosFinancierosFile()" class="text-xs text-gray-400 mt-1">
+                    Arrastra o haz clic para subir
+                  </p>
+                  <p
+                    *ngIf="estadosFinancierosFile()"
+                    class="text-xs text-emerald-600 mt-1 font-medium"
+                  >
+                    {{ estadosFinancierosFile()!.name }}
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  class="hidden"
+                  #efInput
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  (change)="onFileSelected($event, 'estadosFinancieros')"
+                />
+                <button
+                  *ngIf="!estadosFinancierosFile()"
+                  type="button"
+                  (click)="efInput.click()"
+                  class="px-4 py-1.5 rounded-lg bg-[#045C94]/10 text-[#045C94] text-xs font-semibold hover:bg-[#045C94]/20 transition-colors duration-200"
+                >
+                  Seleccionar
+                </button>
+                <button
+                  *ngIf="estadosFinancierosFile()"
+                  type="button"
+                  (click)="removeFile('estadosFinancieros')"
+                  class="px-4 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors duration-200"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div
+      class="flex items-center justify-between px-8 py-5 border-t border-gray-100 bg-gray-50/50"
+    >
+      <div>
+        <button
+          *ngIf="currentStep() > 1"
+          (click)="prevStep()"
+          type="button"
+          class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-all duration-200"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Anterior
+        </button>
+      </div>
+      <div class="flex items-center gap-3">
+        <button
+          (click)="closeModal()"
+          type="button"
+          class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 transition-all duration-200"
+        >
+          Cancelar
+        </button>
+        <button
+          *ngIf="currentStep() < 3"
+          (click)="nextStep()"
+          type="button"
+          [disabled]="!canAdvance()"
+          class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#045C94] to-[#213053] shadow-lg shadow-[#045C94]/25 hover:shadow-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Siguiente
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
+        <button
+          *ngIf="currentStep() === 3"
+          (click)="saveProveedor()"
+          type="button"
+          [disabled]="saving()"
+          class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-xl transition-all duration-300 disabled:opacity-60"
+        >
+          <svg
+            *ngIf="!saving()"
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <div
+            *ngIf="saving()"
+            class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+          ></div>
+          {{
+            saving()
+              ? "Guardando..."
+              : editMode()
+                ? "Actualizar"
+                : "Guardar Proveedor"
+          }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     DETAIL MODAL
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div
+  *ngIf="showDetailModal() && selectedProveedor()"
+  class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+>
+  <div
+    class="absolute inset-0 bg-[#0f172a]/60 backdrop-blur-sm animate-fade-in"
+    (click)="closeModal()"
+  ></div>
+  <div
+    class="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-scale-in"
+  >
+    <div
+      class="relative bg-gradient-to-r from-[#213053] to-[#045C94] px-8 py-6"
+    >
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div
+            class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-white text-2xl font-bold"
+          >
+            {{ selectedProveedor()!.nombreProveedor.charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">
+              {{ selectedProveedor()!.nombreProveedor }}
+            </h2>
+            <p class="text-sm text-white/60">
+              NIT: {{ selectedProveedor()!.nit || "—" }}
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span
+            class="px-3 py-1 rounded-full text-xs font-bold"
+            [class]="
+              selectedProveedor()!.estado === 'ACTIVO'
+                ? 'bg-emerald-400/20 text-emerald-200'
+                : 'bg-amber-400/20 text-amber-200'
+            "
+            >{{ selectedProveedor()!.estado }}</span
+          >
+          <button
+            (click)="closeModal()"
+            class="p-2 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-all"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="p-8 overflow-y-auto space-y-6"
+      style="max-height: calc(90vh - 160px)"
+    >
+      <div>
+        <h4
+          class="flex items-center gap-2 text-sm font-bold text-[#213053] mb-3"
+        >
+          <svg
+            class="w-4 h-4 text-[#045C94]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
+          </svg>
+          Información General
+        </h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Teléfono
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.telefono || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Correo
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.correoElectronico || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Dirección
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.direccion || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Rep. Legal
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.nombreRepresentanteLegal || "—" }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <hr class="border-gray-100" />
+      <!-- Información Tributaria -->
+      <div>
+        <h4
+          class="flex items-center gap-2 text-sm font-bold text-[#213053] mb-3"
+        >
+          <svg
+            class="w-4 h-4 text-amber-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"
+            />
+          </svg>
+          Información Tributaria (Rete Fuente)
+        </h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Tipo de Persona
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ getTipoPersonaLabel(selectedProveedor()!.tipoPersona || "") }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Tipo Contribuyente
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{
+                getTipoContribuyenteLabel(
+                  selectedProveedor()!.tipoContribuyente || ""
+                )
+              }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Actividad Económica
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.actividadEconomica || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Tipo de Retención
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{
+                getTipoRetencionLabel(
+                  selectedProveedor()!.conceptoRetencion || ""
+                )
+              }}
+            </p>
+          </div>
+          <div class="space-y-0.5 flex flex-col gap-1.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Estado Tributario
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <span
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                [ngClass]="
+                  selectedProveedor()!.responsableIva
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-gray-100 text-gray-400'
+                "
+              >
+                {{ selectedProveedor()!.responsableIva ? "✅" : "❌" }} IVA
+              </span>
+              <span
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                [ngClass]="
+                  selectedProveedor()!.autorretenedor
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-gray-100 text-gray-400'
+                "
+              >
+                {{ selectedProveedor()!.autorretenedor ? "✅" : "❌" }}
+                Autorretenedor
+              </span>
+              <span
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                [ngClass]="
+                  selectedProveedor()!.sujetoRetencion !== false
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-gray-100 text-gray-400'
+                "
+              >
+                {{
+                  selectedProveedor()!.sujetoRetencion !== false ? "✅" : "❌"
+                }}
+                Rete Fuente
+              </span>
+              <span
+                *ngIf="selectedProveedor()!.reteIca"
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700"
+              >
+                📊 ReteICA: {{ selectedProveedor()!.reteIca }}%
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr class="border-gray-100" />
+      <!-- ReteICA -->
+      <div>
+        <h4
+          class="flex items-center gap-2 text-sm font-bold text-[#213053] mb-3"
+        >
+          <svg
+            class="w-4 h-4 text-indigo-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+            />
+          </svg>
+          ReteICA
+        </h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Municipio
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.reteicaMunicipio || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Actividad Económica
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.reteicaActividadEconomica || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Tarifa (‰)
+            </p>
+            <p class="text-sm font-medium" [class]="selectedProveedor()!.reteicaTarifaPorMil ? 'text-indigo-600 font-bold' : 'text-[#213053]'">
+              {{ selectedProveedor()!.reteicaTarifaPorMil != null ? (selectedProveedor()!.reteicaTarifaPorMil + '‰') : '—' }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <hr class="border-gray-100" />
+      <div>
+        <h4
+          class="flex items-center gap-2 text-sm font-bold text-[#213053] mb-3"
+        >
+          <svg
+            class="w-4 h-4 text-[#045C94]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+            />
+          </svg>
+          Datos de Pago
+        </h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Forma de Pago
+            </p>
+            <span
+              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#045C94]/10 text-[#045C94]"
+              >{{ getFormaPagoIcon(selectedProveedor()!.formaPago || "") }}
+              {{
+                getFormaPagoLabel(selectedProveedor()!.formaPago || "")
+              }}</span
+            >
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Banco
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.banco || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              No. Cuenta
+            </p>
+            <p class="text-sm text-[#213053] font-medium font-mono">
+              {{ selectedProveedor()!.numeroCuenta || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Concepto
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.concepto || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              Condiciones
+            </p>
+            <p class="text-sm text-[#213053] font-medium">
+              {{ selectedProveedor()!.condicionesPago || "—" }}
+            </p>
+          </div>
+          <div class="space-y-0.5">
+            <p
+              class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider"
+            >
+              No. Comprobante
+            </p>
+            <p class="text-sm text-[#213053] font-medium font-mono">
+              {{ selectedProveedor()!.numeroComprobante || "—" }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <hr class="border-gray-100" />
+      <div>
+        <h4
+          class="flex items-center gap-2 text-sm font-bold text-[#213053] mb-3"
+        >
+          <svg
+            class="w-4 h-4 text-[#045C94]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+            />
+          </svg>
+          Documentos Adjuntos
+        </h4>
+        <div class="grid grid-cols-2 gap-3">
+          <div
+            class="flex items-center gap-3 p-3 rounded-xl border border-gray-100"
+            [class]="
+              selectedProveedor()!.rutUrl ? 'bg-emerald-50/50' : 'bg-gray-50'
+            "
+          >
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center"
+              [class]="
+                selectedProveedor()!.rutUrl
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-gray-200 text-gray-400'
+              "
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-[#213053]">RUT</p>
+              <p
+                class="text-[10px]"
+                [class]="
+                  selectedProveedor()!.rutUrl
+                    ? 'text-emerald-600'
+                    : 'text-gray-400'
+                "
+              >
+                {{ selectedProveedor()!.rutUrl ? "Adjunto" : "No adjunto" }}
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center gap-3 p-3 rounded-xl border border-gray-100"
+            [class]="
+              selectedProveedor()!.camaraComercioUrl
+                ? 'bg-emerald-50/50'
+                : 'bg-gray-50'
+            "
+          >
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center"
+              [class]="
+                selectedProveedor()!.camaraComercioUrl
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-gray-200 text-gray-400'
+              "
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-[#213053]">
+                Cámara de Comercio
+              </p>
+              <p
+                class="text-[10px]"
+                [class]="
+                  selectedProveedor()!.camaraComercioUrl
+                    ? 'text-emerald-600'
+                    : 'text-gray-400'
+                "
+              >
+                {{
+                  selectedProveedor()!.camaraComercioUrl
+                    ? "Adjunto"
+                    : "No adjunto"
+                }}
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center gap-3 p-3 rounded-xl border border-gray-100"
+            [class]="
+              selectedProveedor()!.ccRepresentanteUrl
+                ? 'bg-emerald-50/50'
+                : 'bg-gray-50'
+            "
+          >
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center"
+              [class]="
+                selectedProveedor()!.ccRepresentanteUrl
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-gray-200 text-gray-400'
+              "
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-[#213053]">CC Rep. Legal</p>
+              <p
+                class="text-[10px]"
+                [class]="
+                  selectedProveedor()!.ccRepresentanteUrl
+                    ? 'text-emerald-600'
+                    : 'text-gray-400'
+                "
+              >
+                {{
+                  selectedProveedor()!.ccRepresentanteUrl
+                    ? "Adjunto"
+                    : "No adjunto"
+                }}
+              </p>
+            </div>
+          </div>
+          <div
+            class="flex items-center gap-3 p-3 rounded-xl border border-gray-100"
+            [class]="
+              selectedProveedor()!.certificadoBancarioUrl
+                ? 'bg-emerald-50/50'
+                : 'bg-gray-50'
+            "
+          >
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center"
+              [class]="
+                selectedProveedor()!.certificadoBancarioUrl
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-gray-200 text-gray-400'
+              "
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-[#213053]">Cert. Bancario</p>
+              <p
+                class="text-[10px]"
+                [class]="
+                  selectedProveedor()!.certificadoBancarioUrl
+                    ? 'text-emerald-600'
+                    : 'text-gray-400'
+                "
+              >
+                {{
+                  selectedProveedor()!.certificadoBancarioUrl
+                    ? "Adjunto"
+                    : "No adjunto"
+                }}
+              </p>
+            </div>
+          </div>
+          <!-- RUT Representante Legal -->
+          <div
+            class="flex items-center gap-3 p-3 rounded-xl border border-gray-100"
+            [class]="
+              selectedProveedor()!.rutRepresentanteUrl
+                ? 'bg-emerald-50/50'
+                : 'bg-gray-50'
+            "
+          >
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center"
+              [class]="
+                selectedProveedor()!.rutRepresentanteUrl
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-gray-200 text-gray-400'
+              "
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-[#213053]">RUT Repr. Legal</p>
+              <p class="text-[10px]"
+                [class]="selectedProveedor()!.rutRepresentanteUrl ? 'text-emerald-600' : 'text-gray-400'">
+                {{ selectedProveedor()!.rutRepresentanteUrl ? "Adjunto" : "No adjunto" }}
+              </p>
+            </div>
+          </div>
+          <!-- Estados Financieros -->
+          <div
+            class="flex items-center gap-3 p-3 rounded-xl border border-gray-100"
+            [class]="
+              selectedProveedor()!.estadosFinancierosUrl
+                ? 'bg-emerald-50/50'
+                : 'bg-gray-50'
+            "
+          >
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center"
+              [class]="
+                selectedProveedor()!.estadosFinancierosUrl
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : 'bg-gray-200 text-gray-400'
+              "
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-[#213053]">Est. Financieros</p>
+              <p class="text-[10px]"
+                [class]="selectedProveedor()!.estadosFinancierosUrl ? 'text-emerald-600' : 'text-gray-400'">
+                {{ selectedProveedor()!.estadosFinancierosUrl ? "Adjunto" : "No adjunto" }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="flex items-center gap-6 pt-4 border-t border-gray-100 text-[10px] text-gray-400"
+      >
+        <span
+          >Creado por:
+          <b class="text-gray-500">{{
+            selectedProveedor()!.creadoPor || "—"
+          }}</b></span
+        >
+        <span
+          >Fecha:
+          <b class="text-gray-500">{{
+            formatDate(selectedProveedor()!.fechaCreacion)
+          }}</b></span
+        >
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,454 @@
+<div
+  class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3"
+>
+  <!-- ═══ LOADING ═══ -->
+  @if (loading()) {
+    <div class="flex items-center justify-center min-h-[60vh]">
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p class="text-sm text-[#213053]/60 mt-4 font-medium">
+          Cargando solicitudes...
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (!loading()) {
+    <!-- ═══ HEADER ═══ -->
+    <div
+      class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white shadow-2xl rounded-2xl mb-6"
+    >
+      <div class="px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg"
+            >
+              <svg
+                class="w-7 h-7 text-[#FFB71B]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p
+                class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-semibold mb-0.5"
+              >
+                Visto Bueno del Jefe
+              </p>
+              <h1 class="text-2xl font-bold tracking-tight">
+                Bandeja de Tesorería
+              </h1>
+              <p class="text-white/80 text-xs mt-1">
+                Solicitudes pendientes de aprobación
+              </p>
+            </div>
+          </div>
+          <button
+            (click)="router.navigate(['/tesoreria'])"
+            class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-all backdrop-blur-sm border border-white/20"
+          >
+            ↑ Volver
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SEARCH BAR ═══ -->
+    <div class="mb-6">
+      <div class="relative">
+        <svg
+          class="absolute left-4 top-3.5 w-5 h-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          />
+        </svg>
+        <input
+          type="text"
+          [value]="busqueda()"
+          (input)="busqueda.set($any($event.target).value)"
+          placeholder="Buscar por solicitante, área o tipo..."
+          class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#045C94] focus:border-transparent"
+        />
+      </div>
+    </div>
+
+    <!-- ═══ TABS ═══ -->
+    <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+      <button
+        (click)="changeTab('pendientes')"
+        [class.tab-active]="activeTab() === 'pendientes'"
+        class="tab-button"
+      >
+        <span class="tab-label">⏳ Pendientes</span>
+        <span class="tab-count">{{ pendientesFiltrados().length }}</span>
+      </button>
+      <button
+        (click)="changeTab('aprobadas')"
+        [class.tab-active]="activeTab() === 'aprobadas'"
+        class="tab-button"
+      >
+        <span class="tab-label">✓ Aprobadas</span>
+        <span class="tab-count">{{ aprobadasFiltrados().length }}</span>
+      </button>
+      <button
+        (click)="changeTab('rechazadas')"
+        [class.tab-active]="activeTab() === 'rechazadas'"
+        class="tab-button"
+      >
+        <span class="tab-label">✕ Rechazadas</span>
+        <span class="tab-count">{{ rechazadasFiltrados().length }}</span>
+      </button>
+    </div>
+
+    <!-- ═══ EMPTY STATE ═══ -->
+    @if (currentFilteredList().length === 0) {
+      <div
+        class="flex flex-col items-center justify-center min-h-[400px] px-4 py-8"
+      >
+        <div
+          class="w-20 h-20 bg-gradient-to-br from-[#045C94]/20 to-[#213053]/20 rounded-full flex items-center justify-center mb-4"
+        >
+          <svg
+            class="w-10 h-10 text-[#045C94]/40"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+            />
+          </svg>
+        </div>
+        <h3 class="text-lg font-semibold text-[#213053] mb-1">
+          {{
+            activeTab() === "pendientes"
+              ? "Sin solicitudes pendientes"
+              : activeTab() === "aprobadas"
+                ? "Sin solicitudes aprobadas"
+                : "Sin solicitudes rechazadas"
+          }}
+        </h3>
+        <p class="text-sm text-[#213053]/50 text-center">
+          {{
+            activeTab() === "pendientes"
+              ? "No hay solicitudes pendientes de aprobación"
+              : activeTab() === "aprobadas"
+                ? "No hay solicitudes aprobadas"
+                : "No hay solicitudes rechazadas"
+          }}
+        </p>
+      </div>
+    }
+
+    <!-- ═══ SOLICITUDES LIST ═══ -->
+    <div class="space-y-4">
+      @for (solicitud of currentFilteredList(); track solicitud.id) {
+        <div
+          class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all"
+        >
+          <!-- CARD HEADER -->
+          <div
+            class="px-6 py-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 flex items-center justify-between"
+            (click)="toggleExpanded(solicitud.id!)"
+          >
+            <div class="flex-1">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-10 h-10 bg-gradient-to-br from-[#045C94] to-[#213053] rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+                >
+                  {{ (solicitud.nombre || "?").charAt(0).toUpperCase() }}
+                </div>
+                <div>
+                  <h3 class="font-semibold text-[#213053]">
+                    {{ solicitud.nombre }}
+                  </h3>
+                  <p class="text-xs text-[#213053]/50">
+                    {{ solicitud.areaDepartamento }} •
+                    {{ solicitud.tipoRequerimiento }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <span
+                class="px-3 py-1 rounded-full text-xs font-semibold"
+                [ngClass]="{
+                  'bg-amber-100 text-amber-700': activeTab() === 'pendientes',
+                  'bg-green-100 text-green-700': activeTab() === 'aprobadas',
+                  'bg-red-100 text-red-700': activeTab() === 'rechazadas',
+                }"
+              >
+                {{
+                  activeTab() === "pendientes"
+                    ? "Pendiente"
+                    : activeTab() === "aprobadas"
+                      ? "Aprobada"
+                      : "Rechazada"
+                }}
+              </span>
+              <svg
+                class="w-5 h-5 text-[#213053]/40 transition-transform"
+                [class.rotate-180]="expandedId() === solicitud.id"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <!-- CARD EXPANDED CONTENT -->
+          @if (expandedId() === solicitud.id) {
+            <div class="px-6 py-4 bg-gray-50">
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p class="text-xs text-[#213053]/60 font-medium mb-1">
+                    Correo
+                  </p>
+                  <p class="text-sm text-[#213053]">
+                    {{ solicitud.correoElectronico || "—" }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-[#213053]/60 font-medium mb-1">
+                    Teléfono
+                  </p>
+                  <p class="text-sm text-[#213053]">
+                    {{ solicitud.telefonoContacto || "—" }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-[#213053]/60 font-medium mb-1">
+                    Cargo
+                  </p>
+                  <p class="text-sm text-[#213053]">
+                    {{ solicitud.cargo || "—" }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-[#213053]/60 font-medium mb-1">
+                    Fecha solicitud
+                  </p>
+                  <p class="text-sm text-[#213053]">
+                    {{ formatDate(solicitud.fechaSolicitud) }}
+                  </p>
+                </div>
+              </div>
+
+              @if (solicitud.observaciones) {
+                <div class="mb-4">
+                  <p class="text-xs text-[#213053]/60 font-medium mb-1">
+                    Observaciones
+                  </p>
+                  <p
+                    class="text-sm text-[#213053] bg-white p-3 rounded border border-gray-200"
+                  >
+                    {{ solicitud.observaciones }}
+                  </p>
+                </div>
+              }
+
+              <!-- BOTONES ACCIÓN (solo en pestaña pendientes) -->
+              @if (activeTab() === "pendientes") {
+                <div class="flex gap-3 pt-4 border-t border-gray-200">
+                  <button
+                    (click)="openDecisionModal(solicitud.id!)"
+                    class="flex-1 px-4 py-2 bg-[#045C94] text-white text-sm font-semibold rounded-lg hover:bg-[#0d4a7a] transition-all"
+                  >
+                    Revisar y Decidir
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- ═══ DECISION MODAL ═══ -->
+    @if (showDecisionModal()) {
+      <div
+        class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+        (click)="$event.target === $event.currentTarget && closeDecisionModal()"
+      >
+        <div
+          class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 animate-in fade-in zoom-in-95 duration-200"
+        >
+          <h2 class="text-xl font-bold text-[#213053] mb-4">Tomar Decisión</h2>
+
+          <!-- OPCIONES DE DECISIÓN -->
+          <div class="grid grid-cols-2 gap-3 mb-6">
+            <button
+              type="button"
+              [class.ring-2]="decision() === 'APROBADO'"
+              [class.ring-green-500]="decision() === 'APROBADO'"
+              [class.bg-green-50]="decision() === 'APROBADO'"
+              class="p-4 border-2 border-green-200 rounded-lg hover:bg-green-50 transition-all"
+              (click)="selectDecision('APROBADO')"
+            >
+              <svg
+                class="w-6 h-6 text-green-600 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p class="font-semibold text-green-700">Aprobar</p>
+              <p class="text-xs text-green-600">Continuar procesamiento</p>
+            </button>
+
+            <button
+              type="button"
+              [class.ring-2]="decision() === 'RECHAZADO'"
+              [class.ring-red-500]="decision() === 'RECHAZADO'"
+              [class.bg-red-50]="decision() === 'RECHAZADO'"
+              class="p-4 border-2 border-red-200 rounded-lg hover:bg-red-50 transition-all"
+              (click)="selectDecision('RECHAZADO')"
+            >
+              <svg
+                class="w-6 h-6 text-red-600 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <p class="font-semibold text-red-700">Rechazar</p>
+              <p class="text-xs text-red-600">Volver a solicitante</p>
+            </button>
+          </div>
+
+          <!-- CAMPOS CONDICIONALES -->
+          @if (decision() === "RECHAZADO") {
+            <div class="mb-6 p-4 bg-red-50 rounded-lg border border-red-200">
+              <label class="block text-sm font-semibold text-red-700 mb-2">
+                Motivo del Rechazo <span class="text-red-500">*</span>
+              </label>
+              <select
+                [value]="motivoRechazo()"
+                (change)="motivoRechazo.set($any($event.target).value)"
+                class="w-full px-3 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                <option value="">Seleccione un motivo</option>
+                <option *ngFor="let motivo of MOTIVOS_RECHAZO" [value]="motivo">
+                  {{ motivo }}
+                </option>
+              </select>
+
+              <label class="block text-sm font-semibold text-red-700 mb-2 mt-3">
+                Observaciones (opcional)
+              </label>
+              <textarea
+                [value]="observacionesModal()"
+                (input)="observacionesModal.set($any($event.target).value)"
+                rows="3"
+                placeholder="Motivos adicionales del rechazo..."
+                class="w-full px-3 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              ></textarea>
+            </div>
+          }
+
+          @if (decision() === "APROBADO") {
+            <div
+              class="mb-6 p-4 bg-green-50 rounded-lg border border-green-200"
+            >
+              <p class="text-sm text-green-700">
+                <strong>✓ Solicitud Aprobada</strong><br />
+                Se continuará con el procesamiento normal
+              </p>
+            </div>
+          }
+
+          <!-- BOTONES ACCIONES MODAL -->
+          <div class="flex gap-3">
+            <button
+              type="button"
+              (click)="closeDecisionModal()"
+              class="flex-1 px-4 py-2 border border-gray-300 text-[#213053] font-semibold rounded-lg hover:bg-gray-50 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              [disabled]="
+                !decision() ||
+                (decision() === 'RECHAZADO' && !motivoRechazo()) ||
+                procesando()
+              "
+              (click)="submitDecision()"
+              class="flex-1 px-4 py-2 bg-[#045C94] text-white font-semibold rounded-lg hover:bg-[#0d4a7a] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              @if (procesando()) {
+                <span>Procesando...</span>
+              } @else {
+                <span>Confirmar Decisión</span>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TOAST ═══ -->
+    @if (showToast()) {
+      <div
+        class="fixed bottom-5 right-5 z-[9999] flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-xl shadow-2xl animate-in slide-in-from-bottom-5 duration-300"
+      >
+        <div
+          class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <p class="font-medium text-sm">{{ toastMessage() }}</p>
+      </div>
+    }
+  }
+</div>

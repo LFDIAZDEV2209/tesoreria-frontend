@@ -1,0 +1,6 @@
+<label class="block text-sm font-medium">Banco
+  <select class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-3" [ngModel]="bancoSeleccionado ?? ''" (ngModelChange)="onBancoChange($event)">
+    <option value="">Todos</option>
+    <option *ngFor="let banco of bancos" [value]="banco">{{ banco }}</option>
+  </select>
+</label>

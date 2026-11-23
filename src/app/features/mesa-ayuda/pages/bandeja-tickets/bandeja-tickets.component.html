@@ -1,0 +1,354 @@
+<div class="bandeja-page">
+  <div class="bandeja-header header-animate">
+    <div class="bandeja-header__top">
+      <a routerLink="/mesa-ayuda" class="btn-back">
+        <span aria-hidden="true">&#8592;</span>
+        Dashboard
+      </a>
+      <div class="header-pill">{{ filteredTickets().length }} visibles</div>
+    </div>
+
+    <div class="bandeja-header__main">
+      <div class="header-icon header-icon-pulse">N{{ nivel() }}</div>
+      <div>
+        <p class="header-eyebrow">Mesa de ayuda</p>
+        <h1>{{ nivelConfig[nivel()].title }}</h1>
+        <p class="header-subtitle">{{ nivelConfig[nivel()].subtitle }}</p>
+      </div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="kpi-section-compact">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="kpi-skeleton"></div>
+      }
+    </div>
+
+    <div class="list-card">
+      <div class="list-card__head list-card__head--loading"></div>
+      <div class="list-card__body">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="ticket-skeleton">
+            <div class="loading-skeleton line-lg"></div>
+            <div class="loading-skeleton line-md"></div>
+            <div class="loading-skeleton line-sm"></div>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <section class="kpi-section-compact">
+      <div class="kpi-card-compact kpi-teal">
+        <div class="kpi-icon-wrapper-compact kpi-icon-teal">TK</div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">Total tickets</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ tickets().length }}</span>
+            <span class="kpi-trend-compact kpi-trend-neutral">total</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card-compact kpi-warning">
+        <div class="kpi-icon-wrapper-compact kpi-icon-warning">AB</div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">Abiertos</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ abiertosCount() }}</span>
+            <span class="kpi-trend-compact kpi-trend-warning">abierto</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card-compact kpi-purple">
+        <div class="kpi-icon-wrapper-compact kpi-icon-purple">ES</div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">Escalados</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ escaladosCount() }}</span>
+            <span class="kpi-trend-compact kpi-trend-neutral">nivel superior</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card-compact kpi-danger">
+        <div class="kpi-icon-wrapper-compact kpi-icon-danger">CR</div>
+        <div class="kpi-content-compact">
+          <span class="kpi-label-compact">Criticos</span>
+          <div class="kpi-value-wrapper-compact">
+            <span class="kpi-value-compact">{{ criticosCount() }}</span>
+            <span class="kpi-trend-compact kpi-trend-danger">urgente</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="list-card animate-fade-in-up" style="animation-delay: 0.12s">
+
+      <!-- Tabs de navegación -->
+      <div class="bandeja-tabs">
+        <button class="bandeja-tab" [class.bandeja-tab--active]="activeTab() === 'todos'" (click)="setActiveTab('todos')">
+          <span class="tab-label">Todos</span>
+          <span class="tab-count">{{ tickets().length }}</span>
+        </button>
+        <button class="bandeja-tab bandeja-tab--pendientes" [class.bandeja-tab--active]="activeTab() === 'pendientes'" (click)="setActiveTab('pendientes')">
+          <span class="tab-label">Pendientes</span>
+          <span class="tab-count">{{ pendientesCount() }}</span>
+        </button>
+        <button class="bandeja-tab bandeja-tab--asignados" [class.bandeja-tab--active]="activeTab() === 'asignados'" (click)="setActiveTab('asignados')">
+          <span class="tab-label">Asignados a mí</span>
+          <span class="tab-count">{{ asignadosCount() }}</span>
+        </button>
+        <button class="bandeja-tab bandeja-tab--cerrados" [class.bandeja-tab--active]="activeTab() === 'cerrados'" (click)="setActiveTab('cerrados')">
+          <span class="tab-label">Cerrados</span>
+          <span class="tab-count">{{ cerradosCount() }}</span>
+        </button>
+      </div>
+
+      <div class="list-card__head">
+        <div>
+          <h2>Bandeja de tickets</h2>
+          <p>Seguimiento operativo de solicitudes mesa de ayuda</p>
+        </div>
+
+        <div class="toolbar">
+          <div class="view-switch" role="tablist" aria-label="Cambiar vista">
+            <button
+              type="button"
+              class="view-btn"
+              [class.view-btn--active]="viewMode() === 'cards'"
+              (click)="setViewMode('cards')"
+            >Cards</button>
+            <button
+              type="button"
+              class="view-btn"
+              [class.view-btn--active]="viewMode() === 'table'"
+              (click)="setViewMode('table')"
+            >Tabla</button>
+          </div>
+
+          <div class="filters">
+            <input
+              type="text"
+              placeholder="Buscar ticket, nombre, empresa..."
+              [ngModel]="searchTerm()"
+              (ngModelChange)="searchTerm.set($event); applyFilters()"
+            >
+
+            <select [ngModel]="urgenciaFilter()" (ngModelChange)="urgenciaFilter.set($event); applyFilters()">
+              <option value="">Todas las urgencias</option>
+              <option value="BAJA">Baja</option>
+              <option value="MEDIA">Media</option>
+              <option value="ALTA">Alta</option>
+              <option value="CRITICA">Critica</option>
+            </select>
+
+            @if (hasFilters()) {
+              <button class="btn-limpiar" (click)="clearFilters()">Limpiar</button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="list-card__body">
+        @if (filteredTickets().length > 0) {
+          @if (viewMode() === 'cards') {
+            <div class="tickets-list">
+              @for (ticket of filteredTickets(); track ticket.id; let i = $index) {
+                <article class="ticket-card" [style.--stagger-index]="i" (click)="openPanel(ticket)">
+                  <div class="card-header">
+                    <div class="ticket-number">
+                      <span class="dot" [style.background]="getUrgencyColor(ticket.urgencia)"></span>
+                      <span>#{{ ticket.numeroTicket }}</span>
+                    </div>
+                    <span class="badge-urgencia" [ngClass]="getUrgenciaClass(ticket.urgencia)">
+                      {{ ticket.urgencia | titlecase }}
+                    </span>
+                  </div>
+
+                  <h3>{{ ticket.tipoSolicitud }} - {{ ticket.subClasificacion }}</h3>
+                  <p class="description">{{ ticket.descripcionIncidente }}</p>
+
+                  <div class="meta-info">
+                    <span class="chip">{{ ticket.nombreCompleto }}</span>
+                    <span class="chip">{{ ticket.nombreEmpresa }}</span>
+                    <span class="chip">{{ ticket.ciudad }}</span>
+                  </div>
+
+                  <div class="footer">
+                    <span class="badge-estado" [ngClass]="getEstadoClass(ticket.estado)">
+                      {{ getEstadoLabel(ticket.estado) }}
+                    </span>
+                    <div class="time">{{ formatTimeAgo(ticket.fechaCreacion) }}</div>
+                  </div>
+                </article>
+              }
+            </div>
+          } @else {
+            <div class="table-wrap">
+              <table class="tickets-table">
+                <thead>
+                  <tr>
+                    <th>Ticket</th>
+                    <th>Tipo / Subclasif</th>
+                    <th>Solicitante</th>
+                    <th>Empresa</th>
+                    <th>Urgencia</th>
+                    <th class="th-estado">
+                      <select class="th-estado__select"
+                        [ngModel]="estadoFilter()"
+                        (ngModelChange)="estadoFilter.set($event)"
+                        (click)="$event.stopPropagation()">
+                        <option value="">Estado</option>
+                        <option value="ABIERTO">Abierto</option>
+                        <option value="EN_PROGRESO">En progreso</option>
+                        <option value="ESCALADO">Escalado</option>
+                        <option value="RESUELTO">Resuelto</option>
+                        <option value="CERRADO">Cerrado</option>
+                      </select>
+                    </th>
+                    <th>Tiempo</th>
+                    <th>Accion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ticket of filteredTickets(); track ticket.id) {
+                    <tr (click)="openPanel(ticket)">
+                      <td>
+                        <div class="table-ticket">
+                          <span class="dot" [style.background]="getUrgencyColor(ticket.urgencia)"></span>
+                          <span>#{{ ticket.numeroTicket }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="table-main">{{ ticket.tipoSolicitud }}</div>
+                        <small>{{ ticket.subClasificacion }}</small>
+                      </td>
+                      <td>
+                        <div class="table-main">{{ ticket.nombreCompleto }}</div>
+                        <small>{{ ticket.ciudad }}</small>
+                      </td>
+                      <td>{{ ticket.nombreEmpresa }}</td>
+                      <td>
+                        <span class="badge-urgencia" [ngClass]="getUrgenciaClass(ticket.urgencia)">
+                          {{ ticket.urgencia | titlecase }}
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge-estado" [ngClass]="getEstadoClass(ticket.estado)">
+                          {{ getEstadoLabel(ticket.estado) }}
+                        </span>
+                      </td>
+                      <td>{{ formatTimeAgo(ticket.fechaCreacion) }}</td>
+                      <td>
+                        <button type="button" class="btn-open" (click)="$event.stopPropagation(); openPanel(ticket)">Ver</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        } @else {
+          <div class="empty-state">
+            <div class="svg-icon" aria-hidden="true">Ticket</div>
+            <h3>No hay tickets</h3>
+            <p>No se encontraron tickets que coincidan con tus filtros.</p>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+@if (isPanelOpen()) {
+  <div class="panel-overlay" (click)="closePanel()"></div>
+  <aside class="panel open" role="dialog" aria-modal="true" aria-label="Detalle del ticket">
+    <div class="header-panel panel-hero">
+      <div class="panel-hero__top">
+        <button class="btn-close-icon" (click)="closePanel()" aria-label="Cerrar detalle">x</button>
+      </div>
+
+      <div class="panel-hero__body">
+        <div class="panel-avatar" [ngClass]="'avatar-' + getEstadoTone(selectedTicket()?.estado)">
+          {{ getSolicitanteInitial(selectedTicket()?.nombreCompleto) }}
+        </div>
+
+        <div class="panel-identity">
+          <div class="identity-row">
+            <h2>#{{ selectedTicket()?.numeroTicket }}</h2>
+            <span class="badge-estado hero-badge" [ngClass]="getEstadoClass(selectedTicket()?.estado)">
+              {{ getEstadoLabel(selectedTicket()?.estado || '') }}
+            </span>
+          </div>
+          <p>{{ selectedTicket()?.nombreCompleto }}</p>
+          <small>{{ selectedTicket()?.nombreEmpresa }} - {{ selectedTicket()?.cargo }}</small>
+        </div>
+
+        <div class="panel-hero-stats">
+          <div class="hero-stat">
+            <span>Nivel</span>
+            <strong>N{{ nivel() }}</strong>
+          </div>
+          <div class="hero-stat">
+            <span>Urgencia</span>
+            <strong>{{ selectedTicket()?.urgencia | titlecase }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="section expanded">
+      <h4>Clasificacion</h4>
+      <div class="grid-two card-surface">
+        <div><span>Tipo:</span> {{ selectedTicket()?.tipoSolicitud }}</div>
+        <div><span>Sub-clasif:</span> {{ selectedTicket()?.subClasificacion }}</div>
+        <div><span>Impacto:</span> {{ getImpactoIcon(selectedTicket()?.impacto || '') }}</div>
+        <div><span>Fecha:</span> {{ selectedTicket()?.fechaCreacion | date:'short' }}</div>
+      </div>
+    </section>
+
+    <section class="section expanded">
+      <h4>Descripcion</h4>
+      <p class="panel-description card-surface">{{ selectedTicket()?.descripcionIncidente }}</p>
+    </section>
+
+    <section class="section expanded">
+      <h4>Solicitante</h4>
+      <div class="solicitante card-surface">
+        <div><strong>{{ selectedTicket()?.nombreCompleto }}</strong> - {{ selectedTicket()?.cargo }}</div>
+        <div>{{ selectedTicket()?.nombreEmpresa }}</div>
+        <div>{{ selectedTicket()?.correoElectronico }}</div>
+        <div>{{ selectedTicket()?.telefono }}</div>
+        <div>{{ selectedTicket()?.ciudad }}</div>
+      </div>
+    </section>
+
+    <section class="section expanded">
+      <h4>Timeline</h4>
+      <div class="timeline">
+        @for (action of selectedTicketActions(); track action.id; let i = $index) {
+          <div class="timeline-item" [ngClass]="getTimelineClass(action.accion)" [style.--index]="i">
+            <div class="timeline-marker">
+              <div class="dot-timeline" [ngClass]="getTimelineDotClass(action.accion)"></div>
+              <span class="timeline-step">{{ i + 1 }}</span>
+            </div>
+            <div class="timeline-card">
+              <div class="timeline-card-head">
+                <div class="timeline-title">{{ action.accion | titlecase }}</div>
+                <div class="timeline-date">{{ action.fecha | date:'short' }}</div>
+              </div>
+              <p class="timeline-desc">{{ action.descripcion }}</p>
+              <small class="timeline-user">Gestionado por {{ action.usuario }}</small>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <div class="panel-actions">
+      <button class="btn-gestionar" (click)="gestionarTicket()">Gestionar ticket</button>
+    </div>
+  </aside>
+}

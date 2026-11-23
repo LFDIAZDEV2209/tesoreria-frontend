@@ -1,0 +1,270 @@
+<div class="dynamic-section" [formGroup]="formGroup">
+  <!-- Header -->
+  <div class="dynamic-section__header">
+    <div class="dynamic-section__header-icon" style="background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.04)); color: #3b82f6;">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+    </div>
+    <div class="dynamic-section__header-text">
+      <p class="dynamic-section__header-title">Compra de Hardware</p>
+      <p class="dynamic-section__header-subtitle">Solicitud de equipos tecnológicos y especificaciones</p>
+    </div>
+  </div>
+
+  <!-- Sede -->
+  <div class="form-row form-row--1" style="margin-top: 4px;">
+    <div class="form-group">
+      <label class="form-label">Sede / Ubicación</label>
+      <input type="text" formControlName="sedeUbicacion" placeholder="Sede destino del equipo" class="form-input" />
+    </div>
+  </div>
+
+  <!-- ═══ TIPO DE HARDWARE ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🖥️</span> Tipo de Hardware</p>
+    <div class="option-chips">
+      <div *ngFor="let t of tiposHardware"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('tipoHardware')?.value === t"
+           (click)="selectOption('tipoHardware', t)">
+        <span class="option-chip__dot"></span>
+        {{ t }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ESPECIFICACIONES TÉCNICAS ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🔧</span> Especificaciones Técnicas</p>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Descripción del Equipo</label>
+        <textarea formControlName="descripcionEquipo" rows="2" placeholder="Describa el equipo requerido..." class="form-textarea"></textarea>
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Marca Sugerida (opcional)</label>
+        <input type="text" formControlName="marcaSugerida" placeholder="Ej: Dell, HP, Lenovo" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Modelo Sugerido (opcional)</label>
+        <input type="text" formControlName="modeloSugerido" placeholder="Modelo específico" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Procesador</label>
+        <input type="text" formControlName="procesador" placeholder="Ej: Intel i7 13th Gen" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">RAM</label>
+        <input type="text" formControlName="ram" placeholder="Ej: 16 GB" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Disco (SSD/HDD + Capacidad)</label>
+        <input type="text" formControlName="disco" placeholder="Ej: SSD 512 GB" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Pantalla (si aplica)</label>
+        <input type="text" formControlName="pantalla" placeholder="Ej: 15.6 FHD" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sistema Operativo</label>
+        <input type="text" formControlName="sistemaOperativo" placeholder="Ej: Windows 11 Pro" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Puertos / Conectividad</label>
+        <input type="text" formControlName="puertosConectividad" placeholder="USB-C, HDMI, Wi-Fi 6" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Garantía Mínima Requerida</label>
+        <input type="text" formControlName="garantiaMinima" placeholder="Ej: 3 años" class="form-input" />
+      </div>
+    </div>
+    <div class="info-note">
+      <div class="info-note__icon">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <p class="info-note__text">
+        <strong>Recomendación:</strong> Adjunte la ficha técnica del equipo en el paso de Documentos y Evidencias.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══ USO / DESTINO ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🧑‍💼</span> Uso / Destino</p>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Usuario Asignado</label>
+        <input type="text" formControlName="usuarioAsignado" placeholder="Nombre del usuario" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cargo</label>
+        <input type="text" formControlName="cargoUsuario" placeholder="Cargo del usuario" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Proceso / Función</label>
+        <input type="text" formControlName="procesoFuncion" placeholder="Función que desempeña" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Tipo de Uso</label>
+        <div class="option-chips">
+          <div *ngFor="let t of tiposUso"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('tipoUso')?.value === t"
+               (click)="selectOption('tipoUso', t)">
+            <span class="option-chip__dot"></span>
+            {{ t }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Motivo</label>
+        <div class="option-chips">
+          <div *ngFor="let m of motivosCompra"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('motivoCompra')?.value === m"
+               (click)="selectOption('motivoCompra', m)">
+            <span class="option-chip__dot"></span>
+            {{ m }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INFORMACIÓN FINANCIERA ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">💵</span> Información Financiera</p>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <div class="option-chips">
+          <div class="option-chip option-chip--selected">
+            <span class="option-chip__dot"></span>
+            Inversión (CAPEX)
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Centro de Costos</label>
+        <input type="text" formControlName="centroCostos" placeholder="Centro de costos" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Proyecto (si aplica)</label>
+        <input type="text" formControlName="proyecto" placeholder="Nombre del proyecto" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Presupuesto Estimado</label>
+        <input type="number" formControlName="presupuestoEstimado" placeholder="$ 0" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Está Presupuestado?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('estaPresupuestado')?.value"
+             (click)="toggleBoolean('estaPresupuestado')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('estaPresupuestado')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Presupuestado</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('estaPresupuestado')?.value">
+            {{ formGroup.get('estaPresupuestado')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vida Útil Estimada</label>
+        <input type="text" formControlName="vidaUtilEstimada" placeholder="Ej: 5 años" class="form-input" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROVEEDOR ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏢</span> Información de Proveedor</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Proveedor Sugerido</label>
+        <input type="text" formControlName="proveedorSugerido" placeholder="Nombre del proveedor" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Proveedor Homologado?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('proveedorHomologado')?.value"
+             (click)="toggleBoolean('proveedorHomologado')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('proveedorHomologado')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Homologado</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('proveedorHomologado')?.value">
+            {{ formGroup.get('proveedorHomologado')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Nº Cotizaciones Requeridas</label>
+        <div class="option-chips">
+          <div *ngFor="let n of [1, 2, 3]"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('numCotizaciones')?.value === n"
+               (click)="formGroup.get('numCotizaciones')?.setValue(n)">
+            {{ n }}
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tiempo de Entrega Esperado</label>
+        <input type="text" formControlName="tiempoEntrega" placeholder="Ej: 10 días hábiles" class="form-input" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTROL DE INVENTARIOS / ACTIVOS ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📦</span> Control de Inventarios / Activos</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">¿Se Registrará como Activo Fijo?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('registrarActivoFijo')?.value"
+             (click)="toggleBoolean('registrarActivoFijo')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('registrarActivoFijo')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Activo fijo</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('registrarActivoFijo')?.value">
+            {{ formGroup.get('registrarActivoFijo')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Código de Activo</label>
+        <input type="text" formControlName="codigoActivo" placeholder="Automático / Manual" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Responsable del Activo</label>
+        <input type="text" formControlName="responsableActivo" placeholder="Persona responsable" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ubicación Física</label>
+        <input type="text" formControlName="ubicacionFisica" placeholder="Dónde estará ubicado" class="form-input" />
+      </div>
+    </div>
+  </div>
+</div>

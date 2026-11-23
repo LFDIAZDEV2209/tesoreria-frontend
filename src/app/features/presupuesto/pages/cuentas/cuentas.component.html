@@ -1,0 +1,156 @@
+<section class="gp-catalogo">
+  <header><div class="gp-catalogo-titulo"><app-gp-icon name="user-cog" [size]="20"/><div><h1>Cuentas y Empresas</h1><p>Empresas (workspaces) y personas con acceso a la plataforma</p></div></div><button class="btn-primary" (click)="abrir()">+ {{ tab() === 'empresas' ? 'Nueva empresa' : 'Nuevo usuario' }}</button></header>
+  <div class="gp-catalogo-filtros" role="tablist" aria-label="Cuentas y empresas"><button class="btn-ghost" role="tab" [attr.aria-selected]="tab() === 'empresas'" (click)="tab.set('empresas')">Empresas <span>{{ empresas().length }}</span></button><button class="btn-ghost" role="tab" [attr.aria-selected]="tab() === 'usuarios'" (click)="tab.set('usuarios')">Personas <span>{{ personas().length }}</span></button></div>
+  @if (error()) { <p class="gp-catalogo-error" role="alert">{{ error() }} <button class="btn-ghost" (click)="cargar()">Reintentar</button></p> }
+  <div class="card gp-catalogo-tabla"><table><thead><tr><th>Nombre</th><th>{{ tab() === 'empresas' ? 'Código' : 'Usuario' }}</th><th *ngIf="tab() === 'usuarios'">Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+    @if (cargando()) { <tr><td colspan="5" role="status">Cargando…</td></tr> }
+    @for (cuenta of filas(); track cuenta.id) { <tr><td>{{ cuenta.nombre }}</td><td>{{ cuenta.username }} @if (cuenta.debe_cambiar_password) { <span class="text-warn">· Clave temporal</span> }</td><td *ngIf="tab() === 'usuarios'">{{ labelRol(cuenta) }}</td><td><span [class]="cuenta.activo ? 'text-ok' : 'text-err'">{{ cuenta.activo ? 'Activa' : 'Inactiva' }}</span></td><td><div class="gp-catalogo-acciones"><button class="btn-ghost" (click)="abrir(cuenta)" [disabled]="ocupado()" title="Editar cuenta"><app-gp-icon name="edit" [size]="13"/>Editar</button>@if ((cuenta.rol === 'contador' || cuenta.rol === 'tesorero') && !cuenta.es_workspace) { <button class="btn-ghost" (click)="asignar(cuenta)" [disabled]="ocupado()">Empresas</button> }@if (cuenta.rol === 'gerente') { <button class="btn-ghost" (click)="alternarLectura(cuenta)" [disabled]="ocupado()">{{ cuenta.solo_lectura ? 'Permitir edición' : 'Solo lectura' }}</button> }<button class="btn-ghost" (click)="actualizar(cuenta, {activo: !cuenta.activo})" [disabled]="ocupado()">{{ cuenta.activo ? 'Desactivar' : 'Reactivar' }}</button>@if (!cuenta.es_workspace) { <button class="btn-ghost" (click)="cambiarClave(cuenta)" [disabled]="ocupado()" [attr.aria-label]="'Cambiar clave de '+cuenta.nombre" title="Cambiar clave"><app-gp-icon name="key" [size]="13"/></button> } @if (cuenta.es_workspace) { <button class="btn-ghost text-err" (click)="pedirEliminar(cuenta)" [disabled]="ocupado()" title="Retirar empresa del Gestor"><app-gp-icon name="trash" [size]="13"/></button> }</div></td></tr> }
+    @if (!cargando() && !filas().length) { <tr><td colspan="5">No hay {{ tab() === 'empresas' ? 'empresas' : 'personas' }} creadas todavía</td></tr> }
+  </tbody></table></div>
+  @if (modal()) { <div class="gp-catalogo-fondo" (click)="cerrar()"><section class="modal-glass gp-catalogo-form" [class.gp-catalogo-form--ancho]="modal() === 'crear' && !esEmpresa()" role="dialog" aria-modal="true" aria-labelledby="gp-cuenta-titulo" (click)="$event.stopPropagation()">
+    <header><h2 id="gp-cuenta-titulo">{{ modal() === 'eliminar' ? 'Retirar empresa' : modal() === 'empresas' ? 'Asignar empresas' : modal() === 'editar' ? 'Editar cuenta' : tab() === 'empresas' ? 'Nueva empresa' : 'Dar acceso a NEXA' }}</h2><button class="btn-ghost" type="button" (click)="cerrar()" [disabled]="ocupado()" aria-label="Cerrar">×</button></header>
+    @if (modal() === 'crear' || modal() === 'editar') {
+      <form (ngSubmit)="guardar()" class="space-y-4">
+        @if (esEmpresa()) {
+          <label>Nombre de la empresa<input class="field" name="nombre" [(ngModel)]="nombre" required /></label>
+          <label>Código de la empresa<input class="field" name="username" [(ngModel)]="username" required minlength="3" autocomplete="off" /></label>
+        }
+
+        @if (!esEmpresa() && !seleccionada) {
+          <div class="gp-pasos" aria-label="Pasos para dar acceso">
+            <span class="gp-pasos__item" [class.gp-pasos__item--activo]="!employeeId" [class.gp-pasos__item--hecho]="!!employeeId">
+              <span class="gp-pasos__num">1</span> Elige la persona
+            </span>
+            <span class="gp-pasos__linea" [class.gp-pasos__linea--hecha]="!!employeeId"></span>
+            <span class="gp-pasos__item" [class.gp-pasos__item--activo]="!!employeeId">
+              <span class="gp-pasos__num">2</span> Rol y confirmación
+            </span>
+          </div>
+          @if (!employeeId) {
+            <div class="gp-picker">
+              <div class="gp-picker__buscador">
+                <label class="gp-picker__campo">
+                  <app-gp-icon name="search" [size]="14"></app-gp-icon>
+                  <input class="field" name="busquedaEmpleado" placeholder="Buscar por nombre, correo o cédula…"
+                         [(ngModel)]="busquedaEmpleado" (keydown.enter)="$event.preventDefault(); buscarEmpleados()" />
+                  @if (busquedaEmpleado) {
+                    <button type="button" class="gp-picker__limpiar" title="Limpiar búsqueda"
+                            (click)="limpiarBusquedaEmpleado()"><app-gp-icon name="x" [size]="12"></app-gp-icon></button>
+                  }
+                </label>
+                <button type="button" class="btn-ghost" (click)="buscarEmpleados()" [disabled]="buscandoEmpleado()">
+                  <app-gp-icon name="refresh" [size]="13" [class.gp-picker__girando]="buscandoEmpleado()"></app-gp-icon>
+                  Buscar
+                </button>
+              </div>
+
+              <div class="gp-picker__cabecera">
+                <span class="gp-picker__titulo">Personas sin acceso a NEXA</span>
+                @if (!buscandoEmpleado() && totalCandidatos() > 0) {
+                  <span class="gp-picker__conteo">{{ totalCandidatos() }} pendientes</span>
+                }
+              </div>
+
+              @if (buscandoEmpleado()) {
+                <div class="gp-picker__estado" role="status">
+                  <app-gp-icon name="clock" [size]="15" [class.gp-picker__girando]="true"></app-gp-icon>
+                  Buscando personas…
+                </div>
+              } @else if (!candidatos().length) {
+                <div class="gp-picker__estado gp-picker__estado--vacio">
+                  <app-gp-icon name="users" [size]="22"></app-gp-icon>
+                  <span class="gp-picker__nombre">Sin personas por aquí</span>
+                  <span>No hay cuentas pendientes de acceso con esa búsqueda.</span>
+                  <span class="gp-picker__nota">Si la persona no existe, primero crea su cuenta en PeopleNet.</span>
+                </div>
+              } @else {
+                <div class="gp-picker__lista">
+                  @for (c of candidatos(); track c.employeeId) {
+                    <button type="button" class="gp-picker__fila"
+                            [class.gp-picker__fila--activa]="employeeId === c.employeeId"
+                            [attr.aria-pressed]="employeeId === c.employeeId"
+                            [attr.title]="c.nombreCompleto + ' · ' + c.username"
+                            (click)="elegirEmpleado(c)">
+                      <span class="gp-picker__avatar">{{ inicialesUsuario(c.nombreCompleto) }}</span>
+                      <span class="gp-picker__datos">
+                        <span class="gp-picker__nombre">{{ c.nombreCompleto }}</span>
+                        <span class="gp-picker__meta">
+                          <span class="gp-picker__usuario">{{ c.username }}</span>
+                          @if (c.idNumber) { <span>CC {{ c.idNumber }}</span> }
+                          @if (c.cargo) { <span>{{ c.cargo }}</span> }
+                          @if (c.tieneCuenta === false) { <span class="gp-picker__chip">Sin cuenta</span> }
+                        </span>
+                      </span>
+                      <span class="gp-picker__marca"><app-gp-icon name="check" [size]="14"></app-gp-icon></span>
+                    </button>
+                  }
+                </div>
+
+                @if (totalPaginasEmpleado() > 1) {
+                  <div class="gp-picker__pie">
+                    <button type="button" class="btn-ghost" (click)="buscarEmpleados(paginaEmpleado - 1)"
+                            [disabled]="buscandoEmpleado() || paginaEmpleado === 0">
+                      <app-gp-icon name="arrow-left" [size]="12"></app-gp-icon> Anterior
+                    </button>
+                    <span class="gp-picker__pagina">Página {{ paginaEmpleado + 1 }} de {{ totalPaginasEmpleado() }}</span>
+                    <button type="button" class="btn-ghost" (click)="buscarEmpleados(paginaEmpleado + 1)"
+                            [disabled]="buscandoEmpleado() || paginaEmpleado + 1 >= totalPaginasEmpleado()">
+                      Siguiente <app-gp-icon name="arrow-right" [size]="12"></app-gp-icon>
+                    </button>
+                  </div>
+                }
+              }
+            </div>
+          } @else {
+            <div class="gp-picker__elegido">
+              <span class="gp-picker__avatar gp-picker__avatar--ok">{{ inicialesUsuario(nombre) }}</span>
+              <span class="gp-picker__datos">
+                <span class="gp-picker__nombre" [attr.title]="nombre">{{ nombre }}</span>
+                <span class="gp-picker__meta">
+                  <span class="gp-picker__usuario" [attr.title]="username">{{ username }}</span>
+                  @if (seleccionDatos?.idNumber) { <span>CC {{ seleccionDatos?.idNumber }}</span> }
+                  @if (crearCredenciales()) { <span class="gp-picker__chip gp-picker__chip--nuevo">Sin cuenta · se creará</span> }
+                </span>
+              </span>
+              <button type="button" class="btn-ghost" (click)="limpiarEmpleado()">Cambiar</button>
+            </div>
+
+            <div class="gp-picker__campos">
+              <label>Nombre para mostrar<input class="field" name="nombre" [(ngModel)]="nombre" required /></label>
+              <label>Usuario de acceso<input class="field" name="username" [(ngModel)]="username" [disabled]="esCuentaDb()" required minlength="3" autocomplete="off" /></label>
+              <label>Correo electrónico<input class="field" name="email" type="email" [(ngModel)]="email" [disabled]="esCuentaDb()"
+                     [attr.placeholder]="crearCredenciales() ? 'Correo para NEXA y PeopleNet' : null" required /></label>
+            </div>
+            @if (crearCredenciales()) {
+              <label>Contraseña temporal
+                <span class="gp-picker__clave">
+                  <input class="field" name="password" [(ngModel)]="password" minlength="8" autocomplete="new-password" />
+                  <button type="button" class="btn-ghost" title="Generar otra" (click)="regenerarPassword()">
+                    <app-gp-icon name="refresh" [size]="13"></app-gp-icon>
+                  </button>
+                </span>
+              </label>
+            }
+          }
+          <p class="gp-picker__nota">{{ crearCredenciales()
+              ? 'La cuenta se creará con estas credenciales (sirven para NEXA y PeopleNet). Comparte la clave temporal; la persona deberá cambiarla al ingresar.'
+              : 'Las cuentas se crean y administran en PeopleNet; aquí solo se otorga el acceso a NEXA.' }}</p>
+        }
+
+        @if (!esEmpresa() && seleccionada) {
+          <label>Nombre completo<input class="field" name="nombre" [(ngModel)]="nombre" required /></label>
+          <label>Usuario de acceso<input class="field" name="username" [(ngModel)]="username" disabled required minlength="3" autocomplete="off" /></label>
+          <label>Nueva clave (opcional)<input class="field" name="password" type="password" [(ngModel)]="password" minlength="8" autocomplete="new-password" /></label>
+        }
+
+        @if (!esEmpresa()) { <label>Rol<select class="field" name="rol" [(ngModel)]="rol">@for (r of roles; track r.value) { @if (r.value !== 'contador') { <option [value]="r.value">{{ r.label }}</option> } }</select></label> }
+        @if (rol === 'contador_multiempresa') { <p>Después de crear la cuenta, asigna sus empresas desde la tabla.</p> }
+        <button class="btn-primary" type="submit"
+                [disabled]="ocupado() || (!esEmpresa() && !seleccionada && !employeeId)">{{ ocupado() ? 'Guardando…' : seleccionada ? 'Guardar cambios' : rol === 'contador' ? 'Crear empresa' : 'Dar acceso a NEXA' }}</button>
+      </form>
+    }
+    @if (modal() === 'empresas') { <p>{{ seleccionada?.nombre }}</p>@for (empresa of empresas(); track empresa.id) { <label style="flex-direction:row;align-items:center"><input type="checkbox" [checked]="seleccionEmpresas.has(empresa.empresa_id!)" (change)="toggleEmpresa(empresa.empresa_id!)"/>{{ empresa.nombre }}</label> }@if (!empresas().length) { <p>No hay empresas disponibles.</p> }<button class="btn-primary" (click)="guardarEmpresas()" [disabled]="ocupado()">{{ ocupado() ? 'Guardando…' : 'Guardar empresas' }}</button> }
+    @if (modal() === 'eliminar') { <p>¿Retirar {{ seleccionada?.nombre }} del Gestor? Solo es posible si no tiene datos ni accesos asociados. La empresa se conserva en Nexa.</p><div class="gp-catalogo-acciones"><button class="btn-ghost" (click)="cerrar()" [disabled]="ocupado()">Cancelar</button><button class="btn-primary" (click)="eliminar()" [disabled]="ocupado()">{{ ocupado() ? 'Retirando…' : 'Retirar empresa' }}</button></div> }
+    @if (errorModal()) { <p class="text-err" role="alert">{{ errorModal() }}</p> }
+  </section></div> }
+</section>

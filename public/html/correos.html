@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correo Empresa Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;   
+                     
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .container{
+            background-color: rgb(250, 250, 250);
+            padding: 10px;
+        }
+
+        .email-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 10px;            
+        }
+
+        .email-header {
+            background: linear-gradient(to right, #213053, #1b2844, #045C94);
+            padding: 10px 5px;
+            text-align: start;
+            color: white;
+            border-radius: 8px 8px;
+        }
+
+        .email-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin-bottom: 5px;
+        }
+
+        .email-header p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .email-content {
+            padding: 40px 30px;
+        }
+
+        .email-greeting {
+            font-size: 18px;
+            font-weight: 600;
+            color: #213053;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .email-body {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 30px;
+        }
+
+        .email-body p {
+            margin-bottom: 15px;
+        }
+
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #213053, transparent);
+            margin: 30px 0;
+        }
+
+        .email-footer {
+            padding: 20px 30px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .footer-brand {
+            font-size: 14px;
+            font-weight: 700;
+            color: #213053;
+            margin-bottom: 10px;
+        }
+
+        .footer-contact {
+            margin: 10px 0;
+            line-height: 1.8;
+        }
+
+        .footer-contact a {
+            color: #213053;
+            text-decoration: none;
+        }
+
+        .footer-contact a:hover {
+            text-decoration: underline;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #213053, #045C94);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .highlight {
+            color: #FFB71B;
+            font-weight: 600;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                max-width: 100%;
+            }
+
+            .email-header {
+                padding: 20px 15px;
+            }
+
+            .email-header h1 {
+                font-size: 24px;
+            }
+
+            .email-content {
+                padding: 25px 15px;
+            }
+
+            .email-greeting {
+                font-size: 16px;
+            }
+
+            .email-body {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+            <img src="https://example.com/wp-content/uploads/2023/03/cropped-logoPrincipal-.png" alt="">
+        </div>
+
+        <!-- Content -->
+        <div class="email-content">
+            <!-- Greeting -->
+            <div class="email-greeting">
+                Estimados {{NOMBRE}},
+            </div>
+
+            <!-- Body Content -->
+            <div class="email-body">
+                <p>De acuerdo con la revisión realizada, se identifican colaboradores de su área que no cuentan con KPIs asignados a la fecha.</p>
+
+                <p>A continuación, se detalla el personal pendiente:</p>
+
+                <div style="background-color: #f5f5f5; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #213053;">
+                    <strong style="color: #213053;">Colaboradores sin KPIs asignados:</strong>
+                    <table style="width: 100%; margin-top: 12px; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #ddd; background-color: #fff;">
+                            <td style="padding: 8px; color: #213053; font-weight: 600; font-size: 14px;">Nombre del Colaborador</td>                           
+                            <td style="padding: 8px; color: #213053; font-weight: 600; font-size: 14px;">Cargo</td>
+                            <td style="padding: 8px; color: #213053; font-weight: 600; font-size: 14px;">Estado KPIs</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 8px; font-size: 14px;">Juan Pérez</td>                            
+                            <td style="padding: 8px; font-size: 14px;">Analista Financiero</td>
+                            <td style="padding: 8px; font-size: 14px;"><span style="background-color: #ffebee; color: #c62828; padding: 4px 8px; border-radius: 4px; font-weight: 600;">No asignados</span></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 8px; font-size: 14px;">María Gómez</td>                            
+                            <td style="padding: 8px; font-size: 14px;">Coordinadora Administrativa</td>
+                            <td style="padding: 8px; font-size: 14px;"><span style="background-color: #ffebee; color: #c62828; padding: 4px 8px; border-radius: 4px; font-weight: 600;">No asignados</span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p>Les solicitamos, por favor, <strong>completar la asignación de KPIs</strong> para los colaboradores indicados, a fin de asegurar el adecuado seguimiento del desempeño.</p>
+
+               
+
+                <p>Agradecemos su apoyo para regularizar esta situación a la mayor brevedad.</p>
+
+                <p style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #ddd;">
+                    <strong>Cordialmente,</strong><br><br>
+                    <strong style="color: #213053;">David Bustamante</strong><br>
+                    Gerente Ejecutivo
+                </p>
+            </div>
+          
+            <div class="divider"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <div class="footer-brand">EMPRESA DEMO</div>
+            <div class="footer-contact">
+                <p>Soluciones en Gestión de Desempeño</p>
+                <p>
+                    <a href="mailto:contacto@example.com">contacto@example.com</a>
+                </p>
+                <p>
+                    <a href="https://www.example.com" target="_blank">www.example.com</a>
+                </p>
+            </div>
+            <p style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+                &copy; 2025 Empresa Demo. Todos los derechos reservados.
+            </p>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

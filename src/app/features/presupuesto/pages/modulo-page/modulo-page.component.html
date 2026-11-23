@@ -1,0 +1,640 @@
+<div class="gp-native-page module-page" [style.--module-accent]="color">
+  <div class="space-y-5" @gpStagger>
+
+  <!-- Header del módulo -->
+  <app-gp-page-header class="gp-item" [icono]="icono" [color]="color" [titulo]="titulo"
+                      [descripcion]="descripcion" [chip]="cfg.puc" [foto]="foto">
+    <button acciones *ngIf="ctx.tienePermiso('modulos.importar') && (resumen()?.totalMovimientos ?? 0) > 0" class="btn-primary !py-2.5 !px-4 !text-sm" (click)="wizardAbierto.set(true)">
+      <span class="flex items-center gap-2"><app-gp-icon name="upload" [size]="16"></app-gp-icon> Importar período</span>
+    </button>
+    <button acciones *ngIf="puedeLimpiarModulo" class="btn-danger-ghost !py-2.5 !px-4 !text-sm"
+              (click)="limpiar()" [disabled]="limpiando() || (resumen()?.totalMovimientos ?? 0) === 0"
+              [title]="(resumen()?.totalMovimientos ?? 0) === 0 ? 'No hay datos importados que limpiar' : 'Borra los datos importados de ' + titulo + ' para volver a cargarlos'">
+        <span class="flex items-center gap-2">
+          <app-gp-icon [name]="limpiando() ? 'clock' : 'eraser'" [size]="15"></app-gp-icon>
+          {{ limpiando() ? 'Limpiando…' : 'Limpiar' }}
+        </span>
+      </button>
+  </app-gp-page-header>
+
+  <app-gp-vista-periodos *ngIf="!modoHistorico" [mostrarLegalizados]="esAnticipos"/>
+
+  <!-- Repositorio de anticipos legalizados (todos los meses) -->
+  <app-gp-anticipos-legalizados *ngIf="esAnticipos && ctx.vistaLegalizados()"/>
+
+  <app-gp-modulo-anual *ngIf="ctx.vistaCompleta() && !modoHistorico && !(esAnticipos && ctx.vistaLegalizados())" [modulo]="cfg.modulo"/>
+  <ng-container *ngIf="!(ctx.vistaCompleta() && !modoHistorico) && !(esAnticipos && ctx.vistaLegalizados())">
+
+  <div *ngIf="error()" class="gp-item">
+    <app-gp-error-state [mensaje]="error()!" (reintentar)="cargar()"></app-gp-error-state>
+  </div>
+
+  <div *ngIf="!loading() && !error() && (resumen()?.totalMovimientos ?? 0) === 0 && !hayFiltrosActivos" class="gp-module-empty">
+    <div class="gp-empty-symbol"><app-gp-icon name="upload" [size]="40"/></div>
+    <h2>{{modoHistorico?'Sin datos conservados':'Sin datos importados'}}</h2>
+    @if(modoHistorico){<p>Este cierre no conserva registros de {{titulo}}.</p>}
+    @else{<p>Importa el reporte de <strong>{{ titulo }}</strong> exportado<br class="hidden sm:block"> desde SIIGO para generar el análisis presupuestal.</p>}
+    <span class="gp-empty-puc">Cuenta PUC: {{ cfg.puc }}</span>
+    <button *ngIf="ctx.tienePermiso('modulos.importar')" class="btn-primary gp-empty-import" (click)="wizardAbierto.set(true)"><app-gp-icon name="upload" [size]="18"/> Importar archivo SIIGO</button>
+    <button *ngIf="!modoHistorico" class="btn-ghost" (click)="descargarPlantilla()"><app-gp-icon name="download" [size]="14"/> Descargar plantilla en Excel</button>
+    <small *ngIf="!modoHistorico">Formatos aceptados: .xlsx · .xls</small>
+  </div>
+
+  <!-- Sin resultados con filtros -->
+  <div *ngIf="!loading() && !error() && (pagina()?.totalElements ?? 0) === 0 && hayFiltrosActivos" class="gp-item">
+    <app-gp-empty-state icono="search" titulo="Sin resultados"
+      descripcion="Ningún movimiento coincide con los filtros aplicados. Ajusta la búsqueda o el rango de fechas.">
+      <button acciones class="btn-secondary !py-2.5 !text-sm" (click)="limpiarFiltros()">Limpiar filtros</button>
+    </app-gp-empty-state>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading() && !resumen()" class="space-y-4">
+    <app-gp-skeleton tipo="kpis" class="gp-item"></app-gp-skeleton>
+    <app-gp-skeleton tipo="chart" class="gp-item"></app-gp-skeleton>
+    <app-gp-skeleton tipo="table" class="gp-item"></app-gp-skeleton>
+  </div>
+
+  <!-- Vista de datos -->
+  <ng-container *ngIf="!error() && resumen() && ((resumen()?.totalMovimientos ?? 0) > 0 || hayFiltrosActivos)">
+
+    <!-- KPIs -->
+    <div class="gp-item" style="max-width:280px">
+      <app-gp-kpi label="Saldo acumulado" [value]="na(resumen()?.totalSaldo)" icon="balance" variante="default"></app-gp-kpi>
+    </div>
+
+    <!-- Gráficas -->
+    <div class="gp-item card !p-5" @gpPop>
+      <div class="flex items-start justify-between mb-3 flex-wrap gap-3">
+        <div>
+          <h3 class="font-semibold text-t1 flex items-center gap-2.5">
+Saldo por categoría
+          </h3>
+          <p class="text-xs text-t3 mt-0.5">Saldo acumulado por categoría</p>
+        </div>
+        <div class="gp-chart-types flex items-center gap-0.5 rounded-lg p-0.5"
+             >
+          <button *ngFor="let t of tiposGrafica" type="button" [title]="t.titulo"
+                  class="p-1.5 rounded-md transition-all duration-150 cursor-pointer"
+                  [ngClass]="tipoGrafica() === t.id ? 'bg-surface text-acc shadow' : 'text-t3 hover:text-t2 hover:bg-surface/60'"
+                  (click)="setTipoGrafica(t.id)">
+            <app-gp-icon [name]="t.icono" [size]="14"></app-gp-icon>
+          </button>
+        </div>
+      </div>
+      <div class="gp-chart" [style.height.px]="tipoGrafica() === 'donut' ? 340 : tipoGrafica() === 'bar-h' ? 300 : 310" @gpPop *ngIf="chartDatos().length">
+        <apx-chart [series]="chartSeries()"
+                   [chart]="chartOptions().chart" [labels]="chartOptions().labels"
+                   [colors]="chartOptions().colors" [legend]="chartOptions().legend"
+                   [dataLabels]="chartOptions().dataLabels"
+                   [plotOptions]="chartOptions().plotOptions" [tooltip]="chartOptions().tooltip"
+                   [stroke]="chartOptions().stroke" [xaxis]="chartOptions().xaxis"
+                   [yaxis]="chartOptions().yaxis" [grid]="chartOptions().grid"
+                   [fill]="chartOptions().fill"></apx-chart>
+      </div>
+      <div *ngIf="!chartDatos().length" class="text-center py-6 text-sm text-t3">
+        Sin saldos por categoría para graficar.
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="gp-item card !p-0 overflow-hidden">
+      <!-- Hero de la tabla con filtros (estilo bandeja) -->
+      <div class="gp-tabla-hero">
+        <div class="flex flex-wrap items-center gap-2.5 w-full">
+          <app-gp-filtros [hero]="false" [categorias]="categoriasHistoricas" [categoria]="categoria()"
+                          [desde]="fechaDesde()" [hasta]="fechaHasta()" [busqueda]="busqueda()"
+                          [placeholderBusqueda]="'Buscar por NIT o nombre…'"
+                          (cambio)="onFiltro($event)" (limpiarEvent)="limpiarFiltros()"></app-gp-filtros>
+          <button class="btn-ghost" (click)="exportar()" [disabled]="descargando()"><app-gp-icon name="download" [size]="13"/>{{ descargando() ? 'Generando…' : 'Exportar Excel' }}</button>
+          <span *ngIf="badgeMes()" class="gp-mes-badge" [title]="tooltipMes()"><app-gp-icon name="calendar" [size]="13"/>{{ badgeMes() }}</span>
+          <span *ngIf="badgeOmitidos().length" class="gp-mes-badge gp-mes-badge--om" [title]="tooltipOmitidos()"><app-gp-icon name="ban" [size]="12"/>{{ badgeOmitidos()[0] }}</span>
+          <span class="text-xs text-t3 ml-auto">{{ totales() }}</span>
+        </div>
+      </div>
+
+      <div class="overflow-auto gp-table scroll-thin">
+        <table class="w-full">
+          <thead class="gp-thead">
+            <tr class="text-left text-[10px] font-bold text-t1 uppercase tracking-wide">
+              <th class="px-4 py-3 whitespace-nowrap cursor-pointer transition-colors"
+                  (click)="ordenar('nit')">NIT {{ flecha('nit') }}</th>
+              <th class="px-4 py-3 whitespace-nowrap cursor-pointer transition-colors"
+                  (click)="ordenar('nombre')">Nombre {{ flecha('nombre') }}</th>
+              <th class="px-4 py-3 whitespace-nowrap cursor-pointer transition-colors"
+                  (click)="ordenar('comprobante')">Comprobante {{ flecha('comprobante') }}</th>
+              <th class="px-4 py-3 whitespace-nowrap cursor-pointer transition-colors"
+                  (click)="ordenar('fecha')">Fecha {{ flecha('fecha') }}</th>
+              <th class="px-4 py-3 whitespace-nowrap text-right cursor-pointer transition-colors"
+                  (click)="ordenar('saldo')">Saldo {{ flecha('saldo') }}</th>
+              <th class="px-4 py-3 whitespace-nowrap">Categoría</th>
+              <th class="px-4 py-3 whitespace-nowrap" *ngIf="esAnticipos">Legalización</th>
+              <th class="px-4 py-3 whitespace-nowrap" *ngIf="tieneAprobacion()">Aprobación</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr *ngFor="let mov of pagina()?.content ?? []" @gpFilaTabla
+                class="gp-fila">
+              <td class="px-4 py-3 whitespace-nowrap text-xs text-t2">{{ mov.nit }}</td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-medium text-t1 max-w-[180px] truncate" [title]="mov.nombre">{{ mov.nombre }}</span>
+                </div>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span *ngIf="mov.comprobante" class="gp-mono-chip">{{ mov.comprobante }}</span>
+                <span *ngIf="!mov.comprobante" class="text-gray-300">—</span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-xs text-t2">{{ formatearFecha(mov.fecha) }}</td>
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <span class="text-xs font-bold" [style.color]="mov.saldo < 0 ? 'var(--err-solid)' : 'var(--ok-solid)'" [attr.title]="tooltipSaldoAnticipo(mov)">{{ saldoAbsoluto(mov.saldo) }}</span>
+              </td>
+              <td class="px-4 py-3">
+                <ng-container *ngIf="ctx.tienePermiso('modulos.categorizar'); else badgeOnly">
+                  <ng-container *ngIf="editingNit() === mov.nit; else verCategoria">
+                    <div class="flex items-center gap-1.5">
+                      <select class="input-field !py-1 !text-xs !w-44 !pr-8" [ngModel]="categoriaOtrosPendiente() === mov.nit ? 'OTROS' : (mov.categoria ?? '')"
+                              (change)="onCambioCategoria(mov, $event)" [disabled]="guardandoCategoria()" aria-label="Categoría del movimiento" autofocus>
+                        <option value="" disabled>— Sin categoría —</option>
+                        <option *ngIf="mov.categoria && !categorias.includes(mov.categoria)" [value]="mov.categoria" disabled>{{ mov.categoria }} (inactiva)</option>
+                        <option *ngFor="let c of categorias" [value]="c">{{ c }}</option>
+                      </select>
+                      <button class="w-6 h-6 rounded text-t3 hover:text-t2 hover:bg-elevated transition-all flex items-center justify-center"
+                              (click)="editingNit.set(null)" aria-label="Cerrar">
+                        <app-gp-icon name="x" [size]="12"></app-gp-icon>
+                      </button>
+                    </div>
+                    <input *ngIf="mov.categoria === 'OTROS' || categoriaOtrosPendiente() === mov.nit" type="text"
+                           class="input-field !py-1 !text-xs !w-44 mt-1" placeholder="¿Cuál otro?"
+                           aria-label="Detalle de categoría OTROS" [value]="mov.categoriaDetalle ?? ''"
+                           [disabled]="guardandoCategoria()" (blur)="onDetalleCategoria(mov, $event)" />
+                  </ng-container>
+                  <ng-template #verCategoria>
+                    <button (click)="abrirCategoria(mov)" class="cursor-pointer group transition-opacity hover:opacity-80" title="Clic para cambiar categoría">
+                      <app-gp-badge-categoria [categoria]="mov.categoria" [detalle]="mov.categoriaDetalle"></app-gp-badge-categoria>
+                    </button>
+                  </ng-template>
+                </ng-container>
+                <ng-template #badgeOnly>
+                  <app-gp-badge-categoria [categoria]="mov.categoria" [detalle]="mov.categoriaDetalle"></app-gp-badge-categoria>
+                </ng-template>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap" *ngIf="esAnticipos">
+                <div class="flex items-center gap-2">
+                  <span *ngIf="estaLegalizado(mov)" class="gl-estado-badge gl-estado-badge--ok"
+                        [title]="'Legalizado el ' + formatearFecha(legalizacionesVigentes(mov)[0].creadoEn) + (legalizacionesVigentes(mov)[0].creadoPor ? ' por ' + legalizacionesVigentes(mov)[0].creadoPor : '')">
+                    <app-gp-icon name="check" [size]="12"></app-gp-icon> Legalizado
+                  </span>
+                  <span *ngIf="!estaLegalizado(mov)" class="gl-estado-badge gl-estado-badge--pendiente">{{cargandoLegalizaciones() ? 'Consultando…' : errorLegalizaciones() ? 'Soportes sin consultar' : 'Pendiente de legalizar'}}</span>
+                  <span *ngIf="legalizacionesAnuladas(mov).length" class="gl-estado-badge gl-estado-badge--anulada"
+                        [title]="tooltipAnuladas(mov)">
+                    <app-gp-icon name="ban" [size]="11"></app-gp-icon>
+                    {{ legalizacionesAnuladas(mov).length }} anulada{{ legalizacionesAnuladas(mov).length === 1 ? '' : 's' }}
+                  </span>
+                  <span *ngIf="legalizacionesDe(mov).length" class="gl-acciones">
+                    <button type="button" class="gl-accion gl-accion--ver"
+                            [title]="'Ver comprobantes de ' + mov.nombre" (click)="abrirLegalizar(mov)">
+                      <span class="gl-accion__icono"><app-gp-icon name="eye" [size]="14"></app-gp-icon></span>
+                      <span class="gl-accion__tooltip">Ver comprobantes</span>
+                    </button>
+                    <button *ngIf="puedeLegalizar" type="button" class="gl-accion gl-accion--subir"
+                            [title]="(estaLegalizado(mov) ? 'Agregar comprobante de ' : 'Legalizar anticipo de ') + mov.nombre"
+                            (click)="abrirLegalizar(mov)">
+                      <span class="gl-accion__icono"><app-gp-icon name="upload" [size]="14"></app-gp-icon></span>
+                      <span class="gl-accion__tooltip">{{ estaLegalizado(mov) ? 'Agregar comprobante' : 'Legalizar anticipo' }}</span>
+                    </button>
+                  </span>
+                  <button *ngIf="puedeLegalizar && !legalizacionesDe(mov).length" type="button" class="gl-btn-gold"
+                          [title]="'Subir comprobante de legalización de ' + mov.nombre" (click)="abrirLegalizar(mov)">
+                    <app-gp-icon name="plus" [size]="14"></app-gp-icon> Legalizar
+                  </button>
+                </div>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap" *ngIf="tieneAprobacion()">
+                <div class="flex items-center gap-2">
+                  <span class="gp-approval-badge" [class.approved]="!!mov.aprobada">
+                    <app-gp-icon [name]="mov.aprobada ? 'shield' : 'clock'" [size]="12"></app-gp-icon>
+                    {{ aprobada(mov) }}
+                  </span>
+                  <button *ngIf="mov.nit && !mov.aprobada && ctx.tienePermiso('presupuesto.aprobar')"
+                          type="button"
+                          class="p-1 rounded hover:bg-emerald-50 text-emerald-600 transition-colors"
+                          [title]="'Aprobar pagos pendientes para ' + mov.nit"
+                          [disabled]="previsualizando()"
+                          (click)="previsualizarAprobacionFila(mov)">
+                    <app-gp-icon name="shield" [size]="14"></app-gp-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="gp-module-pager px-4 py-3 flex items-center justify-between text-sm">
+        <span class="text-xs text-t3 gp-page-pill">{{ rango() }}</span>
+        <div class="flex items-center gap-2.5">
+          <button class="btn-secondary !py-1.5 !px-4 !text-sm !rounded-full" [disabled]="page === 0" aria-label="Anterior" (click)="paginar(-1)">
+            <app-gp-icon name="arrow-left" [size]="13"/>
+          </button>
+
+          <button class="btn-secondary !py-1.5 !px-4 !text-sm !rounded-full"
+                  [disabled]="page + 1 >= (pagina()?.totalPages ?? 1)" aria-label="Siguiente" (click)="paginar(1)">
+            <app-gp-icon name="arrow-right" [size]="13"/>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  </ng-container>
+
+  <!-- Wizard -->
+  <app-gp-import-wizard *ngIf="wizardAbierto()" [modulo]="cfg.modulo" [titulo]="titulo"
+                        [descripcion]="cfg.puc" (finalizado)="alFinalizarWizard()"
+                        (cerrado)="wizardAbierto.set(false)"></app-gp-import-wizard>
+</div>
+</div>
+
+<app-gp-confirmar-limpieza *ngIf="confirmarLimpieza()" [titulo]="'Limpiar ' + titulo" [empresa]="ctx.nombreEmpresa()" [mensaje]="'Esto borra los datos importados de ' + titulo + ' del mes ' + mesLimpiezaTexto + ' únicamente; los demás meses no se tocan. Las proyecciones de pago sin ejecutar (sugeridos) que dependan de esos datos se cancelan automáticamente. Los pagos ya pagados o con egreso en Tesorería impiden la limpieza hasta resolverse. No se puede deshacer.'" [ocupado]="limpiando()" (cancelar)="confirmarLimpieza.set(false)" (confirmar)="limpiar(true)"/>
+
+<!-- Modal aprobación por fila reutilizado de presupuesto-page -->
+<app-gp-modal *ngIf="modalAprobacion()" [titulo]="'Aprobar pagos pendientes · ' + (preview()?.nombre || cfg.titulo)" icono="shield" ancho="md"
+              [cargando]="aprobando()" (cerrar)="cerrarModalAprobacion()">
+  <ng-container *ngIf="preview() as p">
+    <div class="rounded-xl px-4 py-3 text-sm border mb-3"
+         style="background: rgba(4,92,148,.04); border-color: rgba(4,92,148,.12);">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <p class="font-bold text-t1">{{ p.nombre }}</p>
+          <p class="font-mono text-[11px] text-t3">{{ p.nit || 'Sin NIT' }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[11px] uppercase tracking-wide text-t3 font-semibold">Módulo</p>
+          <p class="font-bold text-t1">{{ cfg.titulo }}</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-between flex-wrap gap-2 mt-2 pt-2 border-t"
+           style="border-color: rgba(4,92,148,.08);">
+        <p class="text-sm text-t2">Se van a aprobar <strong>{{ p.facturas.length }}</strong> facturas/ítems por</p>
+        <p class="font-bold text-emerald-600">{{ cp(p.totalAprobar) }}</p>
+      </div>
+      <p *ngIf="p.primeraFacturaOmitida" class="text-[11px] text-amber-600 mt-2">
+        La primera factura que no cabe completa se deja pendiente.
+      </p>
+    </div>
+
+    <div *ngIf="p.facturas.length" class="overflow-auto rounded-xl border" style="max-height: 260px;">
+      <table class="w-full text-sm">
+        <thead class="gp-thead">
+          <tr class="text-left text-[11px] uppercase tracking-wide">
+            <th class="px-4 py-2.5 font-semibold">Comprobante</th>
+            <th class="px-2 py-2.5 font-semibold">Vencimiento</th>
+            <th class="px-4 py-2.5 font-semibold text-right">Monto</th>
+            <th class="px-2 py-2.5 font-semibold">Días vencida</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of p.facturas" class="gp-fila">
+            <td class="px-4 py-2 font-mono text-xs text-t2">{{ f.comprobante || 'Sin comprobante' }}</td>
+            <td class="px-2 py-2 text-xs text-t3">{{ formatearFecha(f.fechaVencimiento ?? f.fecha) }}</td>
+            <td class="px-4 py-2 text-right font-bold tabular-nums" [class.text-rose-500]="f.vencida">
+              <div *ngIf="p.permiteParcial; else montoFijo" class="inline-flex items-center gap-1 justify-end">
+                <app-gp-celda-monto class="w-28 inline-block"
+                                    [valor]="f.montoAprobar ?? f.monto"
+                                    [moneda]="true"
+                                    (cambio)="actualizarMontoParcial(f, $event)"
+                                    (commit)="actualizarMontoParcial(f, $event)">
+                </app-gp-celda-monto>
+                <span class="text-[10px] text-t3 font-normal" title="Saldo pendiente">/ {{ cp(f.saldoPendiente ?? f.monto) }}</span>
+              </div>
+              <ng-template #montoFijo>{{ cp(f.montoAprobar ?? f.monto) }}<span *ngIf="f.parcial" class="ml-1 text-[10px] font-normal" style="color: #b45309;" title="Pago parcial: el resto de la factura queda pendiente para una próxima aprobación">parcial</span></ng-template>
+            </td>
+            <td class="px-2 py-2 text-xs">{{ diasVencidos(f.fechaVencimiento) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="!p.facturas.length" class="text-sm text-t3 text-center py-4">
+      <p *ngIf="p.totalMovimientosPendientes != null && p.totalMovimientosPendientes > 0; else sinPendientesModulo">
+        Movimientos pendientes en el sistema: {{ p.totalMovimientosPendientes }}, pero ninguno cumple las condiciones para ser aprobado en este momento.
+      </p>
+      <ng-template #sinPendientesModulo>
+        <p>Sin facturas pendientes para este tercero en este módulo.</p>
+      </ng-template>
+    </div>
+  </ng-container>
+  <div pie>
+    <button class="btn-primary !py-2 !px-5 !text-sm" [disabled]="aprobando() || !preview()?.facturas?.length"
+            (click)="confirmarAprobacionModal()">
+      <span class="flex items-center gap-2"><app-gp-icon name="check" [size]="15"></app-gp-icon>
+        {{ aprobando() ? 'Aprobando…' : 'Confirmar aprobación' }}
+      </span>
+    </button>
+  </div>
+</app-gp-modal>
+
+<!-- Legalización del anticipo (solo Anticipos) — UI y animaciones estilo Control de Bancos -->
+<ng-container *ngIf="legalizarMov() as mov">
+  <div *ngIf="esAnticipos && legalizarAbierto()"
+       class="fixed inset-0 z-[9999] flex items-center justify-center p-4" @glModalAnimation>
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-gradient-to-br from-[#213053]/60 via-black/50 to-[#045C94]/40 backdrop-blur-md"
+         (click)="!subiendoLegalizacion() && cerrarLegalizar()"></div>
+
+    <!-- Modal Content -->
+    <div class="relative w-full max-w-3xl bg-white rounded-3xl shadow-[0_32px_64px_rgba(0,0,0,0.2)] overflow-hidden max-h-[92vh] flex flex-col"
+         role="dialog" aria-modal="true" [attr.aria-label]="'Legalizar anticipo · ' + mov.nombre"
+         @glModalContent>
+      <!-- Modal Header -->
+      <div class="relative bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] px-8 py-5 flex-shrink-0 overflow-hidden">
+        <div class="absolute -top-8 -right-8 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
+        <div class="absolute -bottom-4 left-16 w-20 h-20 bg-[#FFB71B]/10 rounded-full blur-lg"></div>
+
+        <div class="relative flex items-center justify-between gap-3">
+          <div class="flex items-center gap-4 min-w-0">
+            <div class="gl-header-icon-pulse w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-xl ring-2 ring-white/20 flex-shrink-0">
+              <app-gp-icon name="file" [size]="22" class="text-white"></app-gp-icon>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[10px] text-[#FFB71B] font-bold uppercase tracking-[0.2em]">
+                {{ estaLegalizado(mov) ? 'Anticipo legalizado' : 'Legalización de anticipo' }}<ng-container *ngIf="mesEtiqueta(mov) as mes"> · Anticipo de {{ mes }}</ng-container>
+              </p>
+              <h2 class="text-xl font-extrabold text-white tracking-tight truncate" [title]="mov.nombre">{{ mov.nombre }}</h2>
+              <p class="text-white/60 text-xs font-mono mt-0.5">
+                {{ mov.nit || 'Sin NIT' }} · Comprobante {{ mov.comprobante || '—' }} · {{ formatearFecha(mov.fecha) }}
+              </p>
+            </div>
+          </div>
+          <button type="button" class="gl-btn-cerrar flex-shrink-0" (click)="cerrarLegalizar()" [disabled]="subiendoLegalizacion()"
+                  aria-label="Cerrar">
+            <app-gp-icon name="x" [size]="16"></app-gp-icon>
+          </button>
+        </div>
+
+        <!-- Resumen del anticipo (tarjetas del header, como el modal Ver Detalle) -->
+        <div class="relative grid grid-cols-3 gap-3 mt-5">
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
+            <p class="text-[10px] text-white/50 font-semibold uppercase tracking-wider">Saldo pendiente</p>
+            <p class="text-lg font-extrabold text-white mt-0.5">{{ saldoAbsoluto(mov.saldo) }}</p>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
+            <p class="text-[10px] text-white/50 font-semibold uppercase tracking-wider">Vigentes</p>
+            <p class="text-lg font-extrabold text-emerald-300 mt-0.5">{{ legalizacionesVigentes(mov).length }}</p>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10">
+            <p class="text-[10px] text-white/50 font-semibold uppercase tracking-wider">Anuladas</p>
+            <p class="text-lg font-extrabold mt-0.5"
+               [ngClass]="legalizacionesAnuladas(mov).length ? 'text-[#FFB71B]' : 'text-white'">{{ legalizacionesAnuladas(mov).length }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="overflow-y-auto flex-1 p-8">
+        <!-- Comprobantes registrados -->
+        <div class="mb-5">
+          <h3 class="gl-section-title">
+            <app-gp-icon name="file" [size]="16" class="text-[#045C94]"></app-gp-icon>
+            Comprobantes de legalización
+            <span class="ml-auto text-[10px] bg-[#045C94]/10 text-[#045C94] font-bold px-2 py-0.5 rounded-full">{{ legalizacionesDe(mov).length }}</span>
+          </h3>
+
+          <app-gp-skeleton *ngIf="cargandoLegalizaciones()" tipo="table"/>
+          <app-gp-error-state *ngIf="errorLegalizaciones()" [mensaje]="errorLegalizaciones()" (reintentar)="cargarLegalizaciones(empresaId!)"/>
+
+          <!-- Empty state -->
+          <div *ngIf="!cargandoLegalizaciones() && !errorLegalizaciones() && !legalizacionesDe(mov).length" class="gl-empty">
+            <div class="w-12 h-12 bg-[#045C94]/10 rounded-xl flex items-center justify-center">
+              <app-gp-icon name="file" [size]="24" class="text-[#045C94]"></app-gp-icon>
+            </div>
+            <p class="text-sm font-bold text-[#213053]">Sin comprobantes de legalización</p>
+            <p class="text-xs text-gray-400 max-w-sm">
+              Sube el comprobante con el que el proveedor soporta este anticipo. Quedará consultable aquí y podrás quitarlo si fue registrado por error.
+            </p>
+          </div>
+
+          <!-- Lista de comprobantes -->
+          <div *ngIf="legalizacionesDe(mov).length" class="space-y-2">
+            <div *ngFor="let l of legalizacionesDe(mov)" class="gl-file-item"
+                 [class.gl-file-item--anulada]="l.anulada" @glSlideDown>
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="gl-file-icon" [ngClass]="'gl-file-icon--' + tipoArchivo(l.archivoNombre)">
+                  <app-gp-icon name="file" [size]="16"></app-gp-icon>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <p class="text-xs font-semibold text-[#213053] truncate max-w-[320px]"
+                       [title]="l.archivoNombre || 'Comprobante'">{{ l.archivoNombre || 'Comprobante' }}</p>
+                    <span *ngIf="!l.anulada" class="gl-chip gl-chip--ok">Vigente</span>
+                    <span *ngIf="l.anulada" class="gl-chip gl-chip--anulada">
+                      <app-gp-icon name="ban" [size]="10"></app-gp-icon> Anulada
+                    </span>
+                  </div>
+                  <p class="text-[10px] text-gray-400 mt-0.5">
+                    <ng-container *ngIf="tamanoLegible(l.archivoBytes)">{{ tamanoLegible(l.archivoBytes) }} · </ng-container>{{ formatearFecha(l.creadoEn) }}<ng-container *ngIf="l.creadoPor"> · {{ l.creadoPor }}</ng-container><ng-container *ngIf="l.valorLegalizado != null"> · Valor {{ cp(l.valorLegalizado) }}</ng-container>
+                  </p>
+                  <p *ngIf="l.observacion" class="text-[10px] text-gray-500 italic mt-0.5 truncate" [title]="l.observacion">
+                    “{{ l.observacion }}”
+                  </p>
+                  <p *ngIf="l.anulada" class="gl-motivo-anulacion">
+                    <app-gp-icon name="ban" [size]="11"></app-gp-icon>
+                    <span>Anulada {{ formatearFecha(l.anuladoEn) }}<ng-container *ngIf="l.anuladoPor"> por {{ l.anuladoPor }}</ng-container> — Motivo: {{ l.motivoAnulacion || '—' }}</span>
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button *ngIf="!l.anulada" type="button" class="gl-btn-suave" (click)="verDocumentoLegalizacion(l)"
+                        [title]="'Abrir ' + (l.archivoNombre || 'comprobante')">
+                  <app-gp-icon name="file-down" [size]="13"></app-gp-icon> Ver
+                </button>
+                <button *ngIf="!l.anulada && puedeLegalizar" type="button" class="gl-btn-danger"
+                        [disabled]="quitando()" (click)="quitarConfirm.set(l)"
+                        [title]="'Quitar comprobante ' + (l.archivoNombre || 'comprobante')">
+                  <app-gp-icon name="trash" [size]="13"></app-gp-icon> Quitar comprobante
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nuevo comprobante -->
+        <div *ngIf="puedeLegalizar">
+          <h3 class="gl-section-title">
+            <app-gp-icon name="upload" [size]="16" class="text-[#045C94]"></app-gp-icon>
+            Nuevo comprobante
+            <span class="ml-auto text-[10px] text-gray-400 font-medium normal-case">PDF · Máximo 10 MB</span>
+          </h3>
+
+          <!-- Dropzone -->
+          <label class="gl-dropzone" [class.is-disabled]="subiendoLegalizacion()"
+                 (dragover)="$event.preventDefault()"
+                 (drop)="$event.preventDefault(); onArchivoLegalizarSoltado($event)">
+            <input type="file" accept=".pdf,application/pdf" aria-label="Comprobante PDF" aria-describedby="legalizarArchivoEstado" [disabled]="subiendoLegalizacion()"
+                   (change)="onArchivoLegalizar($event)"/>
+            <div class="flex flex-col items-center gap-2 pointer-events-none">
+              <div class="w-12 h-12 bg-[#045C94]/10 rounded-xl flex items-center justify-center">
+                <app-gp-icon name="upload" [size]="24" class="text-[#045C94]"></app-gp-icon>
+              </div>
+              <p class="text-sm font-medium text-gray-600">
+                Arrastra el comprobante o <span class="text-[#045C94] font-bold underline cursor-pointer">haz clic para explorar</span>
+              </p>
+              <p class="text-[10px] text-gray-400">Comprobante de legalización del anticipo</p>
+            </div>
+          </label>
+
+          <div id="legalizarArchivoEstado" aria-live="polite">
+            <p *ngIf="validandoArchivoLegalizar()" class="text-xs text-gray-500 mt-3">Validando PDF…</p>
+            <p *ngIf="errorArchivoLegalizar()" class="gl-form-error" role="alert">{{errorArchivoLegalizar()}}</p>
+          </div>
+
+          <!-- Archivo seleccionado -->
+          <div *ngIf="archivoLegalizar() as file" class="mt-3">
+            <div class="gl-file-item" @glSlideDown>
+              <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="gl-file-icon" [ngClass]="'gl-file-icon--' + tipoArchivo(file.name)">
+                  <app-gp-icon name="file" [size]="16"></app-gp-icon>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-semibold text-[#213053] truncate" [title]="file.name">{{ file.name }}</p>
+                  <p class="text-[10px] text-gray-400">{{ tamanoLegible(file.size) }} · Listo para registrar</p>
+                </div>
+              </div>
+              <button type="button" [disabled]="subiendoLegalizacion()"
+                      (click)="quitarArchivoLegalizar()"
+                      class="gl-quitar"
+                      aria-label="Quitar comprobante">
+                <app-gp-icon name="x" [size]="13"></app-gp-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+            <div class="gl-form-field">
+              <label for="legalizarValor">
+                <app-gp-icon name="coins" [size]="14" class="text-[#045C94]"></app-gp-icon>
+                Valor legalizado <span class="text-gray-400 font-medium normal-case">(opcional)</span>
+              </label>
+              <input id="legalizarValor" type="text" inputmode="decimal" class="gl-form-input" placeholder="0,00" aria-describedby="legalizarValorAyuda"
+                     [value]="valorLegalizar" (input)="valorLegalizar = formatearValorMiles($any($event.target).value); $any($event.target).value = valorLegalizar" [disabled]="subiendoLegalizacion()">
+              <p id="legalizarValorAyuda" class="text-[10px] text-gray-400">Ej. 1.500.000,50</p>
+            </div>
+            <div class="gl-form-field">
+              <label for="legalizarObservacion">
+                <app-gp-icon name="message-square" [size]="14" class="text-[#045C94]"></app-gp-icon>
+                Observación <span class="text-gray-400 font-medium normal-case">(opcional)</span>
+              </label>
+              <input id="legalizarObservacion" type="text" class="gl-form-input" maxlength="500"
+                     placeholder="Ej. Factura AJPG-95317 de mayo"
+                     [(ngModel)]="observacionLegalizar" [disabled]="subiendoLegalizacion()">
+            </div>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-3">
+            El valor legalizado se descuenta del saldo del anticipo en el presupuesto. Si lo dejas vacío se descuenta el saldo completo, y no puede superar el saldo pendiente de legalizar.
+          </p>
+        </div>
+
+        <!-- Sin permiso: modo consulta -->
+        <div *ngIf="!puedeLegalizar" class="gl-empty">
+          <div class="w-12 h-12 bg-[#045C94]/10 rounded-xl flex items-center justify-center">
+            <app-gp-icon name="eye" [size]="24" class="text-[#045C94]"></app-gp-icon>
+          </div>
+          <p class="text-sm font-bold text-[#213053]">Modo consulta</p>
+          <p class="text-xs text-gray-400 max-w-sm">
+            Tu usuario no tiene permiso para subir o quitar comprobantes de legalización; los soportes existentes siguen consultables con “Ver”.
+          </p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-8 py-5 bg-gradient-to-r from-gray-50 to-gray-100/80 border-t border-gray-200/60 flex items-center justify-between gap-3 flex-shrink-0">
+        <span class="text-[11px] text-gray-400 font-medium">
+          {{ estaLegalizado(mov) ? 'Anticipo legalizado con ' + legalizacionesVigentes(mov).length + (legalizacionesVigentes(mov).length === 1 ? ' comprobante vigente.' : ' comprobantes vigentes.') : 'Este anticipo aún no tiene comprobantes vigentes.' }}
+        </span>
+        <div class="flex items-center gap-3">
+          <button type="button" class="gl-btn-plano" (click)="cerrarLegalizar()" [disabled]="subiendoLegalizacion()">
+            Cerrar
+          </button>
+          <button *ngIf="puedeLegalizar" type="button" class="gl-btn-primario" (click)="registrarLegalizacion()"
+                  [disabled]="!archivoLegalizar() || subiendoLegalizacion() || validandoArchivoLegalizar()">
+            <svg *ngIf="subiendoLegalizacion()" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <app-gp-icon *ngIf="!subiendoLegalizacion()" name="check" [size]="15"></app-gp-icon>
+            {{ subiendoLegalizacion() ? 'Registrando...' : 'Registrar legalización' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Confirm para quitar comprobante (mismo lenguaje del confirm de Control de Bancos) ═══ -->
+  <div *ngIf="quitarConfirm() as l" class="fixed inset-0 z-[9999] flex items-center justify-center p-4" @glModalAnimation>
+    <div class="absolute inset-0 bg-gradient-to-br from-red-900/30 via-black/50 to-red-800/20 backdrop-blur-md"
+         (click)="!quitando() && cerrarQuitar()"></div>
+
+    <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-[0_32px_64px_rgba(0,0,0,0.25)] overflow-hidden"
+         role="dialog" aria-modal="true" aria-label="Quitar comprobante de legalización"
+         @glModalContent>
+      <!-- Danger Header Strip -->
+      <div class="h-1.5 bg-gradient-to-r from-red-500 via-rose-500 to-red-600"></div>
+
+      <div class="p-8 text-center">
+        <!-- Animated Warning Icon -->
+        <div class="relative w-20 h-20 mx-auto mb-5">
+          <div class="absolute inset-0 bg-red-100 rounded-full animate-ping opacity-20"></div>
+          <div class="gl-delete-icon-animate relative w-20 h-20 bg-gradient-to-br from-red-50 to-red-100 rounded-full flex items-center justify-center ring-4 ring-red-100">
+            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg shadow-red-200">
+              <app-gp-icon name="trash" [size]="22" class="text-white"></app-gp-icon>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="text-xl font-extrabold text-[#213053] mb-2">¿Quitar este comprobante de legalización?</h3>
+        <p class="text-sm text-gray-500 mb-5 max-w-sm mx-auto">
+          Se eliminará el comprobante (también del almacenamiento de archivos) y dejará de descontar del saldo del anticipo. Esta acción no se puede deshacer.
+        </p>
+
+        <!-- Comprobante a quitar -->
+        <div class="gl-info-card text-left">
+          <div class="flex items-center gap-3">
+            <div class="gl-file-icon" [ngClass]="'gl-file-icon--' + tipoArchivo(l.archivoNombre)">
+              <app-gp-icon name="file" [size]="16"></app-gp-icon>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-bold text-[#213053] truncate" [title]="l.archivoNombre || 'Comprobante'">{{ l.archivoNombre || 'Comprobante' }}</p>
+              <p class="text-xs text-gray-400 font-mono">
+                {{ mov.nombre }} · NIT {{ mov.nit || '—' }}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100">
+            <span class="text-[10px] text-gray-400 font-semibold">
+              Registrado {{ formatearFecha(l.creadoEn) }}<ng-container *ngIf="l.creadoPor"> por {{ l.creadoPor }}</ng-container>
+            </span>
+            <span *ngIf="l.valorLegalizado != null" class="text-[10px] font-bold text-emerald-600 ml-auto">{{ cp(l.valorLegalizado) }}</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="px-8 py-5 bg-gradient-to-r from-gray-50 to-gray-100/80 border-t border-gray-200/60 flex items-center justify-end gap-3">
+        <button type="button" class="gl-btn-neutro" (click)="cerrarQuitar()" [disabled]="quitando()">
+          Cancelar
+        </button>
+        <button type="button" class="gl-btn-peligro" (click)="quitar()" [disabled]="quitando()">
+          <svg *ngIf="quitando()" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <app-gp-icon *ngIf="!quitando()" name="trash" [size]="15"></app-gp-icon>
+          {{ quitando() ? 'Quitando...' : 'Quitar comprobante' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</ng-container>

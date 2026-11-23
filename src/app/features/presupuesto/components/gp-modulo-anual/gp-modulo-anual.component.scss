@@ -1,0 +1,345 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   CONSOLIDADO "TODOS LOS MESES" — lenguaje visual de Control de Bancos
+   (Tesorería) adaptado a la identidad Nexa del Gestor Presupuestal:
+   banner degradado navy→azul con acento oro, KPIs compactos, botón oro con
+   barrido, filas escalonadas y resaltado de columna estilo hoja de cálculo.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:host { display: block; min-width: 0; max-width: 100%; }
+
+/* ── Paleta ── */
+$navy: #213053;
+$navy-deep: #1b2844;
+$blue: #045c94;
+$gold: #ffb71b;
+$gold-deep: #e5a216;
+$line: rgba(33, 48, 83, 0.10);
+
+/* ═══ Animaciones (mismo lenguaje de Control de Bancos) ═══ */
+@keyframes anualFilaIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes anualPulso {
+  0% { box-shadow: 0 0 0 0 rgba(255, 183, 27, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 183, 27, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 183, 27, 0); }
+}
+@keyframes anualLatido {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.78); }
+}
+@keyframes anualGiro { to { transform: rotate(360deg); } }
+
+.girando { animation: anualGiro 1.05s linear infinite; transform-origin: center; }
+
+/* ═══ Banner del consolidado ═══ */
+.anual-hero {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(110deg, $navy, $navy-deep 46%, $blue);
+  color: #fff;
+  box-shadow: 0 14px 34px rgba(33, 48, 83, 0.22);
+}
+.anual-hero__glow { position: absolute; border-radius: 50%; pointer-events: none; }
+.anual-hero__glow--a { top: -48px; right: -26px; width: 150px; height: 150px; background: rgba(255, 255, 255, 0.06); }
+.anual-hero__glow--b { bottom: -36px; left: 88px; width: 96px; height: 96px; background: rgba(255, 183, 27, 0.12); }
+
+.anual-hero__icono {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  color: $gold;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.anual-hero__icono::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: anualPulso 2.6s ease-out infinite;
+}
+
+.anual-hero__txt { position: relative; z-index: 1; flex: 1 1 260px; min-width: 0; }
+.anual-hero__eyebrow {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $gold;
+}
+.anual-hero__txt h2 { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
+.anual-hero__txt p { margin: 2px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.72); }
+
+.anual-hero__acciones { position: relative; z-index: 1; margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.anual-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.anual-chip i { width: 7px; height: 7px; border-radius: 50%; background: #34d399; animation: anualLatido 2s ease-in-out infinite; }
+
+/* Botón oro con barrido (equivalente al "Nuevo Banco" de Control de Bancos) */
+.anual-btn-oro {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $navy;
+  background: linear-gradient(135deg, $gold 0%, $gold-deep 100%);
+  box-shadow: 0 4px 14px rgba(255, 183, 27, 0.38);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease;
+}
+.anual-btn-oro::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transition: left 0.55s ease;
+}
+.anual-btn-oro:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(255, 183, 27, 0.48); }
+.anual-btn-oro:hover:not(:disabled)::before { left: 100%; }
+.anual-btn-oro:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+.anual-btn-oro:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
+.anual-btn-oro:focus-visible { outline: 2px solid #ffd76b; outline-offset: 2px; }
+
+.anual-btn-refrescar {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  transition: background 0.18s ease;
+}
+.anual-btn-refrescar:hover:not(:disabled) { background: rgba(255, 255, 255, 0.20); }
+.anual-btn-refrescar:disabled { opacity: 0.6; cursor: default; }
+.anual-btn-refrescar:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.75); outline-offset: 2px; }
+
+/* ═══ KPIs del consolidado ═══ */
+.anual-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+  gap: 1rem;
+}
+
+/* ═══ Filtros ═══ */
+.anual-filtros { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; padding: 14px 18px; }
+.anual-filtros__busqueda { flex: 1 1 100%; min-width: 0; }
+.anual-campo { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.anual-campo > span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tx-3, #64748b);
+}
+.anual-campo select.field { min-width: 152px; }
+
+.anual-seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--bg-elevated, #f2f5fa);
+  border: 1px solid rgba(33, 48, 83, 0.08);
+}
+.anual-seg button {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tx-2, #475569);
+  padding: 8px 14px;
+  border-radius: 9px;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+.anual-seg button:hover { color: var(--tx-1, #213053); }
+.anual-seg button.activo { background: #fff; color: var(--acc-solid, #045c94); box-shadow: 0 2px 8px rgba(33, 48, 83, 0.10); }
+.anual-seg button:focus-visible { outline: 2px solid var(--acc-solid, #045c94); outline-offset: 2px; }
+
+.anual-filtros__meta { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--tx-3, #64748b); }
+
+/* ═══ Tabla ═══ */
+.anual-tabla-card { overflow: hidden; }
+.anual-scroll-wrap { position: relative; }
+
+.anual-scroll {
+  overflow: auto;
+  max-width: 100%;
+  max-height: 66vh;
+  isolation: isolate;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(33, 48, 83, 0.22) transparent;
+}
+.anual-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.anual-scroll::-webkit-scrollbar-track { background: transparent; }
+.anual-scroll::-webkit-scrollbar-thumb { background: rgba(33, 48, 83, 0.22); border-radius: 99px; }
+
+.anual-tabla {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+  font-size: 0.8125rem;
+}
+.anual-tabla th,
+.anual-tabla td {
+  min-width: 10.5rem;
+  padding: 0.75rem 0.95rem;
+  border-bottom: 1px solid rgba(33, 48, 83, 0.08);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.16s ease, box-shadow 0.16s ease;
+}
+.anual-tabla tbody td { color: var(--tx-1, #213053); }
+.anual-tabla .anual-neg { color: var(--err-solid, #dc2626) !important; font-weight: 600; }
+
+/* Encabezado: banda navy con columna del total en azul y filete oro */
+.anual-tabla thead th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: $navy;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(8, 28, 48, 0.45);
+}
+.anual-tabla thead .anual-tercero { z-index: 5; background: $navy-deep; text-align: left; }
+.anual-tabla thead .anual-total-col { background: $blue; box-shadow: inset 0 -3px 0 $gold; }
+.anual-tabla thead th.col-hover { box-shadow: inset 0 0 0 9999px rgba(255, 255, 255, 0.09); }
+
+/* Primera columna pegajosa (Tercero / Total por mes) */
+.anual-sticky {
+  position: sticky;
+  left: 0;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  width: 16rem;
+  min-width: 16rem;
+  max-width: 16rem;
+  box-shadow: 1px 0 0 rgba(33, 48, 83, 0.08);
+}
+.anual-scroll.desplazado .anual-sticky {
+  box-shadow: 12px 0 18px -14px rgba(33, 48, 83, 0.5), 1px 0 0 rgba(33, 48, 83, 0.10);
+}
+.anual-tabla tbody .anual-sticky { z-index: 1; background-color: var(--bg-surface, #fff); }
+.anual-tabla tfoot .anual-sticky { z-index: 5; }
+
+.anual-nombre { display: block; font-size: 0.82rem; font-weight: 600; color: var(--tx-1, #213053); }
+.anual-tabla .anual-sticky small { display: block; margin-top: 0.2rem; font-size: 0.688rem; font-weight: 500; color: var(--tx-3, #64748b); }
+
+/* Filas: cebra suave, hover azulado y resaltado de columna completo */
+.anual-fila { animation: anualFilaIn 0.38s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.anual-tabla tbody tr:nth-child(even) > * { background-color: #f7f9fd; }
+.anual-tabla tbody tr:hover > * { background-color: #eef6fc; }
+.anual-tabla tbody td.col-hover { box-shadow: inset 0 0 0 9999px rgba(4, 92, 148, 0.06); }
+.anual-tabla tbody tr:hover td.col-hover { box-shadow: inset 0 0 0 9999px rgba(4, 92, 148, 0.08); }
+
+/* Pie: totales pegajosos con la columna anual en tono oro */
+.anual-tabla tfoot th,
+.anual-tabla tfoot td {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  background: #f2f6fb;
+  border-top: 2px solid rgba(33, 48, 83, 0.14);
+  border-bottom: 0;
+  font-weight: 800;
+  color: var(--tx-1, #213053);
+}
+.anual-tabla tfoot .anual-total-col { background: #fff6e0; }
+.anual-tabla tfoot td.col-hover { box-shadow: inset 0 0 0 9999px rgba(4, 92, 148, 0.07); }
+
+.anual-tabla .anual-total-col { min-width: 11.5rem; font-weight: 700; }
+
+/* Degradado guía del borde derecho mientras queden meses por ver */
+.anual-fade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 52px;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.25s ease;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0), #ffffff 88%);
+}
+.anual-scroll-wrap.al-fin .anual-fade { opacity: 0; }
+
+:focus-visible { outline: 2px solid var(--acc-solid, #045c94); outline-offset: 3px; }
+
+/* ═══ Responsive ═══ */
+@media (max-width: 640px) {
+  .anual-hero { padding: 14px 16px; gap: 12px; }
+  .anual-hero__acciones { width: 100%; margin-left: 0; }
+  .anual-kpis { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; }
+  .anual-filtros { padding: 12px 14px; gap: 10px; }
+  .anual-filtros__meta { width: 100%; margin-left: 0; }
+  .anual-sticky { width: 9.5rem; min-width: 9.5rem; max-width: 9.5rem; }
+  .anual-tabla th, .anual-tabla td { min-width: 9.5rem; padding: 0.65rem 0.75rem; }
+  .anual-fade { width: 34px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anual-fila,
+  .anual-hero__icono::after,
+  .anual-chip i,
+  .girando { animation: none; }
+  .anual-btn-oro, .anual-btn-oro::before, .anual-btn-refrescar, .anual-seg button { transition: none; }
+  .anual-scroll { scroll-behavior: auto; }
+  .anual-fade { transition: none; }
+}

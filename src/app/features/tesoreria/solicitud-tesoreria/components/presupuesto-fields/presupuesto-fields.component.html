@@ -1,0 +1,222 @@
+<div class="dynamic-section" [formGroup]="formGroup">
+  <!-- Header -->
+  <div class="dynamic-section__header">
+    <div class="dynamic-section__header-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(16,185,129,0.04)); color: #10b981;">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      </svg>
+    </div>
+    <div class="dynamic-section__header-text">
+      <p class="dynamic-section__header-title">Solicitud de Presupuesto</p>
+      <p class="dynamic-section__header-subtitle">Detalle del gasto o inversión requerida</p>
+    </div>
+  </div>
+
+  <!-- ═══ TIPO DE PRESUPUESTO ═══ -->
+  <div class="sub-section" style="margin-top: 0; padding-top: 0; border-top: none;">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📋</span> Tipo de Presupuesto</p>
+    <div class="option-chips">
+      <div *ngFor="let tipo of tiposPpto"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('tipoPpto')?.value === tipo"
+           (click)="selectOption('tipoPpto', tipo)">
+        <span class="option-chip__dot"></span>
+        {{ tipo }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Concepto y justificación -->
+  <div class="form-row form-row--1" style="margin-top: 20px;">
+    <div class="form-group">
+      <label class="form-label">Concepto del Gasto / Inversión</label>
+      <input type="text" formControlName="conceptoGasto" placeholder="Describa el concepto" class="form-input" />
+    </div>
+  </div>
+  <div class="form-row form-row--1">
+    <div class="form-group">
+      <label class="form-label">Justificación</label>
+      <textarea formControlName="justificacion" rows="3" placeholder="Justifique la necesidad del presupuesto..." class="form-textarea"></textarea>
+    </div>
+  </div>
+  <div class="form-row form-row--1">
+    <div class="form-group">
+      <label class="form-label">Alcance Esperado</label>
+      <input type="text" formControlName="alcanceEsperado" placeholder="Alcance del presupuesto" class="form-input" />
+    </div>
+  </div>
+
+  <!-- Beneficio esperado -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🎯</span> Beneficio Esperado</p>
+    <div class="option-chips">
+      <div *ngFor="let b of beneficios"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('beneficioEsperado')?.value === b"
+           (click)="selectOption('beneficioEsperado', b)">
+        <span class="option-chip__dot"></span>
+        {{ b }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INFORMACIÓN FINANCIERA ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">💰</span> Información Financiera (CRÍTICO)</p>
+    <div class="form-row form-row--1" style="margin-bottom: 16px;">
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <div class="option-chips">
+          <div *ngFor="let t of tiposFinanciero"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('tipoFinanciero')?.value === t.value"
+               (click)="selectOption('tipoFinanciero', t.value)">
+            <span class="option-chip__dot"></span>
+            {{ t.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Centro de Costos</label>
+        <input type="text" formControlName="centroCostos" placeholder="Centro de costos" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Proyecto (si aplica)</label>
+        <input type="text" formControlName="proyecto" placeholder="Nombre del proyecto" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Presupuesto Estimado</label>
+        <input type="number" formControlName="presupuestoEstimado" placeholder="$ 0" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Moneda</label>
+        <div class="select-wrapper">
+          <select formControlName="moneda" class="form-select">
+            <option value="" disabled>Seleccione moneda</option>
+            <option *ngFor="let m of monedas" [value]="m">{{ m }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Incluye Impuestos?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('incluyeImpuestos')?.value"
+             (click)="toggleBoolean('incluyeImpuestos')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('incluyeImpuestos')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Incluye impuestos</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('incluyeImpuestos')?.value">
+            {{ formGroup.get('incluyeImpuestos')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ IMPACTO / PRIORIDAD ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📊</span> Impacto / Prioridad</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Nivel de Urgencia</label>
+        <div class="criticidad-options">
+          <div class="criticidad-badge criticidad-badge--alta"
+               [class.criticidad-badge--selected]="formGroup.get('nivelUrgencia')?.value === 'ALTA'"
+               (click)="selectOption('nivelUrgencia', 'ALTA')">
+            <span class="criticidad-badge__indicator criticidad-badge__indicator--alta"></span> Alta
+          </div>
+          <div class="criticidad-badge criticidad-badge--media"
+               [class.criticidad-badge--selected]="formGroup.get('nivelUrgencia')?.value === 'MEDIA'"
+               (click)="selectOption('nivelUrgencia', 'MEDIA')">
+            <span class="criticidad-badge__indicator criticidad-badge__indicator--media"></span> Media
+          </div>
+          <div class="criticidad-badge criticidad-badge--baja"
+               [class.criticidad-badge--selected]="formGroup.get('nivelUrgencia')?.value === 'BAJA'"
+               (click)="selectOption('nivelUrgencia', 'BAJA')">
+            <span class="criticidad-badge__indicator criticidad-badge__indicator--baja"></span> Baja
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Impacto</label>
+        <div class="option-chips">
+          <div *ngFor="let i of impactos"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('impacto')?.value === i.value"
+               (click)="selectOption('impacto', i.value)">
+            <span class="option-chip__dot"></span>
+            {{ i.label }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROVEEDOR ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏢</span> Información de Proveedor</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">¿Proveedor Sugerido?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('proveedorSugerido')?.value"
+             (click)="toggleBoolean('proveedorSugerido')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('proveedorSugerido')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Proveedor sugerido</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('proveedorSugerido')?.value">
+            {{ formGroup.get('proveedorSugerido')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+      <div class="form-group" *ngIf="formGroup.get('proveedorSugerido')?.value">
+        <label class="form-label">Nombre del Proveedor</label>
+        <input type="text" formControlName="nombreProveedor" placeholder="Nombre del proveedor" class="form-input" />
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">¿Requiere Cotizaciones?</label>
+        <div class="option-chips">
+          <div *ngFor="let n of [1, 2, 3]"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('requiereCotizaciones')?.value === n"
+               (click)="formGroup.get('requiereCotizaciones')?.setValue(n)">
+            {{ n }}
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tipo de Proveedor</label>
+        <div class="option-chips">
+          <div *ngFor="let t of tiposProveedor"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('tipoProveedor')?.value === t"
+               (click)="selectOption('tipoProveedor', t)">
+            <span class="option-chip__dot"></span>
+            {{ t }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FECHAS ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📅</span> Fechas</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Fecha Requerida</label>
+        <input type="date" formControlName="fechaRequerida" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Vigencia del Presupuesto</label>
+        <input type="date" formControlName="vigenciaPresupuesto" class="form-input" />
+      </div>
+    </div>
+  </div>
+</div>

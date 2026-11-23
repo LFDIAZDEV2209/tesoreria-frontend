@@ -1,0 +1,821 @@
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- CREAR PRODUCTO — Premium Stepper Wizard                    -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="crear-producto-container p-6 lg:p-8 min-h-screen" @fadeSlideIn>
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#045C94] to-[#FFB71B] flex items-center justify-center shadow-lg shadow-[#045C94]/30">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl lg:text-3xl font-extrabold text-[#213053]">Crear Producto</h1>
+            <p class="text-sm text-[#213053]/50">Registra un nuevo producto al catálogo</p>
+          </div>
+        </div>
+      </div>
+      <!-- Action buttons -->
+      <div class="flex items-center gap-3">
+        <a routerLink="/planeacion/productos/listado"
+           class="group flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 border-2 border-[#213053]/10 text-[#213053]/60 hover:border-[#045C94] hover:text-[#045C94] hover:bg-[#045C94]/5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+          Ver Listado
+        </a>
+        <button (click)="showBulkUpload.set(!showBulkUpload())" 
+                class="bulk-toggle-btn group flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300"
+                [class.active]="showBulkUpload()">
+          <svg class="w-5 h-5 transition-transform duration-300" [class.rotate-180]="showBulkUpload()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          {{ showBulkUpload() ? 'Crear Individual' : 'Carga Masiva' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div *ngIf="!showBulkUpload()" class="mt-6">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-[#213053]/60">Progreso del formulario</span>
+        <span class="text-xs font-bold" [style.color]="currentStepConfig.colorFrom">{{ progressPercentage() }}%</span>
+      </div>
+      <div class="h-2 bg-[#213053]/10 rounded-full overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-700 ease-out progress-bar-gradient"
+             [style.width.%]="progressPercentage()"
+             [style.background]="'linear-gradient(90deg, ' + currentStepConfig.colorFrom + ', ' + currentStepConfig.colorTo + ')'">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- BULK UPLOAD MODE                                        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div *ngIf="showBulkUpload()" @fadeSlideIn class="bulk-upload-section">
+    <div class="glass-card rounded-3xl p-8">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-[#213053]">Carga Masiva de Productos</h2>
+          <p class="text-sm text-[#213053]/50">Sube un archivo Excel o CSV para crear múltiples productos</p>
+        </div>
+      </div>
+
+      <!-- Template download -->
+      <div class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50">
+        <div class="flex items-center gap-3">
+          <svg class="w-8 h-8 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <div class="flex-1">
+            <p class="font-semibold text-blue-900 text-sm">Plantilla de ejemplo</p>
+            <p class="text-xs text-blue-700/70">Descarga la plantilla con los campos requeridos y datos de ejemplo</p>
+          </div>
+          <button (click)="downloadTemplate()" class="px-4 py-2 rounded-xl bg-blue-500 text-white text-sm font-semibold hover:bg-blue-600 transition-colors shadow-md shadow-blue-500/30">
+            Descargar CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="upload-drop-zone rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-300 cursor-pointer"
+           [class.drag-active]="bulkDragOver()"
+           [class.has-file]="bulkFile()"
+           (dragover)="onBulkDragOver($event)"
+           (dragleave)="onBulkDragLeave()"
+           (drop)="onBulkFileDrop($event)"
+           (click)="bulkFileInput.click()">
+        <input #bulkFileInput type="file" accept=".csv,.xlsx,.xls" class="hidden" (change)="onBulkFileSelect($event)">
+
+        <div *ngIf="!bulkFile()" class="space-y-4">
+          <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center animate-bounce-slow">
+            <svg class="w-10 h-10 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-lg font-bold text-[#213053]">Arrastra tu archivo aquí</p>
+            <p class="text-sm text-[#213053]/50">o haz clic para seleccionar</p>
+          </div>
+          <div class="flex items-center justify-center gap-3 text-xs text-[#213053]/40">
+            <span class="px-2 py-1 rounded bg-[#213053]/5">.csv</span>
+            <span class="px-2 py-1 rounded bg-[#213053]/5">.xlsx</span>
+            <span class="px-2 py-1 rounded bg-[#213053]/5">.xls</span>
+          </div>
+        </div>
+
+        <div *ngIf="bulkFile()" @pulseIn class="space-y-3" (click)="$event.stopPropagation()">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <p class="font-bold text-[#213053]">{{ bulkFile()?.name }}</p>
+          <p class="text-xs text-[#213053]/50">{{ (bulkFile()?.size || 0) / 1024 | number:'1.1-1' }} KB</p>
+          <button (click)="removeBulkFile(); $event.stopPropagation()" class="text-red-500 hover:text-red-600 text-sm font-semibold underline">
+            Quitar archivo
+          </button>
+        </div>
+      </div>
+
+      <!-- Process button -->
+      <div *ngIf="bulkFile()" class="mt-6 flex justify-center" @fadeSlideIn>
+        <button (click)="processBulkUpload()" [disabled]="bulkUploading()"
+                class="px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-base shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3">
+          <div *ngIf="bulkUploading()" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          <svg *ngIf="!bulkUploading()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          {{ bulkUploading() ? 'Procesando...' : 'Procesar Archivo' }}
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div *ngIf="bulkResult()" @fadeSlideIn class="mt-8">
+        <div class="rounded-2xl overflow-hidden border border-[#213053]/10">
+          <!-- Results header -->
+          <div class="p-4 bg-gradient-to-r from-[#045C94]/10 to-[#FFB71B]/10">
+            <h3 class="font-bold text-[#213053]">Resultado del procesamiento</h3>
+          </div>
+          <!-- Stats -->
+          <div class="grid grid-cols-3 gap-4 p-4">
+            <div class="text-center p-3 rounded-xl bg-[#213053]/5">
+              <p class="text-2xl font-extrabold text-[#213053]">{{ bulkResult()!.totalRows }}</p>
+              <p class="text-xs text-[#213053]/50">Total filas</p>
+            </div>
+            <div class="text-center p-3 rounded-xl bg-emerald-50">
+              <p class="text-2xl font-extrabold text-emerald-600">{{ bulkResult()!.successCount }}</p>
+              <p class="text-xs text-emerald-600/70">Exitosos</p>
+            </div>
+            <div class="text-center p-3 rounded-xl bg-red-50">
+              <p class="text-2xl font-extrabold text-red-500">{{ bulkResult()!.errorCount }}</p>
+              <p class="text-xs text-red-500/70">Errores</p>
+            </div>
+          </div>
+          <!-- Error details -->
+          <div *ngIf="bulkResult()!.errors.length > 0" class="p-4 border-t border-[#213053]/10">
+            <p class="text-sm font-semibold text-red-600 mb-3">Detalle de errores:</p>
+            <div class="space-y-2 max-h-48 overflow-y-auto">
+              <div *ngFor="let err of bulkResult()!.errors" class="flex items-start gap-3 p-3 rounded-xl bg-red-50/80 text-sm">
+                <span class="px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-bold text-xs flex-shrink-0">Fila {{ err.row }}</span>
+                <div>
+                  <p class="font-semibold text-red-800">{{ err.field }}: {{ err.message }}</p>
+                  <p *ngIf="err.value" class="text-xs text-red-500/70 mt-0.5">Valor: "{{ err.value }}"</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- INDIVIDUAL CREATE MODE — STEPPER                        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div *ngIf="!showBulkUpload()" class="stepper-layout flex flex-col xl:flex-row gap-8">
+
+    <!-- Left: Step Indicator (Vertical Stepper) -->
+    <div class="xl:w-72 flex-shrink-0">
+      <div class="glass-card rounded-3xl p-5 sticky top-8">
+        <div class="space-y-1">
+          <div *ngFor="let step of steps; let i = index"
+               (click)="goToStep(step.id)"
+               class="step-indicator flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-300 group"
+               [class.active]="currentStep() === step.id"
+               [class.completed]="isStepValid(step.id) && currentStep() !== step.id">
+            
+            <!-- Step number/icon -->
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 flex-shrink-0 step-number"
+                 [style.background]="currentStep() === step.id ? 'linear-gradient(135deg, ' + step.colorFrom + ', ' + step.colorTo + ')' : ''"
+                 [class.text-white]="currentStep() === step.id"
+                 [class.shadow-lg]="currentStep() === step.id">
+              <span *ngIf="!isStepValid(step.id) || currentStep() === step.id">{{ step.icon }}</span>
+              <svg *ngIf="isStepValid(step.id) && currentStep() !== step.id" class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            
+            <!-- Step text -->
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold truncate transition-colors duration-300"
+                 [ngClass]="{
+                   'text-white': currentStep() === step.id,
+                   'text-emerald-600': isStepValid(step.id) && currentStep() !== step.id,
+                   'text-slate-500': !isStepValid(step.id) && currentStep() !== step.id
+                 }">
+                {{ step.title }}
+              </p>
+              <p class="text-xs truncate transition-colors duration-300"
+                 [ngClass]="{
+                   'text-white/60': currentStep() === step.id,
+                   'text-emerald-400': isStepValid(step.id) && currentStep() !== step.id,
+                   'text-slate-400': !isStepValid(step.id) && currentStep() !== step.id
+                 }">
+                {{ step.subtitle }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Step Content -->
+    <div class="flex-1 min-w-0">
+      <form [formGroup]="form" (ngSubmit)="onSave()">
+
+        <!-- ═══════════ STEP 1: Identificación ═══════════ -->
+        <div *ngIf="currentStep() === 1" @stepTransition @staggerCards class="glass-card rounded-3xl p-6 lg:p-8">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#045C94] to-[#0ea5e9] flex items-center justify-center text-lg">🏷️</div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#213053]">Identificación del Producto</h2>
+              <p class="text-sm text-[#213053]/50">Información básica para catalogar el producto</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Código -->
+            <div class="stagger-item form-field">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg>
+                Código del producto <span class="text-red-400">*</span>
+              </label>
+              <input type="text" formControlName="codigo" placeholder="Ej: PRD-001" 
+                     class="form-input" [class.input-error]="form.get('codigo')?.invalid && form.get('codigo')?.touched">
+              <div *ngIf="form.get('codigo')?.invalid && form.get('codigo')?.touched" class="form-error">
+                Código requerido (mín. 3 caracteres)
+              </div>
+            </div>
+
+            <!-- Estado -->
+            <div class="stagger-item form-field">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Estado
+              </label>
+              <div class="flex gap-3">
+                <button type="button" (click)="form.get('estado')?.setValue('ACTIVO')" 
+                        class="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                        [class]="form.get('estado')?.value === 'ACTIVO' ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/30' : 'bg-white text-[#213053]/60 border-[#213053]/10 hover:border-emerald-300'">
+                  ✅ Activo
+                </button>
+                <button type="button" (click)="form.get('estado')?.setValue('INACTIVO')"
+                        class="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                        [class]="form.get('estado')?.value === 'INACTIVO' ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/30' : 'bg-white text-[#213053]/60 border-[#213053]/10 hover:border-red-300'">
+                  ❌ Inactivo
+                </button>
+              </div>
+            </div>
+
+            <!-- Nombre -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                Nombre del producto <span class="text-red-400">*</span>
+              </label>
+              <input type="text" formControlName="nombre" placeholder="Ej: Arroz con pollo especial" class="form-input"
+                     [class.input-error]="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+            </div>
+
+            <!-- Descripción -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                Descripción corta <span class="text-red-400">*</span>
+              </label>
+              <textarea formControlName="descripcionCorta" rows="3" placeholder="Descripción breve del producto..." class="form-input resize-none"
+                        [class.input-error]="form.get('descripcionCorta')?.invalid && form.get('descripcionCorta')?.touched"></textarea>
+              <div class="flex justify-end mt-1">
+                <span class="text-xs"
+                      [ngClass]="(form.get('descripcionCorta')?.value?.length || 0) > 200 ? 'text-red-500' : 'text-slate-400'">
+                  {{ form.get('descripcionCorta')?.value?.length || 0 }}/200
+                </span>
+              </div>
+            </div>
+
+            <!-- Categoría -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                Categoría / Línea <span class="text-red-400">*</span>
+              </label>
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                <button *ngFor="let cat of categorias" type="button"
+                        (click)="form.get('categoria')?.setValue(cat.value)"
+                        class="category-card p-3 rounded-xl border-2 text-center transition-all duration-300 group"
+                        [class.selected]="form.get('categoria')?.value === cat.value">
+                  <span class="text-2xl block mb-1 group-hover:scale-110 transition-transform">{{ cat.icon }}</span>
+                  <span class="text-xs font-semibold block">{{ cat.label }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ STEP 2: Costos ═══════════ -->
+        <div *ngIf="currentStep() === 2" @stepTransition @staggerCards class="glass-card rounded-3xl p-6 lg:p-8">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-400 flex items-center justify-center text-lg">💰</div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#213053]">Costos</h2>
+              <p class="text-sm text-[#213053]/50">Define el costo de adquisición o producción</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Costo unitario -->
+            <div class="stagger-item form-field">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Costo Unitario <span class="text-red-400">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#213053]/40 font-bold text-sm">$</span>
+                <input type="number" formControlName="costoUnitario" placeholder="0.00" class="form-input pl-8" min="0" step="0.01"
+                       [class.input-error]="form.get('costoUnitario')?.invalid && form.get('costoUnitario')?.touched">
+              </div>
+            </div>
+
+            <!-- Tipo de costo -->
+            <div class="stagger-item form-field">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                Tipo de Costo
+              </label>
+              <div class="flex gap-3">
+                <button type="button" (click)="form.get('tipoCosto')?.setValue('ESTANDAR')"
+                        class="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                        [class]="form.get('tipoCosto')?.value === 'ESTANDAR' ? 'bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-500/30' : 'bg-white text-[#213053]/60 border-[#213053]/10 hover:border-amber-300'">
+                  📊 Estándar
+                </button>
+                <button type="button" (click)="form.get('tipoCosto')?.setValue('REFERENCIAL')"
+                        class="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                        [class]="form.get('tipoCosto')?.value === 'REFERENCIAL' ? 'bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/30' : 'bg-white text-[#213053]/60 border-[#213053]/10 hover:border-blue-300'">
+                  📋 Referencial
+                </button>
+              </div>
+            </div>
+
+            <!-- Fecha actualización -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                Fecha de actualización de costo <span class="text-[#213053]/30 text-xs">(opcional)</span>
+              </label>
+              <input type="date" formControlName="fechaActualizacionCosto" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ STEP 3: Precios ═══════════ -->
+        <div *ngIf="currentStep() === 3" @stepTransition @staggerCards class="glass-card rounded-3xl p-6 lg:p-8">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-400 flex items-center justify-center text-lg">💵</div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#213053]">Precios</h2>
+              <p class="text-sm text-[#213053]/50">Precio de venta e información tributaria</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Precio de venta -->
+            <div class="stagger-item form-field">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                Precio de Venta <span class="text-red-400">*</span>
+              </label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-[#213053]/40 font-bold text-sm">$</span>
+                <input type="number" formControlName="precioVenta" placeholder="0.00" class="form-input pl-8" min="0" step="0.01">
+              </div>
+            </div>
+
+            <!-- Margen -->
+            <div class="stagger-item form-field">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                Margen (%) <span class="text-[#213053]/30 text-xs">(auto-calculado)</span>
+              </label>
+              <div class="relative">
+                <input type="number" formControlName="margenPorcentaje" placeholder="Auto" class="form-input pr-12" step="0.1">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[#213053]/40 font-bold text-sm">%</span>
+              </div>
+              <div *ngIf="calculatedMargin()" class="mt-1 text-xs font-semibold text-emerald-600">
+                📈 Margen calculado: {{ calculatedMargin() }}%
+              </div>
+            </div>
+
+            <!-- Impuestos incluidos -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Impuestos incluidos</label>
+              <div class="flex gap-3">
+                <button type="button" (click)="form.get('impuestosIncluidos')?.setValue(true)"
+                        class="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                        [class]="form.get('impuestosIncluidos')?.value === true ? 'bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/30' : 'bg-white text-[#213053]/60 border-[#213053]/10'">
+                  ✅ Sí
+                </button>
+                <button type="button" (click)="form.get('impuestosIncluidos')?.setValue(false)"
+                        class="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                        [class]="form.get('impuestosIncluidos')?.value === false ? 'bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/30' : 'bg-white text-[#213053]/60 border-[#213053]/10'">
+                  ❌ No
+                </button>
+              </div>
+            </div>
+
+            <!-- Tipo impuesto -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Tipo de Impuesto</label>
+              <select formControlName="tipoImpuesto" class="form-input">
+                <option *ngFor="let imp of tiposImpuesto" [value]="imp.value">{{ imp.label }}</option>
+              </select>
+            </div>
+
+            <!-- Moneda -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">Moneda <span class="text-red-400">*</span></label>
+              <div class="flex gap-3">
+                <button *ngFor="let mon of monedas" type="button"
+                        (click)="form.get('moneda')?.setValue(mon.value)"
+                        class="flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 border-2 text-center"
+                        [class]="form.get('moneda')?.value === mon.value ? 'bg-[#045C94] text-white border-[#045C94] shadow-lg shadow-[#045C94]/30' : 'bg-white text-[#213053]/60 border-[#213053]/10 hover:border-[#045C94]/30'">
+                  {{ mon.symbol }} {{ mon.label }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ STEP 4: Especificaciones ═══════════ -->
+        <div *ngIf="currentStep() === 4" @stepTransition @staggerCards class="glass-card rounded-3xl p-6 lg:p-8">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-400 flex items-center justify-center text-lg">🍽️</div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#213053]">Especificaciones del Producto</h2>
+              <p class="text-sm text-[#213053]/50">Detalles específicos para alimentos y servicio</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Tipo Producto -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">Tipo <span class="text-red-400">*</span></label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <button *ngFor="let tipo of tiposProducto" type="button"
+                        (click)="form.get('tipoProducto')?.setValue(tipo.value)"
+                        class="product-type-card p-4 rounded-xl border-2 text-center transition-all duration-300"
+                        [class.selected]="form.get('tipoProducto')?.value === tipo.value">
+                  <span class="text-3xl block mb-2">{{ tipo.icon }}</span>
+                  <span class="text-sm font-bold block">{{ tipo.label }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tamaño -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Tamaño / Presentación <span class="text-red-400">*</span></label>
+              <input type="text" formControlName="tamanoPresentacion" placeholder="Ej: Porción estándar, 500ml" class="form-input">
+            </div>
+
+            <!-- Gramaje -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Gramaje / Peso neto</label>
+              <input type="number" formControlName="gramajePesoNeto" placeholder="0" class="form-input" min="0">
+            </div>
+
+            <!-- Unidad de medida -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Unidad de medida <span class="text-red-400">*</span></label>
+              <div class="flex gap-2 flex-wrap">
+                <button *ngFor="let um of unidadesMedida" type="button"
+                        (click)="form.get('unidadMedida')?.setValue(um.value)"
+                        class="px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                        [class]="form.get('unidadMedida')?.value === um.value ? 'bg-violet-500 text-white border-violet-500 shadow-md' : 'bg-white text-[#213053]/60 border-[#213053]/10 hover:border-violet-300'">
+                  {{ um.label }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Porciones -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Porciones</label>
+              <input type="number" formControlName="porciones" placeholder="1" class="form-input" min="1">
+            </div>
+
+            <!-- Calorías -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Calorías <span class="text-[#213053]/30 text-xs">(opcional)</span></label>
+              <div class="relative">
+                <input type="number" formControlName="calorias" placeholder="0" class="form-input pr-14" min="0">
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[#213053]/40 text-xs font-semibold">kcal</span>
+              </div>
+            </div>
+
+            <!-- Info Nutricional -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Info. Nutricional <span class="text-[#213053]/30 text-xs">(opcional)</span></label>
+              <textarea formControlName="informacionNutricional" rows="2" placeholder="Proteínas, carbohidratos..." class="form-input resize-none"></textarea>
+            </div>
+
+            <!-- Alérgenos -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Alérgenos <span class="text-[#213053]/30 text-xs">(muy recomendado)</span>
+              </label>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <button *ngFor="let al of alergenosComunes" type="button"
+                        (click)="toggleAlergeno(al)"
+                        class="chip-btn px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border"
+                        [class.chip-selected]="selectedAlergenos().includes(al)">
+                  {{ al }}
+                </button>
+              </div>
+              <!-- Selected alérgenos chips -->
+              <div *ngIf="selectedAlergenos().length > 0" class="flex flex-wrap gap-2 mb-3">
+                <span *ngFor="let al of selectedAlergenos()" @chipEnter
+                      class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
+                  ⚠️ {{ al }}
+                  <button type="button" (click)="removeAlergeno(al)" class="hover:text-red-600 ml-1">&times;</button>
+                </span>
+              </div>
+              <!-- Custom alérgeno -->
+              <div class="flex gap-2">
+                <input type="text" [ngModel]="nuevoAlergeno()" (ngModelChange)="nuevoAlergeno.set($event)" [ngModelOptions]="{standalone: true}"
+                       placeholder="Agregar otro alérgeno..." class="form-input flex-1 text-sm" (keydown.enter)="addCustomAlergeno(); $event.preventDefault()">
+                <button type="button" (click)="addCustomAlergeno()" class="px-4 py-2 rounded-xl bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors">+</button>
+              </div>
+            </div>
+
+            <!-- Restricciones -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">Restricciones alimentarias</label>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <button *ngFor="let rest of restricciones" type="button"
+                        (click)="toggleRestriccion(rest.value)"
+                        class="restriction-card p-3 rounded-xl border-2 text-center transition-all duration-300"
+                        [class.selected]="selectedRestricciones().includes(rest.value)"
+                        [style.--rest-color]="rest.color">
+                  <span class="text-sm font-bold">{{ rest.label }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Vida útil -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">Vida útil <span class="text-[#213053]/30 text-xs">(si aplica)</span></label>
+              <input type="text" formControlName="vidaUtil" placeholder="Ej: 24 horas, 3 días, 6 meses" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ STEP 5: Operación ═══════════ -->
+        <div *ngIf="currentStep() === 5" @stepTransition @staggerCards class="glass-card rounded-3xl p-6 lg:p-8">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-400 flex items-center justify-center text-lg">📍</div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#213053]">Operación / Servicio</h2>
+              <p class="text-sm text-[#213053]/50">Modalidad de servicio y logística operativa</p>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Modalidad -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Modalidad <span class="text-red-400">*</span></label>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button *ngFor="let mod of modalidades" type="button"
+                        (click)="toggleModalidad(mod.value)"
+                        class="modalidad-card p-5 rounded-2xl border-2 text-center transition-all duration-300"
+                        [class.selected]="selectedModalidades().includes(mod.value)">
+                  <span class="text-4xl block mb-3">{{ mod.icon }}</span>
+                  <span class="text-sm font-bold block">{{ mod.label }}</span>
+                </button>
+              </div>
+              <div *ngIf="selectedModalidades().length === 0" class="text-xs text-red-400 mt-2 font-semibold">
+                Selecciona al menos una modalidad
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <!-- Requiere preparación -->
+              <div class="stagger-item form-field">
+                <label class="form-label">¿Requiere preparación?</label>
+                <div class="flex gap-3">
+                  <button type="button" (click)="form.get('requierePreparacion')?.setValue(true)"
+                          class="flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                          [class]="form.get('requierePreparacion')?.value === true ? 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/30' : 'bg-white text-[#213053]/60 border-[#213053]/10'">
+                    👨‍🍳 Sí
+                  </button>
+                  <button type="button" (click)="form.get('requierePreparacion')?.setValue(false)"
+                          class="flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                          [class]="form.get('requierePreparacion')?.value === false ? 'bg-gray-500 text-white border-gray-500 shadow-lg' : 'bg-white text-[#213053]/60 border-[#213053]/10'">
+                    📦 No
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tiempo preparación -->
+              <div class="stagger-item form-field">
+                <label class="form-label">Tiempo est. preparación</label>
+                <div class="relative">
+                  <input type="number" formControlName="tiempoEstimadoPreparacion" placeholder="0" class="form-input pr-14" min="0">
+                  <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[#213053]/40 text-xs font-semibold">min</span>
+                </div>
+              </div>
+
+              <!-- Cadena fría -->
+              <div class="stagger-item form-field">
+                <label class="form-label">¿Requiere cadena fría?</label>
+                <div class="flex gap-3">
+                  <button type="button" (click)="form.get('requiereCadenaFria')?.setValue(true)"
+                          class="flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                          [class]="form.get('requiereCadenaFria')?.value === true ? 'bg-cyan-500 text-white border-cyan-500 shadow-lg shadow-cyan-500/30' : 'bg-white text-[#213053]/60 border-[#213053]/10'">
+                    🧊 Sí
+                  </button>
+                  <button type="button" (click)="form.get('requiereCadenaFria')?.setValue(false)"
+                          class="flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 border-2"
+                          [class]="form.get('requiereCadenaFria')?.value === false ? 'bg-gray-500 text-white border-gray-500 shadow-lg' : 'bg-white text-[#213053]/60 border-[#213053]/10'">
+                    🌡️ No
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ STEP 6: Opcionales ═══════════ -->
+        <div *ngIf="currentStep() === 6" @stepTransition @staggerCards class="glass-card rounded-3xl p-6 lg:p-8">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-400 flex items-center justify-center text-lg">⚙️</div>
+            <div>
+              <h2 class="text-xl font-extrabold text-[#213053]">Campos Opcionales</h2>
+              <p class="text-sm text-[#213053]/50">Información adicional y enriquecimiento</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Imagen del producto -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">Imagen del Producto</label>
+              <div class="flex items-start gap-6">
+                <!-- Preview -->
+                <div class="w-32 h-32 rounded-2xl border-2 border-dashed border-[#213053]/20 flex items-center justify-center overflow-hidden flex-shrink-0 transition-all duration-300 hover:border-[#045C94]/40 group bg-gradient-to-br from-[#213053]/5 to-transparent relative cursor-pointer"
+                     (click)="imageInput.click()">
+                  <input #imageInput type="file" accept="image/*" class="hidden" (change)="onImageSelect($event)">
+                  <img *ngIf="imagenPreview()" [src]="imagenPreview()" class="w-full h-full object-cover" alt="Preview">
+                  <div *ngIf="!imagenPreview()" class="text-center">
+                    <svg class="w-8 h-8 text-[#213053]/20 mx-auto group-hover:text-[#045C94]/40 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <p class="text-[10px] text-[#213053]/30 mt-1">Subir imagen</p>
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-[#213053]/40 mb-3">Formatos: JPG, PNG, WEBP. Máx 5MB.</p>
+                  <button *ngIf="imagenPreview()" type="button" (click)="removeImage()"
+                          class="text-xs text-red-500 hover:text-red-600 font-semibold underline">
+                    Quitar imagen
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Receta asociada -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Receta asociada</label>
+              <textarea formControlName="recetaAsociada" rows="3" placeholder="Pasos de preparación o referencia a receta..." class="form-input resize-none"></textarea>
+            </div>
+
+            <!-- Observaciones -->
+            <div class="stagger-item form-field">
+              <label class="form-label">Observaciones</label>
+              <textarea formControlName="observaciones" rows="3" placeholder="Notas adicionales..." class="form-input resize-none"></textarea>
+            </div>
+
+            <!-- Ingredientes principales -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">Ingredientes principales</label>
+              <div *ngIf="ingredientes().length > 0" class="flex flex-wrap gap-2 mb-3">
+                <span *ngFor="let ing of ingredientes()" @chipEnter
+                      class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                  🥘 {{ ing }}
+                  <button type="button" (click)="removeIngrediente(ing)" class="hover:text-red-600 ml-1">&times;</button>
+                </span>
+              </div>
+              <div class="flex gap-2">
+                <input type="text" [ngModel]="nuevoIngrediente()" (ngModelChange)="nuevoIngrediente.set($event)" [ngModelOptions]="{standalone: true}"
+                       placeholder="Agregar ingrediente..." class="form-input flex-1 text-sm" (keydown.enter)="addIngrediente(); $event.preventDefault()">
+                <button type="button" (click)="addIngrediente()" class="px-4 py-2 rounded-xl bg-indigo-500 text-white text-sm font-bold hover:bg-indigo-600 transition-colors">+</button>
+              </div>
+            </div>
+
+            <!-- Etiquetas -->
+            <div class="stagger-item form-field md:col-span-2">
+              <label class="form-label">Etiquetas</label>
+              <div class="flex flex-wrap gap-2 mb-3">
+                <button *ngFor="let et of etiquetasPredefinidas" type="button"
+                        (click)="toggleEtiqueta(et)"
+                        class="chip-btn px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border"
+                        [class.chip-selected]="selectedEtiquetas().includes(et)">
+                  {{ et }}
+                </button>
+              </div>
+              <!-- Selected etiquetas -->
+              <div *ngIf="selectedEtiquetas().length > 0" class="flex flex-wrap gap-2 mb-3">
+                <span *ngFor="let et of selectedEtiquetas()" @chipEnter
+                      class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-violet-100 text-violet-700 text-xs font-semibold">
+                  🏷️ {{ et }}
+                  <button type="button" (click)="removeEtiqueta(et)" class="hover:text-red-600 ml-1">&times;</button>
+                </span>
+              </div>
+              <!-- Custom etiqueta -->
+              <div class="flex gap-2">
+                <input type="text" [ngModel]="nuevaEtiqueta()" (ngModelChange)="nuevaEtiqueta.set($event)" [ngModelOptions]="{standalone: true}"
+                       placeholder="Agregar etiqueta personalizada..." class="form-input flex-1 text-sm" (keydown.enter)="addCustomEtiqueta(); $event.preventDefault()">
+                <button type="button" (click)="addCustomEtiqueta()" class="px-4 py-2 rounded-xl bg-violet-500 text-white text-sm font-bold hover:bg-violet-600 transition-colors">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ NAVIGATION BUTTONS ═══ -->
+        <div class="flex items-center justify-between mt-8 gap-4">
+          <button *ngIf="currentStep() > 1" type="button" (click)="prevStep()"
+                  class="nav-btn-secondary flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Anterior
+          </button>
+          <div *ngIf="currentStep() === 1"></div>
+
+          <div class="flex items-center gap-3">
+            <!-- Step info -->
+            <span class="text-xs text-[#213053]/40 font-semibold hidden sm:inline">
+              Paso {{ currentStep() }} de 6
+            </span>
+
+            <button *ngIf="currentStep() < 6" type="button" (click)="nextStep()"
+                    class="nav-btn-primary flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg"
+                    [style.background]="'linear-gradient(135deg, ' + currentStepConfig.colorFrom + ', ' + currentStepConfig.colorTo + ')'">
+              Siguiente
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+
+            <button *ngIf="currentStep() === 6" type="submit" [disabled]="isSaving()"
+                    class="nav-btn-save flex items-center gap-2 px-8 py-3 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg">
+              <div *ngIf="isSaving()" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <svg *ngIf="!isSaving()" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ isSaving() ? 'Guardando...' : 'Guardar Producto' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- SUCCESS MODAL                                            -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div *ngIf="showSuccessModal()" @modalBg class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div @modalPanel class="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl">
+      <div @successAnim class="text-center">
+        <!-- Success checkmark -->
+        <div class="w-20 h-20 mx-auto mb-5 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-xl shadow-emerald-500/40 animate-bounce-once">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h3 class="text-2xl font-extrabold text-[#213053] mb-2">¡Producto Creado!</h3>
+        <p class="text-sm text-[#213053]/50 mb-6">El producto <strong class="text-[#045C94]">{{ savedProduct()?.identificacion?.nombre }}</strong> se ha registrado exitosamente</p>
+
+        <div class="flex gap-3">
+          <button (click)="createAnother()" 
+                  class="flex-1 py-3 px-4 rounded-xl bg-[#045C94] text-white font-bold text-sm hover:bg-[#034b7a] transition-colors">
+            + Crear Otro
+          </button>
+          <button (click)="closeSuccessModal()"
+                  class="flex-1 py-3 px-4 rounded-xl border-2 border-[#213053]/10 text-[#213053]/70 font-bold text-sm hover:bg-[#213053]/5 transition-colors">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

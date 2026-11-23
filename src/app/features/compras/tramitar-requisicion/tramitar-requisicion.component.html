@@ -1,0 +1,840 @@
+<div
+  class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3"
+>
+  <!-- ═══ LOADING ═══ -->
+  @if (loading()) {
+    <div class="flex items-center justify-center min-h-[60vh]">
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p class="text-sm text-[#213053]/60 mt-4 font-medium">
+          Cargando trámite...
+        </p>
+      </div>
+    </div>
+  }
+
+  @if (!loading() && tramite()) {
+    <!-- ═══ HEADER ═══ -->
+    <div
+      class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white shadow-2xl rounded-2xl mb-5 header-animate"
+    >
+      <div class="px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div
+              class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg header-icon-pulse"
+            >
+              <svg
+                class="w-7 h-7 text-[#FFB71B]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.8"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                />
+              </svg>
+            </div>
+            <div>
+              <p
+                class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-semibold mb-0.5"
+              >
+                Tramitar Requisición
+              </p>
+              <h1 class="text-xl font-bold tracking-tight">
+                {{ tramite()!.requisicion.numeroRequisicion }}
+              </h1>
+              <p class="text-white/80 text-xs">
+                {{ tramite()!.requisicion.solicitante }} —
+                {{ tramite()!.requisicion.areaCentroCosto }}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <!-- Estado badge -->
+            <div
+              class="estado-tramite-badge"
+              [class.estado-en-proceso]="
+                tramite()!.estadoTramite === 'EN_PROCESO'
+              "
+              [class.estado-esperando]="
+                tramite()!.estadoTramite === 'EN_CONTABILIDAD' ||
+                tramite()!.estadoTramite === 'ESPERANDO_CONTABILIDAD' ||
+                tramite()!.estadoTramite === 'ESPERANDO_VISTO_BUENO'
+              "
+              [class.estado-aprobado]="
+                tramite()!.estadoTramite === 'APROBADO_CONTABILIDAD'
+              "
+              [class.estado-rechazado-jefe]="
+                tramite()!.estadoTramite === 'RECHAZADO_JEFE'
+              "
+              [class.estado-completado]="
+                tramite()!.estadoTramite === 'COMPLETADO'
+              "
+            >
+              @switch (tramite()!.estadoTramite) {
+                @case ("EN_PROCESO") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
+                  </svg>
+                  En Proceso
+                }
+                @case ("EN_CONTABILIDAD") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  En Contabilidad
+                }
+                @case ("ESPERANDO_CONTABILIDAD") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  En Contabilidad
+                }
+                @case ("ESPERANDO_VISTO_BUENO") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                    />
+                  </svg>
+                  Esperando Visto Bueno
+                }
+                @case ("APROBADO_JEFE") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Aprobado por Jefe
+                }
+                @case ("RECHAZADO_JEFE") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Rechazado por Jefe
+                }
+                @case ("ACEPTADO_CON_NOVEDAD") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                  Con Novedades
+                }
+                @case ("APROBADO_CONTABILIDAD") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Aprobado Contabilidad
+                }
+                @case ("COMPLETADO") {
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Completado
+                }
+              }
+            </div>
+            <!-- Botón Volver -->
+            <button
+              (click)="volver()"
+              class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all backdrop-blur-sm border border-white/20"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
+              </svg>
+              Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PROGRESS BAR ═══ -->
+    <div class="progress-bar-container mb-2">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" [style.width]="getProgressWidth()"></div>
+      </div>
+      <span class="progress-label">Paso {{ pasoActual() }} de 5</span>
+    </div>
+
+    <!-- ═══ STEPPER ═══ -->
+    <div class="stepper-container">
+      <div class="stepper-wrapper">
+        @for (
+          paso of pasos();
+          track paso.numero;
+          let i = $index;
+          let last = $last
+        ) {
+          <div
+            class="step-item"
+            [class.step-completed]="paso.estado === 'completado'"
+            [class.step-active]="paso.estado === 'activo'"
+            [class.step-pending]="paso.estado === 'pendiente'"
+            [class.step-blocked]="paso.estado === 'bloqueado'"
+            [class.step-clickable]="isStepClickable(paso)"
+            (click)="isStepClickable(paso) ? irAPaso(paso.numero) : null"
+          >
+            <!-- Connector line -->
+            @if (i > 0) {
+              <div
+                class="step-connector"
+                [class.connector-completed]="
+                  paso.estado === 'completado' || paso.estado === 'activo'
+                "
+              ></div>
+            }
+
+            <!-- Circle -->
+            <div class="step-circle">
+              @if (paso.estado === "completado") {
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              } @else if (paso.estado === "bloqueado") {
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              } @else {
+                <!-- Step icon based on type -->
+                @switch (paso.icono) {
+                  @case ("clipboard") {
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      />
+                    </svg>
+                  }
+                  @case ("shopping-cart") {
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"
+                      />
+                    </svg>
+                  }
+                  @case ("chart-bar") {
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                  }
+                  @case ("truck") {
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
+                      />
+                    </svg>
+                  }
+                  @case ("hand") {
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11"
+                      />
+                    </svg>
+                  }
+                }
+              }
+            </div>
+
+            <!-- Labels -->
+            <div class="step-labels">
+              <span class="step-number">Paso {{ paso.numero }}</span>
+              <span class="step-title">{{ paso.titulo }}</span>
+              <span class="step-subtitle">{{ paso.subtitulo }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ═══ STEP CONTENT ═══ -->
+    <div
+      class="step-content-container"
+      [class.step-animating]="animatingStep()"
+    >
+      <!-- ═══ VISTA ESPERANDO VISTO BUENO ═══ -->
+      @if (esperandoVistoBueno() && pasoActual() === 3) {
+        <div class="bg-white rounded-2xl shadow-lg border border-amber-200 p-8 text-center">
+          <div class="flex justify-center mb-4">
+            <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center border-4 border-amber-200 animate-pulse">
+              <svg class="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <h3 class="text-xl font-bold text-[#213053] mb-2">Esperando respuesta del Jefe de Compras</h3>
+          <p class="text-sm text-[#213053]/60 mb-6 max-w-md mx-auto">
+            La requisición <strong>{{ tramite()!.requisicion.numeroRequisicion }}</strong> fue enviada al
+            Jefe de Compras para su revisión y visto bueno. Recibirás una notificación cuando se emita la decisión.
+          </p>
+          <div class="flex justify-center items-center gap-3 mb-6">
+            <div class="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+              <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span class="text-xs font-semibold text-amber-700">{{ tramite()!.ordenesCargadas.length }} OC{{ tramite()!.ordenesCargadas.length > 1 ? 's' : '' }} enviada{{ tramite()!.ordenesCargadas.length > 1 ? 's' : '' }}</span>
+            </div>
+            <div class="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span class="text-xs font-semibold text-blue-700">Pendiente de aprobación</span>
+            </div>
+          </div>
+          <div class="flex justify-center gap-3">
+            <button
+              (click)="irASeguimiento()"
+              class="px-5 py-2.5 bg-gradient-to-r from-[#045C94] to-[#034a78] text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Ver Seguimiento
+            </button>
+            <button
+              (click)="volver()"
+              class="px-5 py-2.5 bg-white border border-[#213053]/20 text-[#213053] text-sm font-semibold rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver a Gestión
+            </button>
+          </div>
+        </div>
+      } @else if (rechazadoPorJefe() && pasoActual() === 3) {
+        <!-- ═══ VISTA RECHAZADO POR JEFE ═══ -->
+        <div class="bg-white rounded-2xl shadow-lg border border-red-200 p-8 text-center">
+          <div class="flex justify-center mb-4">
+            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center border-4 border-red-200">
+              <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <h3 class="text-xl font-bold text-[#213053] mb-2">Requisición Rechazada por el Jefe de Compras</h3>
+          <p class="text-sm text-[#213053]/60 mb-6 max-w-md mx-auto">
+            La requisición <strong>{{ tramite()!.requisicion.numeroRequisicion }}</strong> fue rechazada.
+            Puede editar y corregir la solicitud o reenviarla directamente al Jefe de Compras.
+          </p>
+
+          <!-- Motivo de Rechazo -->
+          @if (rechazoMotivo()) {
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 max-w-lg mx-auto text-left">
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span class="text-sm font-bold text-red-700">Motivo del Rechazo</span>
+              </div>
+              <p class="text-sm text-red-800">{{ rechazoMotivo() }}</p>
+            </div>
+          }
+
+          <!-- Observaciones -->
+          @if (rechazoObservaciones()) {
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 max-w-lg mx-auto text-left">
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
+                <span class="text-sm font-bold text-amber-700">Observaciones</span>
+              </div>
+              <p class="text-sm text-amber-800">{{ rechazoObservaciones() }}</p>
+            </div>
+          }
+
+          <!-- Revisado por -->
+          @if (rechazoRevisadoPor() || rechazoFecha()) {
+            <div class="flex items-center justify-center gap-3 mb-6 text-xs text-gray-500">
+              @if (rechazoRevisadoPor()) {
+                <span>Revisado por: <strong class="text-gray-700">{{ rechazoRevisadoPor() }}</strong></span>
+              }
+              @if (rechazoFecha()) {
+                <span>{{ rechazoFecha() }}</span>
+              }
+            </div>
+          }
+
+          <!-- Info: Opciones disponibles -->
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 max-w-lg mx-auto text-left">
+            <p class="text-xs text-blue-700 leading-relaxed">
+              <strong>¿Qué desea hacer?</strong><br>
+              Puede <strong>editar la solicitud</strong> para corregir los datos y luego reenviar al Jefe de Compras, o
+              <strong>reenviar directamente</strong> sin cambios para una nueva revisión.
+            </p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row justify-center gap-3">
+            <!-- Editar Solicitud -->
+            <button
+              (click)="editarSolicitud()"
+              class="px-5 py-2.5 border-2 border-[#045C94] text-[#045C94] text-sm font-semibold rounded-lg hover:bg-[#045C94]/5 transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Editar Solicitud
+            </button>
+
+            <!-- Reenviar al Jefe -->
+            <button
+              (click)="reenviarAJefe()"
+              [disabled]="reenvioLoading()"
+              class="px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              @if (reenvioLoading()) {
+                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                Reenviando...
+              } @else {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                Reenviar al Jefe de Compras
+              }
+            </button>
+
+            <!-- Volver a Gestión -->
+            <button
+              (click)="volver()"
+              class="px-5 py-2.5 bg-gray-100 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver a Gestión
+            </button>
+          </div>
+        </div>
+      } @else {
+      @switch (pasoActual()) {
+        @case (1) {
+          <app-paso1-requisicion
+            [tramite]="tramite()!"
+            [solicitud]="solicitudActual()"
+            (completed)="onStepCompleted(1)"
+            (saved)="onStepSaved(1)"
+          />
+        }
+        @case (2) {
+          <app-paso4-orden-compra
+            [tramite]="tramite()!"
+            (completed)="onStepCompleted(2)"
+            (saved)="onStepSaved(2)"
+          />
+        }
+        @case (3) {
+          <app-comparativa-planeacion-oc
+            [tramite]="tramite()!"
+            (completed)="onStepCompleted(3)"
+            (saved)="onStepSaved(3)"
+          />
+        }
+        @case (4) {
+          <app-paso5-recepcion
+            [tramite]="tramite()!"
+            (completed)="onStepCompleted(4)"
+            (saved)="onStepSaved(4)"
+          />
+        }
+        @case (5) {
+          <app-paso6-entrega
+            [tramite]="tramite()!"
+            (completed)="onStepCompleted(5)"
+            (saved)="onStepSaved(5)"
+          />
+        }
+      }
+      }
+    </div>
+
+    <!-- ═══ NAVIGATION BUTTONS ═══ -->
+    @if (!esperandoVistoBueno() && !rechazadoPorJefe()) {
+    <div class="nav-buttons-container">
+      <button
+        (click)="pasoAnterior()"
+        [disabled]="pasoActual() === 1"
+        class="nav-btn nav-btn-back"
+        [class.nav-btn-disabled]="pasoActual() === 1"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+        Anterior
+      </button>
+
+      <div class="flex items-center gap-2">
+        @if (pasoActual() === 2 && tramite()!.enviadoContabilidad) {
+          <div
+            class="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-lg"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Enviado a Contabilidad
+          </div>
+          @if (!tramite()!.respuestaContabilidad) {
+            <button
+              (click)="verificarContabilidad()"
+              class="nav-btn nav-btn-verificar"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Verificar Respuesta
+            </button>
+          } @else {
+            <button (click)="siguientePaso()" class="nav-btn nav-btn-next">
+              Siguiente
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          }
+        } @else if (pasoActual() < 5 && pasoActual() !== 2 && pasoActual() !== 3) {
+          <button (click)="siguientePaso()" class="nav-btn nav-btn-next">
+            Siguiente
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        } @else if (pasoActual() === 5) {
+          <button
+            (click)="finalizarTramite()"
+            class="nav-btn nav-btn-finalizar"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Finalizar Trámite
+          </button>
+        }
+      </div>
+    </div>
+    }
+
+    <!-- ═══ VISTO BUENO ALERT MODAL ═══ -->
+    @if (showVistoBuenoAlert()) {
+      <div class="fixed inset-0 z-[80] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-[#213053]/50 backdrop-blur-sm" (click)="cerrarVistoBuenoAlert()"></div>
+        <div class="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center z-10">
+          <div class="flex justify-center mb-4">
+            <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center border-4 border-emerald-200">
+              <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <h3 class="text-lg font-bold text-[#213053] mb-2">¡Enviado al Jefe de Compras!</h3>
+          <p class="text-sm text-[#213053]/60 mb-6">
+            La requisición <strong>{{ tramite()!.requisicion.numeroRequisicion }}</strong> ha sido enviada
+            exitosamente al Jefe de Compras para su revisión y aprobación.
+          </p>
+          <button
+            (click)="cerrarVistoBuenoAlert()"
+            class="px-6 py-2.5 bg-gradient-to-r from-[#045C94] to-[#034a78] text-white text-sm font-semibold rounded-lg hover:shadow-lg transition-all duration-200"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ TOAST ═══ -->
+    @if (showToast()) {
+      <div
+        class="toast-notification"
+        [class.toast-success]="toastType() === 'success'"
+        [class.toast-error]="toastType() === 'error'"
+        [class.toast-warning]="toastType() === 'warning'"
+        [class.toast-info]="toastType() === 'info'"
+      >
+        @switch (toastType()) {
+          @case ("success") {
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          }
+          @case ("error") {
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          }
+          @case ("warning") {
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+          }
+          @case ("info") {
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          }
+        }
+        <span>{{ toastMessage() }}</span>
+      </div>
+    }
+  }
+</div>
+
+<!-- ConveX Chatbot -->
+<app-convex-chatbot [tramiteId]="tramite()?.id ?? null"></app-convex-chatbot>

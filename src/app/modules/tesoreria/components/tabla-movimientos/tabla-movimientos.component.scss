@@ -1,0 +1,163 @@
+/* ═══════════════════════════════════════════════════════
+   TABLA MOVIMIENTOS — Matching Gestion-Compras Pattern
+   Colors: primary #213053, accent #045C94, gold #FFB71B
+   ═══════════════════════════════════════════════════════ */
+
+// Variables
+$primary: #213053;
+$accent: #045C94;
+$gold: #FFB71B;
+$transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// ─── Keyframes ─────────────────────────────────────────
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rowFadeIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes dropdownSlide {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(4, 92, 148, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(4, 92, 148, 0); }
+}
+
+// ─── Host ──────────────────────────────────────────────
+:host {
+  display: block;
+}
+
+// ─── Table Wrapper ─────────────────────────────────────
+.table-wrapper {
+  border-radius: 1rem;
+  overflow: visible;
+  animation: fadeIn 0.5s ease-out;
+}
+
+// ─── Header Icon Pulse ─────────────────────────────────
+.header-icon-pulse {
+  animation: pulseGlow 2.5s infinite;
+}
+
+// ─── Table Row Animations ──────────────────────────────
+.table-row,
+:host ::ng-deep .mat-mdc-row {
+  transition: all 0.2s ease;
+  animation: rowFadeIn 0.4s ease-out both;
+
+  &:hover {
+    background: linear-gradient(135deg, rgba($primary, 0.02) 0%, rgba($accent, 0.04) 100%) !important;
+  }
+}
+
+// ─── Dropdown Enter ────────────────────────────────────
+.dropdown-enter {
+  animation: dropdownSlide 0.18s ease-out;
+}
+
+// ─── Mobile Card ───────────────────────────────────────
+.mobile-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(#e5e7eb, 0.8);
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+// ─── Material Table Overrides ──────────────────────────
+:host ::ng-deep .mat-mdc-header-row {
+  background: #f4f4f4 !important;
+  border-bottom: 2px solid rgba($primary, 0.1) !important;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+:host ::ng-deep .mat-mdc-header-cell {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $primary !important;
+  background: #f4f4f4 !important;
+  white-space: nowrap;
+  border-bottom: none !important;
+}
+
+:host ::ng-deep .mat-mdc-cell {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+  border-bottom: 1px solid #f3f4f6 !important;
+}
+
+:host ::ng-deep .mat-mdc-row {
+  &:nth-child(even) {
+    background: #fafbfd;
+  }
+}
+
+// ─── Paginator ─────────────────────────────────────────
+:host ::ng-deep .mat-mdc-paginator {
+  background: #ffffff;
+  border-top: 1px solid #f3f4f6;
+  border-radius: 0 0 12px 12px;
+  padding: 6px 8px;
+}
+
+:host ::ng-deep .mat-mdc-paginator-container {
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+:host ::ng-deep .mat-mdc-paginator-page-size-label,
+:host ::ng-deep .mat-mdc-paginator-range-label {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+:host ::ng-deep .mat-mdc-paginator .mat-mdc-icon-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba($accent, 0.05);
+    border-color: $accent;
+  }
+}
+
+:host ::ng-deep .mat-mdc-select-trigger {
+  min-width: 70px;
+  height: 32px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0 8px;
+  align-items: center;
+}
+
+:host ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+// ─── Sort Header Arrow ────────────────────────────────
+:host ::ng-deep .mat-sort-header-arrow {
+  color: $accent !important;
+}

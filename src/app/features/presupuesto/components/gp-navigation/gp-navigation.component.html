@@ -1,0 +1,45 @@
+<div class="gp-app gp-nexa">
+  <header class="gp-nexa-context">
+    <div class="gp-nexa-context-title"><app-gp-icon name="chart" [size]="22"/><div><span>Tesorería</span><strong>Gestor Presupuestal</strong></div></div>
+    <div class="gp-nexa-context-actions">
+      @if (mostrarSelector() && ctx.empresas().length > 0) { <label class="gp-nexa-company"><span class="gp-nexa-company__icono" aria-hidden="true"><app-gp-icon name="building" [size]="15"/></span><span class="gp-nexa-company__txt"><small>Empresa</small><select aria-label="Empresa" [ngModel]="ctx.empresaId()" (ngModelChange)="ctx.seleccionarEnUrl(+$event)"><option [ngValue]="null" disabled>Elegir empresa…</option>@for (grupo of gruposEmpresas(); track grupo.responsable) { <optgroup [label]="grupo.responsable">@for (empresa of grupo.empresas; track empresa.id) { <option [ngValue]="empresa.id">{{ empresa.name }}</option> }</optgroup> }</select></span></label> }
+      @if (session.estado()?.rol === 'contador') { <app-gp-notificaciones /> }
+      <button type="button" class="gp-nexa-account" title="Mi cuenta" aria-label="Mi cuenta" (click)="abrirCuenta()"><app-gp-icon name="user" [size]="18"/><span>{{ session.estado()?.nombre }}<small>{{ roleName() }}</small></span></button>
+      <button type="button" class="btn-ghost gp-nexa-signout" title="Cerrar sesión del Gestor" aria-label="Cerrar sesión del Gestor" (click)="salir()"><app-gp-icon name="logout" [size]="18"/></button>
+    </div>
+  </header>
+  @if(!esVistaHistorica()){
+  <section class="gp-global-period" aria-label="Período del gestor">
+    @if(esVistaMensual()) {<label>Mes de consulta <select aria-label="Mes de consulta" [ngModel]="ctx.mesConsulta()" (ngModelChange)="ctx.mesConsulta.set($event)"><option [ngValue]="null">Mes habilitado</option>@for(mes of mesesConsulta();track mes){<option [ngValue]="mes">{{etiquetaPeriodo(mes)}}</option>}</select></label>}
+    <span>{{esVistaMensual() ? 'Vista mensual' : 'Todos los meses'}} · {{ ctx.mesActivo() ? 'Mes habilitado: ' + etiquetaPeriodo(ctx.mesActivo()!) : 'Sin mes habilitado' }}</span>
+    <span class="gp-period-chip" [ngClass]="'gp-period-chip--' + estadoPeriodo().tono" role="status">{{ estadoPeriodo().texto }}</span>
+    @if(periodos.puedeCrear()){<a class="btn-ghost" routerLink="/presupuesto/historicos/periodos">Creación de periodos</a>}
+  </section>
+  }
+  <div class="gp-nexa-tabs-wrap">
+    <nav aria-label="Gestor Presupuestal" class="gp-nexa-tabs">
+      @for (item of items(); track item.path) { <a [routerLink]="'/presupuesto/' + item.path" queryParamsHandling="preserve" routerLinkActive="active" [attr.aria-label]="item.label" [title]="item.label"><app-gp-icon [name]="item.icon" [size]="17"/><span>{{item.label}}</span></a> }
+    </nav>
+    @if (adminItems().length) { <div class="gp-native-admin gp-nexa-admin"><button type="button" class="btn-ghost" aria-label="Administración" [class.active]="administracionActiva()" (click)="adminOpen.set(!adminOpen())" [attr.aria-expanded]="adminOpen()"><app-gp-icon name="settings-2" [size]="17"/><span>Administración</span><app-gp-icon name="chevron-down" [size]="13"/></button>@if (adminOpen()) { <nav class="gp-native-dropdown modal-glass" aria-label="Administración">@for (item of adminItems(); track item.path) { <a [routerLink]="'/presupuesto/' + item.path" (click)="adminOpen.set(false)"><app-gp-icon [name]="item.icon" [size]="16"/>{{item.label}}</a> }</nav> }</div> }
+  </div>
+  <main class="gp-native-content">
+    @if (!session.estado()?.debe_cambiar_password) {
+      @if (ctx.cargando() && necesitaEmpresa()) { <p class="gp-workspace-status" role="status">Cargando empresas…</p> }
+      @else if (ctx.error()) { <div class="gp-workspace-status"><app-gp-error-state titulo="No pudimos abrir el Gestor" [mensaje]="ctx.error()!" detalle="Revisa la empresa seleccionada y tu conexión a internet. Si el problema continúa, cierra sesión y entra de nuevo." (reintentar)="ctx.cargar()"></app-gp-error-state></div> }
+      @else if (necesitaEmpresa()) { <section class="gp-workspace-picker card"><h1>¿Con qué empresa vas a trabajar?</h1><p>Elige una empresa para continuar.</p>@for(grupo of gruposEmpresas();track grupo.responsable){<h2>{{grupo.responsable}}</h2>@for(empresa of grupo.empresas;track empresa.id){<button class="btn-ghost" (click)="ctx.seleccionarEnUrl(empresa.id)"><app-gp-icon name="building" [size]="20"/>{{empresa.name}}<app-gp-icon name="arrow-right" [size]="16"/></button>}}@if(!ctx.empresas().length){<p>No tienes empresas disponibles para esta sesión.</p>}</section> }
+      <div [hidden]="necesitaEmpresa() || !!ctx.error()"><ng-content /></div>
+    }
+  </main>
+  @if (accountOpen() || session.estado()?.debe_cambiar_password) {
+    <div class="gp-native-backdrop" (click)="cerrarCuenta()"><form class="modal-glass gp-native-profile" (click)="$event.stopPropagation()" (ngSubmit)="guardarPerfil()" role="dialog" aria-modal="true" aria-labelledby="gp-profile-title">
+      <h2 id="gp-profile-title">{{ session.estado()?.debe_cambiar_password ? 'Actualiza tus datos' : 'Mi cuenta' }}</h2>
+      <p>Actualiza tu nombre o cambia tu contraseña.</p>
+      <label>Nombre completo<input class="field" name="nombre" [(ngModel)]="nombre" autocomplete="name" required /></label>
+      <label>Contraseña actual<input class="field" name="actual" type="password" [(ngModel)]="actual" autocomplete="current-password" [required]="!!nueva" /></label>
+      <label>Nueva contraseña<input class="field" name="nueva" type="password" [(ngModel)]="nueva" autocomplete="new-password" minlength="8" /></label>
+      <label>Repetir nueva contraseña<input class="field" name="repetir" type="password" [(ngModel)]="repetir" autocomplete="new-password" /></label>
+      @if (error()) { <p role="alert" class="text-err">{{ error() }}</p> }
+      <div class="gp-native-profile-actions">@if (!session.estado()?.debe_cambiar_password) { <button type="button" class="btn-ghost" (click)="cerrarCuenta()" [disabled]="saving()">Cancelar</button> }<button type="submit" class="btn-primary" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar cambios' }}</button></div>
+    </form></div>
+  }
+</div>

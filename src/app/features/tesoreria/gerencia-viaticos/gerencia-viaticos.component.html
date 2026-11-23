@@ -1,0 +1,1109 @@
+<div class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3">
+
+  <!-- ═══ TOAST ═══ -->
+  @if (showToast()) {
+    <div
+      class="fixed top-5 right-5 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-xl text-white text-sm font-semibold shadow-2xl animate-fade-in"
+      [class.bg-green-500]="toastType() === 'success'"
+      [class.bg-red-500]="toastType() === 'error'"
+      [class.bg-amber-500]="toastType() === 'warning'"
+      [class.bg-blue-500]="toastType() === 'info'"
+    >
+      <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        @if (toastType() === 'success') {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        } @else if (toastType() === 'error') {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        } @else {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        }
+      </svg>
+      {{ toastMessage() }}
+    </div>
+  }
+
+  <!-- ═══ HEADER ═══ -->
+  <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white shadow-2xl rounded-2xl mb-4 header-animate">
+    <div class="px-6 py-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg header-icon-pulse">
+          <svg class="w-7 h-7 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-semibold mb-0.5">Gerencia</p>
+          <h1 class="text-xl font-bold tracking-tight">Aprobación de Viáticos</h1>
+          <p class="text-white/80 text-xs">Revisión y decisión de solicitudes de viáticos</p>
+        </div>
+        <div class="ml-auto">
+          <button
+            (click)="cargarSolicitudes()"
+            [disabled]="loading()"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-xl transition-all duration-200 border border-white/20 hover:border-white/30 shadow-lg disabled:opacity-60"
+          >
+            <svg class="w-4 h-4" [class.animate-spin]="loading()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ KPI CARDS ═══ -->
+  <section class="kpi-section-compact">
+    <div class="kpi-card-compact kpi-teal">
+      <div class="kpi-icon-wrapper-compact kpi-icon-teal">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Total</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ totalSolicitudes() }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Solicitudes</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-warning">
+      <div class="kpi-icon-wrapper-compact kpi-icon-warning">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Pendientes</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ solicitudesPendientes().length }}</span>
+          <span class="kpi-trend-compact kpi-trend-warning">Por revisar</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-success">
+      <div class="kpi-icon-wrapper-compact kpi-icon-success">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Aprobadas</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ solicitudesAprobadas().length }}</span>
+          <span class="kpi-trend-compact kpi-trend-up">Aprobadas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-danger">
+      <div class="kpi-icon-wrapper-compact kpi-icon-danger">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Rechazadas</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ solicitudesRechazadas().length }}</span>
+          <span class="kpi-trend-compact kpi-trend-down">Rechazadas</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FILTROS Y TABS ═══ -->
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-4 animate-fade-in-up">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-3 p-4">
+      <!-- Tabs -->
+      <div class="tab-group flex gap-1 bg-gray-100 rounded-xl p-1 flex-1">
+        <button (click)="setTab('pendientes')"
+          class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200"
+          [class.tab-active]="activeTab() === 'pendientes'">
+          <span class="flex items-center justify-center gap-1.5">
+            <span class="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
+              [class.bg-amber-500]="activeTab() === 'pendientes'"
+              [class.text-white]="activeTab() === 'pendientes'"
+              [class.bg-gray-200]="activeTab() !== 'pendientes'"
+              [class.text-gray-600]="activeTab() !== 'pendientes'">
+              {{ solicitudesPendientes().length }}
+            </span>
+            Pendientes
+          </span>
+        </button>
+        <button (click)="setTab('aprobadas')"
+          class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200"
+          [class.tab-active]="activeTab() === 'aprobadas'">
+          <span class="flex items-center justify-center gap-1.5">
+            <span class="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
+              [class.bg-green-500]="activeTab() === 'aprobadas'"
+              [class.text-white]="activeTab() === 'aprobadas'"
+              [class.bg-gray-200]="activeTab() !== 'aprobadas'"
+              [class.text-gray-600]="activeTab() !== 'aprobadas'">
+              {{ solicitudesAprobadas().length }}
+            </span>
+            Aprobadas
+          </span>
+        </button>
+        <button (click)="setTab('rechazadas')"
+          class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200"
+          [class.tab-active]="activeTab() === 'rechazadas'">
+          <span class="flex items-center justify-center gap-1.5">
+            <span class="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
+              [class.bg-red-500]="activeTab() === 'rechazadas'"
+              [class.text-white]="activeTab() === 'rechazadas'"
+              [class.bg-gray-200]="activeTab() !== 'rechazadas'"
+              [class.text-gray-600]="activeTab() !== 'rechazadas'">
+              {{ solicitudesRechazadas().length }}
+            </span>
+            Rechazadas
+          </span>
+        </button>
+      </div>
+
+      <!-- Búsqueda -->
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar solicitante, empresa..."
+          class="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#045C94]/30 focus:border-[#045C94] w-64 transition-all"
+          (input)="onBusqueda($event)"
+        />
+      </div>
+
+      <!-- Toggle vista -->
+      <div class="view-toggle-group">
+        <button
+          class="view-toggle-btn"
+          [class.view-toggle-active]="viewMode() === 'cards'"
+          (click)="viewMode.set('cards')"
+          title="Vista cards"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+        </button>
+        <button
+          class="view-toggle-btn"
+          [class.view-toggle-active]="viewMode() === 'table'"
+          (click)="viewMode.set('table')"
+          title="Vista tabla"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 10h18M3 14h18M10 3v18M3 6a1 1 0 011-1h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LOADING ═══ -->
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center py-20 gap-4">
+      <div class="relative w-16 h-16">
+        <div class="absolute inset-0 rounded-full border-4 border-[#045C94]/20"></div>
+        <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-[#045C94] animate-spin"></div>
+      </div>
+      <p class="text-gray-500 text-sm font-medium">Cargando solicitudes...</p>
+    </div>
+  }
+
+  <!-- ═══ LISTA DE SOLICITUDES ═══ -->
+  @if (!loading()) {
+    @if (currentList().length === 0) {
+      <div class="flex flex-col items-center justify-center py-20 gap-3 animate-fade-in-up">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="text-gray-500 font-medium">No hay solicitudes</p>
+        <p class="text-gray-400 text-sm">
+          @if (activeTab() === 'pendientes') { No hay solicitudes pendientes de revisión. }
+          @else if (activeTab() === 'aprobadas') { No hay solicitudes aprobadas. }
+          @else { No hay solicitudes rechazadas. }
+        </p>
+      </div>
+    } @else {
+
+      <!-- ══ VISTA CARDS ══ -->
+      @if (viewMode() === 'cards') {
+        <div class="space-y-4">
+          @for (solicitud of currentList(); track solicitud.id) {
+            <div class="card-solicitud animate-fade-in-up">
+
+              <!-- ── Franja de estado lateral + cabecera ── -->
+              <div class="card-estado-strip" [class]="'strip-' + getEstadoTone(solicitud.estado)"></div>
+
+              <div class="card-header" (click)="toggleExpanded(solicitud.id)">
+                <!-- Avatar con inicial y estado de fondo -->
+                <div class="card-avatar" [class]="'avatar-' + getEstadoTone(solicitud.estado)">
+                  <span>{{ solicitud.nombreCompleto.charAt(0).toUpperCase() }}</span>
+                </div>
+
+                <!-- Info principal -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-2 mb-1">
+                    <span class="badge-tipo-solicitud" [class]="getTipoSolicitudClass(solicitud)">
+                      {{ getTipoSolicitudLabel(solicitud) }}
+                    </span>
+                    <h3 class="font-semibold text-gray-800 text-sm">{{ solicitud.nombreCompleto }}</h3>
+                    <span class="badge-estado" [class]="getEstadoClass(solicitud.estado)">
+                      {{ getEstadoLabel(solicitud.estado) }}
+                    </span>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
+                    <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="font-medium text-gray-600">{{ solicitud.cargo }}</span>
+                    <span class="text-gray-300">·</span>
+                    <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                    <span class="truncate max-w-[180px]">{{ solicitud.nombreEmpresa }}</span>
+                    <span class="text-gray-300">·</span>
+                    <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    </svg>
+                    <span>{{ solicitud.ciudad || '—' }}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-xs text-gray-400 mt-0.5">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    {{ solicitud.correoElectronico }}
+                    <span class="text-gray-300">·</span>
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    {{ solicitud.fechaCreacion.split(' ')[0] }}
+                  </div>
+                </div>
+
+                <!-- Panel derecho: monto + acciones -->
+                <div class="card-right-panel">
+                  <!-- Monto destacado -->
+                  <div class="card-monto-badge">
+                    <span class="card-monto-label">Total viáticos</span>
+                    <span class="card-monto-value">{{ formatCurrency(solicitud.totalGeneral) }}</span>
+                    <span class="card-monto-items">{{ solicitud.items.length }} ítem(s)</span>
+                  </div>
+
+                  <!-- Acciones -->
+                  <div class="card-actions">
+                    <button
+                      (click)="$event.stopPropagation(); abrirDetalle(solicitud)"
+                      class="btn-icon-sm btn-info"
+                      title="Ver detalle completo"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                    </button>
+
+                    @if (canDecidir(solicitud)) {
+                      <button
+                        (click)="$event.stopPropagation(); abrirDecision(solicitud, 'APROBAR')"
+                        class="btn-action btn-aprobar"
+                        title="Aprobar solicitud"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="hidden sm:inline">Aprobar</span>
+                      </button>
+                      <button
+                        (click)="$event.stopPropagation(); abrirDecision(solicitud, 'RECHAZAR')"
+                        class="btn-action btn-rechazar"
+                        title="Rechazar solicitud"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        <span class="hidden sm:inline">Rechazar</span>
+                      </button>
+                    }
+
+                    <svg
+                      class="w-5 h-5 text-gray-400 transition-transform duration-300 flex-shrink-0"
+                      [class.rotate-180]="expandedId() === solicitud.id"
+                      fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Contenido expandible ── -->
+              @if (expandedId() === solicitud.id) {
+                <div class="card-expand-body animate-fade-in">
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                    <div class="info-field">
+                      <span class="info-label">Empresa / NIT</span>
+                      <span class="info-value">{{ solicitud.nombreEmpresa }} — {{ solicitud.nit }}</span>
+                    </div>
+                    <div class="info-field">
+                      <span class="info-label">Centro de Costo</span>
+                      <span class="info-value">{{ solicitud.centroCosto || '—' }}</span>
+                    </div>
+                    <div class="info-field">
+                      <span class="info-label">Subtotal base</span>
+                      <span class="info-value font-semibold text-[#045C94]">{{ formatCurrency(solicitud.subtotalBase) }}</span>
+                    </div>
+                    <div class="info-field">
+                      <span class="info-label">Total IVA</span>
+                      <span class="info-value">{{ formatCurrency(solicitud.totalIva) }}</span>
+                    </div>
+                    <div class="info-field">
+                      <span class="info-label">Total General</span>
+                      <span class="info-value font-bold text-green-600 text-base">{{ formatCurrency(solicitud.totalGeneral) }}</span>
+                    </div>
+                    <div class="info-field">
+                      <span class="info-label">Ítems de gasto</span>
+                      <span class="info-value">{{ solicitud.items.length }} ítem(s)</span>
+                    </div>
+                    <div class="info-field">
+                      <span class="info-label">Área / Dependencia</span>
+                      <span class="info-value">{{ solicitud.areaDependencia }}</span>
+                    </div>
+                    <div class="info-field">
+                      <span class="info-label">Creado por</span>
+                      <span class="info-value">{{ solicitud.creadoPor }}</span>
+                    </div>
+                  </div>
+
+                  @if (solicitud.observaciones) {
+                    <div class="obs-block mb-3">
+                      <span class="obs-label">Observaciones del solicitante</span>
+                      <p class="obs-text">{{ solicitud.observaciones }}</p>
+                    </div>
+                  }
+
+                  @if (solicitud.observacionesGerencia) {
+                    <div class="obs-block obs-gerencia mb-3">
+                      <span class="obs-label">Observaciones de gerencia</span>
+                      <p class="obs-text">{{ solicitud.observacionesGerencia }}</p>
+                      <p class="text-xs text-gray-400 mt-1">Revisado por: <strong>{{ solicitud.revisadoPor }}</strong> · {{ solicitud.fechaDecision }}</p>
+                    </div>
+                  }
+
+                  <div class="flex gap-2 pt-1">
+                    <button (click)="abrirDetalle(solicitud)" class="btn-link-action">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                      </svg>
+                      Ver detalle completo
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ══ VISTA TABLA ══ -->
+      @if (viewMode() === 'table') {
+        <div class="table-wrapper animate-fade-in-up">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tipo</th>
+                <th>Solicitante</th>
+                <th>Empresa</th>
+                <th>Ítems</th>
+                <th>Total</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (solicitud of currentList(); track solicitud.id) {
+                <tr class="table-row">
+                  <td class="table-id">{{ solicitud.id }}</td>
+                  <td>
+                    <span class="badge-tipo-solicitud" [class]="getTipoSolicitudClass(solicitud)">
+                      {{ getTipoSolicitudLabel(solicitud) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="flex items-center gap-2.5">
+                      <div class="table-avatar" [class]="'avatar-' + getEstadoTone(solicitud.estado)">
+                        {{ solicitud.nombreCompleto.charAt(0).toUpperCase() }}
+                      </div>
+                      <div>
+                        <p class="font-semibold text-gray-800 text-sm leading-tight">{{ solicitud.nombreCompleto }}</p>
+                        <p class="text-xs text-gray-400 leading-tight">{{ solicitud.cargo }}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="text-sm text-gray-700 font-medium leading-tight">{{ solicitud.nombreEmpresa }}</p>
+                    <p class="text-xs text-gray-400">NIT: {{ solicitud.nit }}</p>
+                  </td>
+                  <td class="text-center">
+                    <span class="table-pill table-pill-neutral">{{ solicitud.items.length }}</span>
+                  </td>
+                  <td>
+                    <span class="font-bold text-[#045C94] text-sm">{{ formatCurrency(solicitud.totalGeneral) }}</span>
+                  </td>
+                  <td class="text-xs text-gray-500 whitespace-nowrap">{{ solicitud.fechaCreacion.split(' ')[0] }}</td>
+                  <td>
+                    <span class="badge-estado" [class]="getEstadoClass(solicitud.estado)">
+                      {{ getEstadoLabel(solicitud.estado) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="flex items-center gap-1.5">
+                      <button
+                        (click)="abrirDetalle(solicitud)"
+                        class="btn-icon-sm btn-info"
+                        title="Ver detalle"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                      </button>
+                      @if (canDecidir(solicitud)) {
+                        <button
+                          (click)="abrirDecision(solicitud, 'APROBAR')"
+                          class="btn-icon-sm btn-icon-aprobar"
+                          title="Aprobar"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                          </svg>
+                        </button>
+                        <button
+                          (click)="abrirDecision(solicitud, 'RECHAZAR')"
+                          class="btn-icon-sm btn-icon-rechazar"
+                          title="Rechazar"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                          </svg>
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    }
+  }
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL DETALLE COMPLETO
+══════════════════════════════════════════════════════ -->
+@if (showDetalleModal() && detalleSolicitud()) {
+  <div class="dv-modal-backdrop" (click)="cerrarDetalle()">
+    <div class="dv-modal-panel" (click)="$event.stopPropagation()">
+
+      <!-- ══ HERO HEADER (dark gradient) ══ -->
+      <div class="dv-modal-hero">
+
+        <!-- Close button -->
+        <button (click)="cerrarDetalle()" class="dv-modal-close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- Hero body: avatar + info + meta -->
+        <div class="dv-modal-hero-inner">
+
+          <!-- Avatar grande con estado -->
+          <div class="dv-modal-avatar" [class]="'avatar-' + getEstadoTone(detalleSolicitud()!.estado)">
+            {{ detalleSolicitud()!.nombreCompleto.charAt(0).toUpperCase() }}
+          </div>
+
+          <!-- Nombre, cargo, empresa -->
+          <div class="dv-modal-identity">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 class="text-xl font-bold text-white leading-tight">{{ detalleSolicitud()!.nombreCompleto }}</h2>
+              <!-- Estado badge en header -->
+              <span class="dv-hero-badge"
+                [class.dv-hero-badge--pendiente]="getEstadoTone(detalleSolicitud()!.estado) === 'pendiente'"
+                [class.dv-hero-badge--aprobada]="getEstadoTone(detalleSolicitud()!.estado) === 'aprobada'"
+                [class.dv-hero-badge--rechazada]="getEstadoTone(detalleSolicitud()!.estado) === 'rechazada'"
+              >
+                {{ getEstadoLabel(detalleSolicitud()!.estado) }}
+              </span>
+            </div>
+            <p class="text-white/70 text-sm mt-0.5">{{ detalleSolicitud()!.cargo }}</p>
+            <div class="flex items-center gap-1.5 text-white/50 text-xs mt-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              <span>{{ detalleSolicitud()!.nombreEmpresa }}</span>
+              <span class="text-white/30">·</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              </svg>
+              <span>{{ getConceptoSolicitud(detalleSolicitud()!) }}</span>
+              <span class="text-white/30">·</span>
+              <span>S-{{ detalleSolicitud()!.id }}</span>
+            </div>
+          </div>
+
+          <!-- Separador vertical -->
+          <div class="dv-hero-divider"></div>
+
+          <!-- Stats rápidos -->
+          <div class="dv-hero-stats">
+            <div class="dv-hero-stat">
+              <span class="dv-hero-stat-label">Total Viáticos</span>
+              <span class="dv-hero-stat-value text-[#FFB71B]">{{ formatCurrency(detalleSolicitud()!.totalGeneral) }}</span>
+            </div>
+            <div class="dv-hero-stat">
+              <span class="dv-hero-stat-label">Ítems de Gasto</span>
+              <span class="dv-hero-stat-value">{{ detalleSolicitud()!.items.length }}</span>
+            </div>
+            <div class="dv-hero-stat">
+              <span class="dv-hero-stat-label">Fecha</span>
+              <span class="dv-hero-stat-value text-sm">{{ detalleSolicitud()!.fechaCreacion.split(' ')[0] }}</span>
+            </div>
+            @if (detalleSolicitud()!.tramiteCompraId) {
+              <div class="dv-hero-stat dv-hero-stat--compras">
+                <span class="dv-hero-stat-label">Enviado a Contabilidad</span>
+                <span class="dv-hero-stat-value dv-compras-badge">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Reg. #{{ detalleSolicitud()!.tramiteCompraId }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TABS ══ -->
+      <div class="dv-modal-tabs">
+        <button class="dv-modal-tab" [class.dv-modal-tab--active]="detalleTab() === 'info'" (click)="detalleTab.set('info')">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          Información General
+        </button>
+        <button class="dv-modal-tab" [class.dv-modal-tab--active]="detalleTab() === 'items'" (click)="detalleTab.set('items')">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+          Ítems de Gasto
+          <span class="dv-tab-pill">{{ detalleSolicitud()!.items.length }}</span>
+        </button>
+      </div>
+
+      <!-- ══ MODAL BODY ══ -->
+      <div class="modal-body">
+
+        <!-- ── TAB: Información General ── -->
+        @if (detalleTab() === 'info') {
+          <div class="space-y-5">
+            <!-- Dos columnas en escritorio -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+              <!-- Card: Empresa -->
+              <div class="dv-section-card">
+                <div class="dv-section-header">
+                  <div class="dv-section-icon dv-icon-blue">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                  </div>
+                  <h4 class="dv-section-title">Datos de la Empresa</h4>
+                </div>
+                <div class="dv-field-grid">
+                  <div class="detail-field">
+                    <span class="detail-label">Tipo de Empresa</span>
+                    <span class="detail-value">{{ detalleSolicitud()!.tipoEmpresa }}</span>
+                  </div>
+                  <div class="detail-field">
+                    <span class="detail-label">Nombre</span>
+                    <span class="detail-value font-semibold">{{ detalleSolicitud()!.nombreEmpresa }}</span>
+                  </div>
+                  <div class="detail-field">
+                    <span class="detail-label">NIT</span>
+                    <span class="detail-value font-mono text-[#045C94]">{{ detalleSolicitud()!.nit }}</span>
+                  </div>
+                  <div class="detail-field">
+                    <span class="detail-label">Centro de Costo</span>
+                    <span class="detail-value">{{ detalleSolicitud()!.centroCosto || '—' }}</span>
+                  </div>
+                  <div class="detail-field">
+                    <span class="detail-label">Área / Dependencia</span>
+                    <span class="detail-value">{{ detalleSolicitud()!.areaDependencia || '—' }}</span>
+                  </div>
+                  <div class="detail-field">
+                    <span class="detail-label">Concepto</span>
+                    <span class="detail-value">{{ getConceptoSolicitud(detalleSolicitud()!) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card: Solicitante -->
+              <div class="dv-section-card">
+                <div class="dv-section-header">
+                  <div class="dv-section-icon dv-icon-purple">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                  </div>
+                  <h4 class="dv-section-title">Datos del Solicitante</h4>
+                </div>
+                <div class="dv-field-grid">
+                  <div class="detail-field col-span-2">
+                    <span class="detail-label">Nombre Completo</span>
+                    <span class="detail-value font-semibold text-[#213053]">{{ detalleSolicitud()!.nombreCompleto }}</span>
+                  </div>
+                  <div class="detail-field">
+                    <span class="detail-label">Cargo</span>
+                    <span class="detail-value">{{ detalleSolicitud()!.cargo }}</span>
+                  </div>
+                  <div class="detail-field">
+                    <span class="detail-label">Teléfono / Ext</span>
+                    <span class="detail-value">{{ detalleSolicitud()!.telefonoExt || '—' }}</span>
+                  </div>
+                  <div class="detail-field col-span-2">
+                    <span class="detail-label">Correo Electrónico</span>
+                    <span class="detail-value text-[#045C94]">{{ detalleSolicitud()!.correoElectronico }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card: Resumen Financiero (ancho completo, destacado) -->
+            <div class="dv-finance-card">
+              <div class="dv-section-header mb-3">
+                <div class="dv-section-icon dv-icon-gold">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <h4 class="dv-section-title">Resumen Financiero</h4>
+              </div>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="dv-finance-item">
+                  <span class="dv-finance-label">Subtotal Base</span>
+                  <span class="dv-finance-value">{{ formatCurrency(detalleSolicitud()!.subtotalBase) }}</span>
+                </div>
+                <div class="dv-finance-item">
+                  <span class="dv-finance-label">Total IVA</span>
+                  <span class="dv-finance-value">{{ formatCurrency(detalleSolicitud()!.totalIva) }}</span>
+                </div>
+                <div class="dv-finance-item dv-finance-item--total">
+                  <span class="dv-finance-label">Total General</span>
+                  <span class="dv-finance-total">{{ formatCurrency(detalleSolicitud()!.totalGeneral) }}</span>
+                </div>
+              </div>
+            </div>
+
+            @if (detalleSolicitud()!.observaciones) {
+              <div class="dv-obs-card">
+                <div class="dv-section-header mb-2">
+                  <div class="dv-section-icon dv-icon-gray">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                    </svg>
+                  </div>
+                  <h4 class="dv-section-title">Observaciones del Solicitante</h4>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed">{{ detalleSolicitud()!.observaciones }}</p>
+              </div>
+            }
+
+            @if (detalleSolicitud()!.observacionesGerencia) {
+              <div class="dv-obs-card dv-obs-card--gerencia">
+                <div class="dv-section-header mb-2">
+                  <div class="dv-section-icon dv-icon-blue">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                  </div>
+                  <h4 class="dv-section-title">Decisión de Gerencia</h4>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed">{{ detalleSolicitud()!.observacionesGerencia }}</p>
+                <div class="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                  <span>Revisado por: <strong class="text-gray-600">{{ detalleSolicitud()!.revisadoPor }}</strong></span>
+                  <span class="text-gray-300">·</span>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  <span>{{ detalleSolicitud()!.fechaDecision }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ── TAB: Ítems de Gasto ── -->
+        @if (detalleTab() === 'items') {
+          <div>
+            @if (!detalleSolicitud()!.items || detalleSolicitud()!.items.length === 0) {
+              <div class="text-center py-10 text-gray-400">No hay ítems registrados.</div>
+            } @else {
+              @if (isAdelantoSolicitud(detalleSolicitud()!)) {
+                <div class="adelanto-contexto-card mb-3">
+                  <div class="adelanto-contexto-title">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                    </svg>
+                    Contexto del anticipo solicitado
+                  </div>
+                  @if (detalleSolicitud()!.observaciones) {
+                    <p class="adelanto-contexto-text">{{ detalleSolicitud()!.observaciones }}</p>
+                  } @else {
+                    <p class="adelanto-contexto-text text-gray-500">Sin observaciones generales del anticipo.</p>
+                  }
+                </div>
+              }
+
+              <div class="space-y-3">
+                @for (item of detalleSolicitud()!.items; track $index) {
+                  <div class="item-gasto-card">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="item-tipo-badge">{{ item.tipoViatico }}</span>
+                      <span class="font-bold text-[#045C94]">{{ formatCurrency(item.valorTotal) }}</span>
+                    </div>
+
+                    @if (isAdelantoSolicitud(detalleSolicitud()!)) {
+                      <div class="adelanto-item-contexto mb-2">
+                        <p class="text-xs font-semibold text-[#1f2937] uppercase tracking-wide mb-1">Concepto del anticipo</p>
+                        <p class="text-sm text-gray-700 mb-2">{{ item.conceptoDetallado || 'Sin concepto registrado' }}</p>
+                        <p class="text-xs font-semibold text-[#1f2937] uppercase tracking-wide mb-1">Detalle / justificación</p>
+                        <p class="text-sm text-gray-700">{{ hasObservacionItem(item) ? item.observacionItem : 'Sin detalle adicional registrado' }}</p>
+                      </div>
+                    } @else {
+                      <p class="text-sm text-gray-700 mb-2">{{ item.conceptoDetallado }}</p>
+                    }
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <span class="text-gray-400">Fecha</span>
+                        <p class="font-medium text-gray-700">{{ item.fechaGasto }}</p>
+                      </div>
+                      <div>
+                        <span class="text-gray-400">Valor base</span>
+                        <p class="font-medium text-gray-700">{{ formatCurrency(item.valorBase) }}</p>
+                      </div>
+                      <div>
+                        <span class="text-gray-400">IVA ({{ item.porcentajeIva }}%)</span>
+                        <p class="font-medium text-gray-700">{{ formatCurrency(item.valorIva) }}</p>
+                      </div>
+                      <div>
+                        <span class="text-gray-400">Aplica IVA</span>
+                        <p class="font-medium" [class.text-green-600]="item.aplicaIva" [class.text-gray-400]="!item.aplicaIva">
+                          {{ item.aplicaIva ? 'Sí' : 'No' }}
+                        </p>
+                      </div>
+                    </div>
+                    <!-- Soporte del ítem (viene del campo soporteUrl de cada ítem) -->
+                    @if (item.soporteUrl) {
+                      <div class="mt-3 pt-3 border-t border-gray-100 flex items-center gap-3">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center"
+                          [class.bg-red-50]="isPdf(item.soporteUrl)"
+                          [class.bg-blue-50]="!isPdf(item.soporteUrl)">
+                          @if (isPdf(item.soporteUrl)) {
+                            <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M9 13h6M9 16h4"/>
+                            </svg>
+                          } @else {
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                          }
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs font-medium text-gray-700 truncate">{{ getFileNameFromUrl(item.soporteUrl) }}</p>
+                          <p class="text-xs text-gray-400">Soporte adjunto · {{ isPdf(item.soporteUrl) ? 'PDF' : 'Imagen' }}</p>
+                        </div>
+                        <a [href]="item.soporteUrl" target="_blank" rel="noopener noreferrer"
+                          class="flex-shrink-0 flex items-center gap-1 text-xs font-medium text-[#045C94] hover:text-[#213053] transition-colors px-2.5 py-1.5 rounded-lg hover:bg-[#045C94]/5">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                          </svg>
+                          Ver
+                        </a>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Totales finales -->
+                <div class="bg-gradient-to-r from-[#045C94]/5 to-[#213053]/5 rounded-xl p-4 border border-[#045C94]/10">
+                  <div class="flex justify-between items-center text-sm mb-1">
+                    <span class="text-gray-500">Subtotal base</span>
+                    <span class="font-medium">{{ formatCurrency(detalleSolicitud()!.subtotalBase) }}</span>
+                  </div>
+                  <div class="flex justify-between items-center text-sm mb-2">
+                    <span class="text-gray-500">Total IVA</span>
+                    <span class="font-medium">{{ formatCurrency(detalleSolicitud()!.totalIva) }}</span>
+                  </div>
+                  <div class="flex justify-between items-center border-t border-[#045C94]/10 pt-2">
+                    <span class="font-bold text-gray-800">TOTAL GENERAL</span>
+                    <span class="font-bold text-xl text-[#045C94]">{{ formatCurrency(detalleSolicitud()!.totalGeneral) }}</span>
+                  </div>
+                </div>
+
+                <!-- Soportes adicionales generales (no asociados a ítems específicos) -->
+                @if (detalleSolicitud()!.soportePrincipalUrl || (soportesAdicionalesArr().length > detalleSolicitud()!.items.length)) {
+                  <div class="mt-2">
+                    <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Soportes Adicionales Generales</h5>
+                    <div class="space-y-2">
+                      @if (detalleSolicitud()!.soportePrincipalUrl) {
+                        <div class="archivo-card">
+                          <div class="archivo-icon">
+                            @if (isPdf(detalleSolicitud()!.soportePrincipalUrl)) {
+                              <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/></svg>
+                            } @else {
+                              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            }
+                          </div>
+                          <div class="archivo-info">
+                            <span class="archivo-name">{{ getFileNameFromUrl(detalleSolicitud()!.soportePrincipalUrl) }}</span>
+                            <span class="archivo-type">{{ isPdf(detalleSolicitud()!.soportePrincipalUrl) ? 'PDF' : 'Imagen' }}</span>
+                          </div>
+                          <a [href]="detalleSolicitud()!.soportePrincipalUrl" target="_blank" rel="noopener noreferrer" class="btn-download">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            Abrir
+                          </a>
+                        </div>
+                      }
+                      @for (url of soportesAdicionalesArr().slice(detalleSolicitud()!.items.length); track url) {
+                        <div class="archivo-card">
+                          <div class="archivo-icon">
+                            @if (isPdf(url)) {
+                              <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z"/></svg>
+                            } @else {
+                              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            }
+                          </div>
+                          <div class="archivo-info">
+                            <span class="archivo-name">{{ getFileNameFromUrl(url) }}</span>
+                            <span class="archivo-type">{{ isPdf(url) ? 'PDF' : 'Imagen' }}</span>
+                          </div>
+                          <a [href]="url" target="_blank" rel="noopener noreferrer" class="btn-download">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            Abrir
+                          </a>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button (click)="cerrarDetalle()" class="btn-secondary">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Cerrar
+        </button>
+        @if (canDecidir(detalleSolicitud()!)) {
+          <button (click)="cerrarDetalle(); abrirDecision(detalleSolicitud()!, 'RECHAZAR')" class="btn-danger-outline">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Rechazar
+          </button>
+          <button (click)="cerrarDetalle(); abrirDecision(detalleSolicitud()!, 'APROBAR')" class="btn-success">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Aprobar Solicitud
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL DECISIÓN (APROBAR / RECHAZAR)
+══════════════════════════════════════════════════════ -->
+@if (showDecisionModal() && decisionSolicitud()) {
+  <div class="dm-backdrop" (click)="cerrarDecision()">
+    <div class="dm-panel" (click)="$event.stopPropagation()">
+
+      <!-- ── Hero header ── -->
+      <div class="dm-hero"
+        [class.dm-hero--aprobar]="decisionAccion() === 'APROBAR'"
+        [class.dm-hero--rechazar]="decisionAccion() === 'RECHAZAR'"
+      >
+        <div class="dm-hero-icon"
+          [class.dm-hero-icon--aprobar]="decisionAccion() === 'APROBAR'"
+          [class.dm-hero-icon--rechazar]="decisionAccion() === 'RECHAZAR'"
+        >
+          @if (decisionAccion() === 'APROBAR') {
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+          } @else {
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          }
+        </div>
+        <div class="dm-hero-text">
+          <h2 class="dm-hero-title">
+            {{ decisionAccion() === 'APROBAR' ? 'Aprobar Solicitud' : 'Rechazar Solicitud' }}
+          </h2>
+          <p class="dm-hero-sub">{{ decisionSolicitud()!.nombreCompleto }}</p>
+        </div>
+        <button (click)="cerrarDecision()" [disabled]="decisionProcessing()" class="dm-close">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- ── Body ── -->
+      <div class="dm-body">
+
+        <!-- Resumen -->
+        <div class="dm-summary">
+          <div class="dm-summary-row">
+            <span class="dm-summary-label">Empresa</span>
+            <span class="dm-summary-value">{{ decisionSolicitud()!.nombreEmpresa }}</span>
+          </div>
+          <div class="dm-summary-row">
+            <span class="dm-summary-label">Ciudad</span>
+            <span class="dm-summary-value">{{ decisionSolicitud()!.ciudad }}</span>
+          </div>
+          <div class="dm-summary-divider"></div>
+          <div class="dm-summary-row">
+            <span class="dm-summary-label">Total solicitud</span>
+            <span class="dm-summary-total">{{ formatCurrency(decisionSolicitud()!.totalGeneral) }}</span>
+          </div>
+          <div class="dm-summary-row">
+            <span class="dm-summary-label">Ítems de gasto</span>
+            <span class="dm-summary-value">{{ decisionSolicitud()!.items.length }} ítem(s)</span>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="dm-field">
+          <label class="dm-field-label">
+            Observaciones
+            @if (decisionAccion() === 'RECHAZAR') {
+              <span class="dm-field-required">· requerida para rechazo</span>
+            }
+          </label>
+          <textarea
+            [value]="decisionObservaciones()"
+            (input)="decisionObservaciones.set($any($event.target).value)"
+            rows="3"
+            class="dm-textarea"
+            [placeholder]="decisionAccion() === 'RECHAZAR' ? 'Indique el motivo del rechazo...' : 'Observaciones adicionales (opcional)...'"
+          ></textarea>
+        </div>
+
+        <!-- Confirmación rechazo -->
+        @if (showConfirmRechazo()) {
+          <div class="dm-confirm-rechazo">
+            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <div>
+              <p class="dm-confirm-title">¿Confirmar rechazo?</p>
+              <p class="dm-confirm-text">Esta acción no se puede deshacer. La solicitud quedará marcada como rechazada.</p>
+            </div>
+          </div>
+        }
+
+      </div>
+
+      <!-- ── Footer ── -->
+      <div class="dm-footer">
+        <button (click)="cerrarDecision()" [disabled]="decisionProcessing()" class="dm-btn-cancel">
+          Cancelar
+        </button>
+        <button
+          (click)="confirmarDecision()"
+          [disabled]="decisionProcessing()"
+          class="dm-btn-confirm"
+          [class.dm-btn-confirm--aprobar]="decisionAccion() === 'APROBAR'"
+          [class.dm-btn-confirm--rechazar]="decisionAccion() === 'RECHAZAR'"
+        >
+          @if (decisionProcessing()) {
+            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            Procesando...
+          } @else if (decisionAccion() === 'APROBAR') {
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+            Aprobar Solicitud
+          } @else if (showConfirmRechazo()) {
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Confirmar Rechazo
+          } @else {
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Rechazar
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

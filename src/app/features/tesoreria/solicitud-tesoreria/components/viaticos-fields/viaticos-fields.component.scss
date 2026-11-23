@@ -1,0 +1,1606 @@
+/* ═══════════════════════════════════════════════════════
+   VIÁTICOS FIELDS — Professional Finance Theme
+   Matches app palette: primary #213053, accent #045C94
+   ═══════════════════════════════════════════════════════ */
+
+// ─── Variables (same as the rest of the app) ───────────
+$primary:      #213053;
+$primary-dark: #1b2844;
+$primary-light:#2d4270;
+$accent:       #045C94;
+$accent-light: #0874b8;
+$accent-50:    #e8f4fc;
+$gold:         #FFB71B;
+$gold-light:   #fef3c7;
+$success:      #10b981;
+$gray-50:      #f9fafb;
+$gray-100:     #f3f4f6;
+$gray-200:     #e5e7eb;
+$gray-300:     #d1d5db;
+$gray-400:     #9ca3af;
+$gray-500:     #6b7280;
+$gray-600:     #4b5563;
+$white:        #ffffff;
+
+$radius:    16px;
+$radius-sm: 12px;
+$radius-xs: 8px;
+$shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 6px 18px rgba(0, 0, 0, 0.05);
+$shadow-hover: 0 8px 30px rgba($primary, 0.12);
+$transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// ─── Animations ────────────────────────────────────────
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.92) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes rowSlideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba($accent, 0.25); }
+  50%      { box-shadow: 0 0 0 8px rgba($accent, 0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes checkPop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes iconBounce {
+  0%   { transform: scale(0.6) rotate(-6deg); opacity: 0; }
+  60%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes flowFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-card {
+  animation: cardSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.animate-row {
+  animation: rowSlideIn 0.35s ease both;
+}
+.animate-modal {
+  animation: modalFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+// ─── Layout ────────────────────────────────────────────
+.viat-wrapper {
+  padding: 4px 0 0;
+}
+
+.animate-flow-enter {
+  animation: flowFadeIn 0.45s ease both;
+}
+
+.viat-flow-entry {
+  margin-bottom: 18px;
+  padding: 0;
+  border-radius: $radius;
+  border: 1.5px solid rgba($accent, 0.26);
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: $shadow-card;
+
+  &__header {
+    background: linear-gradient(135deg, $primary-dark 0%, $primary 55%, $primary-light 100%);
+    padding: 12px 22px 14px;
+  }
+
+  &__eyebrow {
+    display: inline-block;
+    margin: 0 0 8px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $gold;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &__title {
+    margin: 0;
+    padding: 0;
+    font-size: clamp(20px, 2.7vw, 28px);
+    line-height: 1.1;
+    font-weight: 800;
+    color: $white;
+    letter-spacing: -0.01em;
+  }
+
+  &__subtitle {
+    margin: 12px 22px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: $gray-600;
+    max-width: 760px;
+  }
+
+  &__meta {
+    margin: 0 22px 16px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+
+    @media (max-width: 920px) {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 720px) {
+      margin: 0 16px 14px;
+    }
+  }
+
+  &__meta-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    border: 1px solid rgba($accent, 0.15);
+    border-radius: 10px;
+    background: linear-gradient(150deg, #ffffff, #f8fbff);
+    padding: 9px 10px;
+  }
+
+  &__meta-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: rgba($accent, 0.1);
+    color: $accent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__meta-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+      font-size: 11.5px;
+      color: $primary;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    small {
+      font-size: 10.5px;
+      color: $gray-600;
+      line-height: 1.3;
+    }
+  }
+
+  &__actions {
+    margin: 12px 22px 18px;
+    display: flex;
+    justify-content: flex-end;
+
+    @media (max-width: 720px) {
+      margin: 12px 16px 16px;
+      justify-content: stretch;
+    }
+  }
+
+  &__continue {
+    border: none;
+    border-radius: 999px;
+    padding: 11px 18px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: $white;
+    background: linear-gradient(130deg, $primary 0%, $accent 100%);
+    box-shadow: 0 10px 24px -12px rgba($accent, 0.6);
+    cursor: pointer;
+    transition: transform $transition, box-shadow $transition;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px -12px rgba($accent, 0.68);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 720px) {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+.viat-mode-select {
+  margin-bottom: 18px;
+  padding: 18px;
+  border-radius: $radius;
+  border: 1.5px solid rgba($accent, 0.16);
+  background:
+    radial-gradient(circle at 90% 90%, rgba($accent, 0.06), transparent 35%),
+    linear-gradient(145deg, #ffffff 0%, #ffffff 100%);
+  box-shadow: $shadow-card;
+
+  &--entry {
+    margin: 0 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+
+    @media (max-width: 720px) {
+      margin: 0 16px;
+    }
+  }
+
+  &__eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $accent;
+    margin-bottom: 10px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: stretch;
+
+    &--single {
+      grid-template-columns: 1fr;
+    }
+
+    @media (max-width: 720px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__card {
+    text-align: left;
+    border: 1.5px solid rgba($primary, 0.34);
+    border-radius: $radius-sm;
+    background: linear-gradient(155deg, $primary-dark 0%, $primary 60%, $primary-light 100%);
+    padding: 14px 14px 12px;
+    min-height: 108px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    cursor: pointer;
+    transition: border-color $transition, transform $transition, box-shadow $transition;
+
+    &:hover {
+      border-color: rgba($accent, 0.56);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba($primary, 0.26);
+    }
+
+    &--active {
+      border-color: rgba($accent, 0.82);
+      background: linear-gradient(160deg, #20314f 0%, #2a4675 70%, #0d5f92 100%);
+      box-shadow: 0 10px 20px rgba($accent, 0.24);
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    width: fit-content;
+    max-width: max-content;
+    padding: 3px 8px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6a4800;
+    background: linear-gradient(135deg, #ffe7b5, #ffd27a);
+  }
+
+  &__title {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: $white;
+    margin-bottom: 4px;
+  }
+
+  &__text {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.84);
+    line-height: 1.4;
+    margin-top: auto;
+  }
+
+  &__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  &__back {
+    border: 1px solid rgba($accent, 0.3);
+    border-radius: 999px;
+    background: rgba($accent, 0.06);
+    color: $accent;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: all $transition;
+
+    &:hover {
+      background: rgba($accent, 0.11);
+      border-color: rgba($accent, 0.42);
+    }
+  }
+}
+
+.viat-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.viat-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.viat-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+
+  // Hide scrollbar but keep scrolling
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  @media (max-width: 1024px) {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    flex-direction: row;
+    & > * { flex: 1; min-width: 0; }
+  }
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
+}
+
+// ─── Cards ─────────────────────────────────────────────
+.viat-card {
+  background: $white;
+  border-radius: $radius;
+  border: 1.5px solid $gray-200;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+  transition: box-shadow $transition, border-color $transition, transform $transition;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+    border-color: rgba($accent, 0.25);
+    transform: translateY(-2px);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, $primary-dark 0%, $primary-light 100%);
+    position: relative;
+    overflow: hidden;
+
+    // Shimmer overlay
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    &--between {
+      justify-content: space-between;
+    }
+
+    &-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    &-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: $radius-sm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      animation: iconBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+      position: relative;
+      z-index: 1;
+
+      &--empresa {
+        background: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.9);
+      }
+      &--solicitante {
+        background: rgba(255, 255, 255, 0.15);
+        color: $gold;
+      }
+      &--items {
+        background: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.9);
+      }
+      &--docs {
+        background: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.85);
+      }
+      &--obs {
+        background: rgba(255, 255, 255, 0.15);
+        color: rgba(255, 255, 255, 0.85);
+      }
+    }
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 700;
+    color: $white;
+    letter-spacing: -0.01em;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.65);
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__body {
+    padding: 22px;
+  }
+}
+
+// ─── Form Grid ─────────────────────────────────────────
+.viat-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ─── Form Fields ───────────────────────────────────────
+.viat-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.viat-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: $primary;
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &__icon {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba($accent, 0.08);
+    color: $accent;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  &--accent {
+    color: $accent;
+    font-weight: 700;
+  }
+}
+
+.viat-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: $gray-50;
+  border: 1.5px solid $gray-200;
+  border-radius: $radius-xs;
+  font-size: 13.5px;
+  color: $primary;
+  outline: none;
+  transition: all $transition;
+  font-family: inherit;
+  min-height: 40px;
+
+  &::placeholder { color: $gray-400; }
+
+  &:focus {
+    border-color: $accent;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba($accent, 0.1), 0 2px 8px rgba($accent, 0.06);
+  }
+
+  &:hover:not(:disabled):not(:focus) {
+    border-color: rgba($accent, 0.35);
+    background: $white;
+  }
+
+  &--readonly {
+    background: $gray-100;
+    border-color: $gray-200;
+    color: $gray-500;
+    cursor: default;
+
+    &:focus, &:hover { border-color: $gray-200; box-shadow: none; background: $gray-100; }
+  }
+
+  &--currency {
+    padding-left: 28px;
+  }
+
+  &--total {
+    font-weight: 700;
+    color: $primary;
+    font-size: 15px;
+  }
+}
+
+.viat-select-wrap {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-size: contain;
+    pointer-events: none;
+  }
+}
+
+.viat-select {
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  background: $gray-50;
+  border: 1.5px solid $gray-200;
+  border-radius: $radius-xs;
+  font-size: 13.5px;
+  color: $primary;
+  outline: none;
+  transition: all $transition;
+  appearance: none;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 40px;
+
+  &:focus {
+    border-color: $accent;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba($accent, 0.1);
+  }
+}
+
+.viat-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: $gray-50;
+  border: 1.5px solid $gray-200;
+  border-radius: $radius-xs;
+  font-size: 13.5px;
+  color: $primary;
+  outline: none;
+  transition: all $transition;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  line-height: 1.6;
+
+  &::placeholder { color: $gray-400; }
+
+  &:focus {
+    border-color: $accent;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba($accent, 0.1);
+  }
+}
+
+.viat-char-count {
+  font-size: 11.5px;
+  color: $gray-400;
+  text-align: right;
+  margin-top: 4px;
+}
+
+// ─── Currency wrap ─────────────────────────────────────
+.viat-currency-wrap {
+  position: relative;
+
+  &--readonly {
+    opacity: 0.7;
+  }
+
+  &--total {
+    .viat-input { font-weight: 700; color: $primary; font-size: 15px; }
+  }
+}
+
+.viat-currency-prefix {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $gray-500;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.viat-currency-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $gray-500;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+// ─── Add Button ────────────────────────────────────────
+.viat-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  color: $white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition;
+  position: relative;
+  z-index: 1;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active { transform: scale(0.97); }
+}
+
+// ─── Empty State ───────────────────────────────────────
+.viat-empty {
+  text-align: center;
+  padding: 40px 20px;
+
+  &__icon {
+    font-size: 42px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: $gray-400;
+    font-weight: 500;
+  }
+}
+
+.viat-inline-adelanto {
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: $radius-sm;
+  border: 1px solid rgba($accent, 0.18);
+  background: linear-gradient(155deg, #ffffff 0%, #f7fbff 100%);
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+
+    @media (max-width: 760px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  &__btn {
+    border: none;
+    border-radius: 999px;
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: $white;
+    background: linear-gradient(130deg, $primary 0%, $accent 100%);
+    box-shadow: 0 8px 18px -12px rgba($accent, 0.6);
+    cursor: pointer;
+    transition: transform $transition, box-shadow $transition, opacity $transition;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px -10px rgba($accent, 0.66);
+    }
+
+    &:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+  }
+
+  &__limit-note {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba($accent, 0.18);
+    background: rgba($accent, 0.06);
+    color: $primary;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+}
+
+.viat-adelanto-form {
+  margin-bottom: 14px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: linear-gradient(120deg, rgba($accent, 0.08), rgba($accent, 0.03));
+    border: 1px solid rgba($accent, 0.14);
+  }
+
+  &__head-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: $accent;
+    background: rgba($accent, 0.12);
+    flex-shrink: 0;
+  }
+
+  &__head-title {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 800;
+    color: $primary;
+  }
+
+  &__head-subtitle {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    color: $gray-600;
+    line-height: 1.35;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+
+    @media (max-width: 760px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__total-preview {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: $gray-600;
+
+    strong {
+      color: $accent;
+      font-weight: 800;
+    }
+  }
+
+  &__hint {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba($accent, 0.14);
+    background: rgba($accent, 0.05);
+    color: $primary;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+}
+
+// ─── Items Table ───────────────────────────────────────
+.viat-table-wrap {
+  overflow-x: auto;
+  border-radius: $radius-xs;
+  border: 1px solid $gray-200;
+}
+
+.viat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  thead {
+    background: linear-gradient(135deg, $accent-50, rgba($accent, 0.04));
+
+    th {
+      padding: 12px 14px;
+      font-weight: 700;
+      color: $primary;
+      text-align: left;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 2px solid rgba($accent, 0.15);
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $gray-100;
+      transition: background $transition;
+
+      &:hover { background: rgba($accent, 0.03); }
+      &:last-child { border-bottom: none; }
+    }
+
+    td {
+      padding: 12px 14px;
+      color: $gray-600;
+    }
+  }
+
+  tfoot {
+    background: $accent-50;
+
+    td {
+      padding: 14px;
+    }
+  }
+
+  .text-right { text-align: right; }
+}
+
+.viat-table__date {
+  font-variant-numeric: tabular-nums;
+  color: $gray-500;
+  font-size: 12.5px;
+}
+
+.viat-table__total {
+  font-weight: 700;
+  color: $primary;
+}
+
+.viat-table__grand-total {
+  font-weight: 800;
+  color: $accent;
+  font-size: 14px;
+}
+
+// ─── Badge ─────────────────────────────────────────────
+.viat-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 12px;
+  background: linear-gradient(135deg, rgba($accent, 0.1), rgba($accent, 0.06));
+  color: $accent;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+// ─── Remove Button ──────────────────────────────────────────────────
+.viat-table__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.viat-btn-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: $gray-400;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all $transition;
+
+  &:hover {
+    background: rgba($accent, 0.1);
+    color: $accent;
+    transform: scale(1.1);
+  }
+}
+
+.viat-btn-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: $gray-400;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all $transition;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    transform: scale(1.1);
+  }
+}
+
+// ─── File Upload ───────────────────────────────────────
+.viat-file-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.viat-file-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, $primary, $accent);
+  color: $white;
+  border: none;
+  border-radius: $radius-xs;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition;
+
+  &:hover {
+    background: linear-gradient(135deg, $primary-dark, $primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($primary, 0.25);
+  }
+
+  &--secondary {
+    background: $gray-100;
+    color: $gray-600;
+    border: 1.5px solid $gray-200;
+
+    &:hover {
+      background: $gray-200;
+      box-shadow: none;
+    }
+  }
+}
+
+.viat-file-name {
+  font-size: 12.5px;
+  color: $gray-400;
+  font-style: italic;
+}
+
+.viat-files-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.viat-file-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: $accent-50;
+  border: 1px solid rgba($accent, 0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  color: $primary;
+
+  &__remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: none;
+    background: rgba($primary, 0.1);
+    color: $primary;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: all $transition;
+
+    &:hover { background: #ef4444; color: $white; }
+  }
+}
+
+// ─── Full-Gradient Panels (ResultPanel style) ──────────
+.viat-panel {
+  border-radius: $radius;
+  padding: 28px 22px 24px;
+  position: relative;
+  text-align: center;
+  color: $white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  transition: box-shadow $transition, transform $transition;
+  word-break: break-word;
+  overflow-wrap: break-word;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  }
+
+  // ── Decorative light overlay
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% -10%, rgba(255,255,255,0.12) 0%, transparent 50%),
+      radial-gradient(circle at 90% 90%, rgba(255,255,255,0.05) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // ── Summary: deep navy → blue gradient
+  &--summary {
+    background: linear-gradient(165deg, $primary 0%, $primary-dark 40%, $accent 100%);
+  }
+
+  // ── Checklist: navy → teal gradient
+  &--checklist {
+    background: linear-gradient(165deg, $primary 0%, #1a3a5c 45%, $accent 100%);
+  }
+
+  // ── Icon at top center
+  &__icon-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+  }
+
+  // ── Eyebrow
+  &__eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: $gold;
+    margin: 0 0 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  // ── Title
+  &__title {
+    font-size: 20px;
+    font-weight: 800;
+    color: $white;
+    margin: 0 0 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  // ── Formula / subtitle
+  &__formula {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  // ── Divider line
+  &__divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.15);
+    margin: 16px 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  // ── Empty state
+  &__empty {
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    padding: 12px 0 4px;
+    position: relative;
+    z-index: 1;
+  }
+
+  // ── Grand value (big number)
+  &__grand-value {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 800;
+    color: $white;
+    letter-spacing: -0.02em;
+    margin: 4px 0 0;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    word-break: break-all;
+  }
+
+  // ── Section label (INGRESOS, EGRESOS style)
+  &__section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: $gold;
+    margin: 0 0 8px;
+    text-align: left;
+    position: relative;
+    z-index: 1;
+  }
+
+  // ── Data row
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.75);
+    position: relative;
+    z-index: 1;
+    text-align: left;
+    gap: 8px;
+    min-width: 0;
+
+    &--highlight {
+      color: $white;
+      font-weight: 700;
+      font-size: 14px;
+    }
+  }
+
+  &__row-val {
+    font-weight: 700;
+    color: $white;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+// ─── Checklist Items (on gradient) ─────────────────────
+.viat-panel-check {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: left;
+  position: relative;
+  z-index: 1;
+  transition: color $transition;
+
+  &__dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+    transition: all $transition;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::after {
+      content: '✓';
+      font-size: 11px;
+      font-weight: 700;
+      color: $white;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all $transition;
+    }
+  }
+
+  &--done {
+    color: $white;
+    font-weight: 600;
+
+    .viat-panel-check__dot {
+      border-color: $gold;
+      background: $gold;
+      animation: checkPop 0.4s ease both;
+
+      &::after {
+        opacity: 1;
+        transform: scale(1);
+        color: $primary;
+      }
+    }
+  }
+}
+
+// ─── Modal ─────────────────────────────────────────────
+.viat-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.viat-modal {
+  background: $white;
+  border-radius: $radius;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, $primary-dark, $primary-light);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    &-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    &-icon {
+      font-size: 24px;
+    }
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $white;
+  }
+
+  &__subtitle {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 2px;
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: $white;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all $transition;
+    position: relative;
+    z-index: 1;
+
+    &:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); }
+  }
+
+  &__body {
+    padding: 24px;
+  }
+
+  &__row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    @media (max-width: 480px) { flex-direction: column; }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid $gray-100;
+    background: $gray-50;
+    border-radius: 0 0 $radius $radius;
+  }
+
+  &__btn {
+    padding: 10px 24px;
+    border-radius: $radius-xs;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all $transition;
+    border: none;
+
+    &--cancel {
+      background: $gray-100;
+      color: $gray-600;
+      border: 1.5px solid $gray-200;
+
+      &:hover { background: $gray-200; }
+    }
+
+    &--add {
+      background: linear-gradient(135deg, $primary, $accent);
+      color: $white;
+      box-shadow: 0 2px 8px rgba($primary, 0.3);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, $primary-dark, $primary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba($primary, 0.35);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    &--danger {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: $white;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, #b91c1c, #dc2626);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+      }
+    }
+  }
+}
+
+// ─── Exit Confirmation Overlay ─────────────────────────────────────
+.viat-confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba($primary-dark, 0.72);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius;
+  z-index: 10;
+}
+
+.viat-confirm-box {
+  background: $white;
+  border-radius: $radius-sm;
+  padding: 32px 28px 24px;
+  text-align: center;
+  max-width: 340px;
+  width: 90%;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+}
+
+.viat-confirm-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.viat-confirm-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: $primary;
+  margin-bottom: 8px;
+}
+
+.viat-confirm-msg {
+  font-size: 13.5px;
+  color: $gray-500;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.viat-confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+// ─── Values Section ────────────────────────────────────
+.viat-values-section {
+  margin-top: 20px;
+  padding: 18px;
+  background: linear-gradient(135deg, $accent-50, rgba($accent, 0.04));
+  border: 1.5px solid rgba($accent, 0.15);
+  border-radius: $radius-sm;
+}
+
+.viat-values-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: $primary;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.viat-values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ─── Auto-fill badge and wrapper ───────────────────────
+.viat-autofill-wrap {
+  position: relative;
+
+  .viat-autofill-badge {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, $accent, $accent-light);
+    color: $white;
+    pointer-events: none;
+  }
+
+  .viat-input {
+    padding-right: 52px;
+  }
+}
+
+// ─── Auto-fill info banner ──────────────────────────────
+.viat-autofill-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: $accent-50;
+  border: 1px solid rgba($accent, 0.25);
+  border-radius: $radius-xs;
+  font-size: 12.5px;
+  color: $accent;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 1px;
+    color: $accent;
+  }
+}
+
+// ─── Full-width field in a 2-col grid ──────────────────
+.viat-field--full {
+  grid-column: span 2;
+
+  @media (max-width: 640px) {
+    grid-column: span 1;
+  }
+}

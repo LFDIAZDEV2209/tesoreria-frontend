@@ -1,0 +1,169 @@
+<div class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3">
+  <div class="space-y-5 max-w-[1200px] mx-auto">
+
+    <!-- Miga -->
+    <div class="flex items-center gap-2 text-sm text-gray-400">
+      <span>Configuraciones Superadmin</span>
+      <span>›</span>
+      <span class="font-semibold text-[#045C94]">Roles y Permisos</span>
+    </div>
+
+    <!-- Header -->
+    <app-gp-page-header icono="shield" eyebrow="Gestor Presupuestal"
+                        titulo="Roles y Permisos"
+                        descripcion="Elige un rol y marca qué puede hacer cada persona en el sistema"
+                        chip="solo superadmin">
+    </app-gp-page-header>
+
+    <div *ngIf="error()">
+      <app-gp-error-state [mensaje]="error()!" (reintentar)="cargar()"></app-gp-error-state>
+    </div>
+
+    <div *ngIf="loading()">
+      <app-gp-skeleton tipo="table"></app-gp-skeleton>
+    </div>
+
+    <ng-container *ngIf="!loading() && !error()">
+
+      <!-- ══ Paso 1 · Elegir el rol ══ -->
+      <div>
+        <p class="paso-titulo">
+          <span class="paso-numero">1</span>
+          Elige el rol que quieres configurar
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <button *ngFor="let r of roles()" type="button"
+                  class="rol-tab"
+                  [class.rol-tab--activo]="r.rol === rolSeleccionado()"
+                  [ngClass]="'rol-tab--' + r.rol"
+                  (click)="seleccionarRol(r.rol)">
+            <span class="rol-tab__check" *ngIf="r.rol === rolSeleccionado()">
+              <app-gp-icon name="check" [size]="13"></app-gp-icon>
+            </span>
+            <span class="flex items-center gap-3">
+              <span class="rol-tab__avatar">{{ r.nombre.charAt(0) }}</span>
+              <span class="min-w-0 flex-1 text-left">
+                <span class="rol-tab__nombre">{{ r.nombre }}</span>
+                <span class="rol-tab__desc">{{ r.descripcion }}</span>
+              </span>
+            </span>
+            <span class="rol-tab__pie">
+              <span class="rol-tab__barra">
+                <span class="rol-tab__barra-fill"
+                      [style.width.%]="totalPermisos() ? (habilitadosDe(r.rol) * 100 / totalPermisos()) : 0"></span>
+              </span>
+              <span class="rol-tab__conteo">{{ habilitadosDe(r.rol) }} de {{ totalPermisos() }} permisos</span>
+              <span *ngIf="cambiosDe(r.rol) > 0" class="rol-tab__pendiente">
+                {{ cambiosDe(r.rol) }} sin guardar
+              </span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ Paso 2 · Ajustar los permisos ══ -->
+      <div>
+        <p class="paso-titulo">
+          <span class="paso-numero">2</span>
+          Activa o desactiva lo que puede hacer <b class="text-[#213053]">{{ rolActual()?.nombre }}</b>
+        </p>
+
+        <!-- Barra de herramientas (fija al hacer scroll) -->
+        <div class="toolbar">
+          <label class="toolbar__buscador">
+            <app-gp-icon name="search" [size]="15"></app-gp-icon>
+            <input type="text" placeholder="Buscar permiso…" autocomplete="off"
+                   [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" />
+            <button *ngIf="busqueda()" type="button" title="Limpiar búsqueda" (click)="limpiarBusqueda()">
+              <app-gp-icon name="x" [size]="13"></app-gp-icon>
+            </button>
+          </label>
+
+          <div class="toolbar__acciones-rapidas">
+            <button type="button" class="btn-mini" (click)="toggleVisibles(true)">
+              <app-gp-icon name="check" [size]="13"></app-gp-icon>
+              Habilitar todos
+            </button>
+            <button type="button" class="btn-mini btn-mini--peligro" (click)="toggleVisibles(false)">
+              <app-gp-icon name="ban" [size]="13"></app-gp-icon>
+              Deshabilitar todos
+            </button>
+          </div>
+
+          <div class="toolbar__guardar">
+            <span *ngIf="hayCambios()" class="chip-pendiente">
+              {{ totalCambios() }} cambio{{ totalCambios() === 1 ? '' : 's' }} sin guardar
+            </span>
+            <button type="button" class="btn-secondary !py-2 !px-4 !text-sm"
+                    [disabled]="!hayCambios() || guardando()" (click)="descartar()">
+              Descartar
+            </button>
+            <button type="button" class="btn-primary !py-2 !px-4 !text-sm"
+                    [disabled]="!hayCambios() || guardando()" (click)="guardar()">
+              <span class="flex items-center gap-2">
+                <app-gp-icon [name]="guardando() ? 'clock' : 'check'" [size]="14"></app-gp-icon>
+                {{ guardando() ? 'Guardando…' : 'Guardar cambios' }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Leyenda -->
+        <p class="leyenda">
+          <app-gp-icon name="alert-circle" [size]="14"></app-gp-icon>
+          Los permisos con la etiqueta <span class="perfil-badge">requiere «puede aprobar»</span>
+          solo funcionan si además el usuario tiene activado <b>Puede aprobar</b> en
+          <b>Mi Perfil → Asignación de Empresas y Permisos</b>.
+        </p>
+
+        <!-- Sin resultados -->
+        <div *ngIf="permisosRol().length === 0" class="card-vacio">
+          <app-gp-icon name="search" [size]="26"></app-gp-icon>
+          <p class="font-semibold text-[#213053]">Sin resultados para “{{ busqueda() }}”</p>
+          <button type="button" class="btn-secondary !py-2 !px-4 !text-sm" (click)="limpiarBusqueda()">
+            Limpiar búsqueda
+          </button>
+        </div>
+
+        <!-- Grupos de permisos -->
+        <div class="space-y-4">
+          <div *ngFor="let g of grupos()" class="grupo-card">
+            <div class="grupo-card__header">
+              <p class="grupo-card__titulo">{{ g.grupo }}</p>
+              <span class="grupo-card__conteo">{{ g.habilitados }}/{{ g.permisos.length }} activos</span>
+              <button type="button" class="grupo-card__accion"
+                      (click)="toggleGrupo(g, g.habilitados < g.permisos.length)">
+                {{ g.habilitados < g.permisos.length ? 'Activar todos' : 'Desactivar todos' }}
+              </button>
+            </div>
+
+            <button *ngFor="let p of g.permisos" type="button" role="switch"
+                    class="permiso-fila"
+                    [class.permiso-fila--off]="!p.habilitado"
+                    [attr.aria-checked]="p.habilitado"
+                    (click)="toggle(p.codigo)">
+              <span class="gp-toggle" [class.gp-toggle--on]="p.habilitado">
+                <span class="gp-toggle__thumb"></span>
+              </span>
+
+              <span class="flex-1 min-w-0 text-left">
+                <span class="permiso-fila__nombre">
+                  {{ p.nombre }}
+                  <span *ngIf="p.requierePuedeAprobar" class="perfil-badge"
+                        title="Además exige el permiso «puede aprobar» del usuario">requiere «puede aprobar»</span>
+                  <span *ngIf="esCambio(p.codigo)" class="chip-modificado">sin guardar</span>
+                </span>
+                <span class="permiso-fila__desc">{{ p.descripcion }}</span>
+              </span>
+
+              <span class="permiso-fila__estado" [class.permiso-fila__estado--on]="p.habilitado">
+                {{ p.habilitado ? 'Habilitado' : 'Deshabilitado' }}
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

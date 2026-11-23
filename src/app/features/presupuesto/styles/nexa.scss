@@ -1,0 +1,109 @@
+/* Identidad de Tesorería/Nexa. El alcance evita alterar los demás módulos. */
+.gp-app.gp-nexa {
+  --bg-base:#f4f6fa;
+  --bg-surface:#ffffff;
+  --bg-elevated:#f2f5fa;
+  --tx-1:#213053;
+  --tx-2:#475569;
+  --tx-3:#64748b;
+  --acc-rgb:4 92 148;
+  --acc-solid:#045c94;
+  --bdr-rgb:33 48 83;
+  --ok-rgb:5 150 105;
+  --ok-solid:#059669;
+  --warn-rgb:217 119 6;
+  --warn-solid:#d97706;
+  --err-rgb:220 38 38;
+  --err-solid:#dc2626;
+  --font-sans:'Poppins','Iconic Trial','Winter Poppins',system-ui,sans-serif;
+  --font-mono:var(--font-sans);
+  --sh-card:0 3px 15px #2130530d,0 1px 3px #00000008;
+  --sh-elevated:0 12px 30px #21305314,0 6px 12px #045c940d;
+  --sh-modal:0 24px 80px -12px #21305340;
+  --sh-glow:0 4px 14px #045c9426;
+  --navbar-height:0px;
+  min-width:0;
+  background:linear-gradient(135deg,#fdfdfd 0%,#f4f4f4 50%,#e8edf5 100%);
+  color:#213053;
+  font-family:var(--font-sans);
+
+  .gp-native-content {padding:0;min-height:calc(100dvh - 120px)}
+  .gp-native-page,.gp-native-page.module-page,.gp-native-page.gp-page {
+    max-width:none;min-width:0;margin:0;padding:20px;background:transparent;border:0;
+  }
+  .module-page::before,.module-watermark {display:none}
+  .gp-catalogo {max-width:none;padding:24px 20px}
+  .card {background:#fff;border:1px solid #2130530d;border-radius:16px;box-shadow:var(--sh-card)}
+  .card:hover {border-color:#045c9426;box-shadow:var(--sh-elevated)}
+  .modal-glass {background:#fff;border:1px solid #045c941f;border-radius:20px;box-shadow:var(--sh-modal)}
+  .field,.input-field {background:#fff;border:1px solid #dbe2ec;border-radius:10px;color:#213053}
+  .field:focus,.input-field:focus {border-color:#045c94;box-shadow:0 0 0 3px #045c9417}
+  .btn-primary,.gp-catalogo .btn-primary {
+    background:linear-gradient(135deg,#213053,#045c94);color:#fff;border:0;border-radius:12px;
+    box-shadow:0 4px 12px #045c941a;
+  }
+  .btn-primary:hover {box-shadow:0 8px 20px #045c9429}
+  .btn-ghost {border:1px solid #045c9426;background:#fff;color:#045c94;border-radius:10px;box-shadow:none}
+  .btn-ghost:hover {background:#edf5fb}
+  .btn-ghost.text-err,.btn-danger-ghost {color:#dc2626}
+  .gp-nexa-hero .btn-ghost.text-err {color:#fecaca}
+  .gp-clear-backdrop footer .btn-primary {background:#dc2626}
+  .gp-tabla-hero {background:#fff;border-bottom:1px solid #e2e8f0}
+  .gp-thead,.gp-thead th,.gp-table tfoot tr {background:#edf2f8;color:#213053}
+  .gp-budget-section::before {background:linear-gradient(90deg,#ffb71b,#045c94)}
+  .gp-budget-section {scroll-margin-top:16px}
+  .gp-budget-index {top:0;background:#f4f6faf2;backdrop-filter:blur(12px);border-radius:12px;padding:10px}
+  .gp-budget-index button {background:#fff;border-color:#045c9426;color:#213053}
+  .gp-budget-downloads button {background:linear-gradient(135deg,#213053,#045c94);border-radius:12px}
+  .gp-budget-downloads button+button {background:linear-gradient(135deg,#045c94,#137daf)}
+  .gp-reference-contract .gp-contrato-box {background:#f8fafc;border:1px solid #e2e8f0}
+  .gp-chart-types button.bg-surface {color:#045c94;background:#e1f1fb}
+  .gp-module-empty .gp-empty-symbol,.gp-budget-empty .gp-empty-symbol {background:linear-gradient(135deg,#213053,#045c94);color:#ffb71b;border:0;box-shadow:0 8px 24px #21305326}
+  .gp-dialog-backdrop,.gp-import-backdrop,.gp-clear-backdrop,.gp-catalogo-fondo,.gp-native-backdrop {z-index:100!important;background:#0f172a80;backdrop-filter:blur(5px)}
+  .gp-dialog-title-mark {background:linear-gradient(#ffb71b,#045c94)}
+  .gp-nexa-context {display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:16px 20px;background:#ffffffd9;border-bottom:1px solid #045c9414}
+  .gp-nexa-context-title {display:flex;align-items:center;gap:12px;color:#045c94}
+  .gp-nexa-context-title>app-gp-icon {width:42px;height:42px;display:grid;place-items:center;color:#ffb71b;background:linear-gradient(135deg,#213053,#045c94);border-radius:12px}
+  .gp-nexa-context-title span {display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:#64748b}
+  .gp-nexa-context-title strong {font-size:15px;color:#213053}
+  .gp-nexa-context-actions {display:flex;align-items:center;gap:10px;min-width:0;flex-wrap:wrap}
+  .gp-nexa-company {
+    display:flex;align-items:center;gap:10px;min-width:0;
+    padding:5px 12px 5px 6px;border-radius:14px;
+    background:#fff;border:1px solid #045c941f;
+    transition:border-color .15s ease,box-shadow .15s ease;
+  }
+  .gp-nexa-company:hover,.gp-nexa-company:focus-within {border-color:#045c9440;box-shadow:0 3px 12px #21305310}
+  .gp-nexa-company__icono {display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;border-radius:10px;color:#045c94;background:linear-gradient(135deg,#e1f1fb,#f2f8fd);border:1px solid #045c9414}
+  .gp-nexa-company__txt {display:flex;flex-direction:column;min-width:0}
+  .gp-nexa-company__txt small {font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#64748b;line-height:1.5}
+  .gp-nexa-company select {max-width:230px;width:auto;padding:0 16px 1px 0;border:0;background:transparent;font-size:12.5px;font-weight:600;color:#213053;outline:none;cursor:pointer}
+  .gp-nexa-account {display:flex;align-items:center;gap:8px;font-size:11px;color:#213053;padding:6px 10px;border:1px solid #045c941f;border-radius:12px;background:#f8fafc;text-align:left}
+  .gp-nexa-account small {display:block;color:#64748b;font-size:10px}
+  .gp-nexa-signout {padding:10px}
+  .gp-nexa-tabs-wrap {display:flex;align-items:center;gap:10px;padding:10px 20px;background:#ffffffa6;border-bottom:1px solid #045c9414;min-width:0}
+  .gp-nexa-tabs {display:flex;gap:6px;overflow-x:auto;min-width:0;flex:1;padding-bottom:4px;scrollbar-width:thin}
+  .gp-nexa-tabs a {display:flex;align-items:center;gap:7px;flex-shrink:0;white-space:nowrap;padding:9px 12px;border:1px solid transparent;border-radius:10px;font-size:12px;font-weight:500;color:#64748b}
+  .gp-nexa-tabs a:hover {background:#f2f6fb;color:#045c94}
+  .gp-nexa-tabs a.active {background:#e1f1fb;color:#045c94;border-color:#045c9426;box-shadow:inset 0 -2px #ffb71b}
+  .gp-nexa-admin {position:relative;flex-shrink:0}
+  .gp-nexa-admin>button {display:flex;align-items:center;gap:6px;font-size:12px;padding:9px 12px}
+  .gp-nexa-admin>button.active {background:#e1f1fb}
+  .gp-native-dropdown {top:44px;z-index:60}
+  .gp-native-profile {border-top:4px solid #ffb71b}
+
+  @media(max-width:1100px) {.gp-nexa-context-title strong {font-size:14px}.gp-nexa-account span {max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+  @media(max-width:767px) {
+    .gp-nexa-context {padding:14px 16px;gap:12px}
+    .gp-nexa-context-actions {width:100%;gap:8px}
+    .gp-nexa-company {flex:1;min-width:0}.gp-nexa-company__txt {flex:1}.gp-nexa-company select {width:100%;max-width:100%}
+    .gp-nexa-account {padding:9px}.gp-nexa-account span {display:none}
+    .gp-nexa-tabs-wrap {padding:8px 12px;gap:6px}
+    .gp-nexa-admin>button>span {display:none}
+    .gp-nexa-tabs a {padding:8px 10px}
+    .gp-native-page,.gp-native-page.module-page,.gp-native-page.gp-page,.gp-catalogo {padding:16px 12px}
+    .gp-native-content {padding:0}
+    .gp-budget-index {top:0}
+    .gp-budget-downloads {flex-direction:column}
+  }
+}

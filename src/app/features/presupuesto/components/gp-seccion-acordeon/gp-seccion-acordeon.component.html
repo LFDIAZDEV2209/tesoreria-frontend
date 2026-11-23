@@ -1,0 +1,32 @@
+<section class="gp-sec"
+         [class.gp-sec--interactiva]="modo === 'interactiva'"
+         [class.gp-sec--abierta]="abierta"
+         [style.--sec]="color"
+         @gpPop>
+  <div class="gp-sec__head">
+    <button type="button"
+            class="gp-sec__toggle"
+            (click)="toggle.emit()"
+            [attr.aria-expanded]="abierta">
+      <span class="gp-sec__icon" [style.background]="iconoGradiente">
+        <app-gp-icon [name]="icono" [size]="16"></app-gp-icon>
+      </span>
+      <span class="gp-sec__txt">
+        <span class="gp-sec__titulo">
+          {{ titulo }}
+          <span *ngIf="contador" class="gp-sec__contador">{{ contador }}</span>
+        </span>
+        <span class="gp-sec__sub">{{ subtitulo }}</span>
+      </span>
+      <span class="gp-sec__chev" [class.gp-sec__chev--abierta]="abierta">
+        <app-gp-icon name="chevron-down" [size]="15"></app-gp-icon>
+      </span>
+    </button>
+    <div class="gp-sec__acciones">
+      <ng-content select="[acciones]"></ng-content>
+    </div>
+  </div>
+  <div class="gp-sec__body" *ngIf="abierta" @gpUnfold>
+    <ng-content></ng-content>
+  </div>
+</section>

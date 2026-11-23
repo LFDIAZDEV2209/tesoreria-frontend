@@ -1,0 +1,685 @@
+<div class="gp-native-page gp-page module-page" style="--module-accent:#E11D48">
+  <div class="space-y-5" @gpStagger>
+
+  <app-gp-page-header class="gp-item" icono="calendar-clock" color="#E11D48" [titulo]="tituloPagina"
+    foto="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1600&q=82"
+    [descripcion]="origen === 'manual' ? 'Provisiones por tercero y fecha. Los proyectados sin aprobar pueden corregirse, incluso en meses anteriores.' : 'Pagos organizados por las secciones del presupuesto'">
+    <button acciones *ngIf="puedeOperar() && origen === 'manual'" class="btn-ghost text-xs" (click)="descargarPlantilla()" [disabled]="descargandoPlantilla()"><app-gp-icon name="download" [size]="14"/> Plantilla</button>
+    <button acciones *ngIf="puedeOperar() && origen === 'manual'" type="button" class="btn-ghost text-xs"
+            [disabled]="importando()" [attr.aria-busy]="importando()" (click)="importarInput.click()">
+      @if (importando()) {
+        <span class="gp-spinner" aria-hidden="true"></span>
+        {{ importandoPct() > 0 && importandoPct() < 100 ? 'Subiendo ' + importandoPct() + '%' : 'Procesando…' }}
+      } @else {
+        <app-gp-icon name="upload" [size]="14"/> Importar
+      }
+    </button>
+    <input #importarInput type="file" accept=".xlsx,.xls" class="hidden" [disabled]="importando()" (change)="importarExcel($event)">
+    <button acciones *ngIf="puedeOperar() && origen === 'manual'" class="btn-primary" (click)="abrirCrear()"><app-gp-icon name="plus" [size]="15"/> Nuevo pago</button>
+    <button acciones *ngIf="puedeLimpiarProvisiones()" class="btn-danger-ghost !py-2.5 !px-4 !text-sm"
+            (click)="limpiarProvisiones()" [disabled]="limpiandoProvisiones() || !provisionesEnMes().length"
+            [title]="!provisionesEnMes().length ? 'No hay provisiones que limpiar en este mes' : 'Borra las provisiones sin pagar de ' + mesLimpiezaProvisionesTexto() + '; las ya pagadas se conservan'">
+      <span class="flex items-center gap-2">
+        <app-gp-icon [name]="limpiandoProvisiones() ? 'clock' : 'eraser'" [size]="15"></app-gp-icon>
+        {{ limpiandoProvisiones() ? 'Limpiando…' : 'Limpiar' }}
+      </span>
+    </button>
+    <button acciones *ngIf="superadmin() && origen !== 'manual' && pagos().length" class="btn-ghost text-err text-xs" (click)="mostrarLimpiar.set(true)"><app-gp-icon name="trash" [size]="14"/> Limpiar workspace</button>
+  </app-gp-page-header>
+
+  <app-gp-vista-periodos *ngIf="!modoHistorico && origen === 'manual'"/>
+  @if (ctx.vistaCompleta() && !modoHistorico && origen === 'manual') {
+    @if (cargarAnual()) {
+      <app-gp-modulo-anual modulo="provisiones"/>
+    } @else {
+      <div class="gp-item"><app-gp-skeleton tipo="kpis"></app-gp-skeleton></div>
+    }
+  }
+  <ng-container *ngIf="!(ctx.vistaCompleta() && !modoHistorico && origen === 'manual')">
+
+  <div *ngIf="error()" class="gp-item">
+    <app-gp-error-state [mensaje]="error()!" (reintentar)="cargar()"></app-gp-error-state>
+  </div>
+
+  <div *ngIf="loading()" class="space-y-4">
+    <app-gp-skeleton tipo="kpis" class="gp-item"></app-gp-skeleton>
+    <app-gp-skeleton tipo="table" class="gp-item"></app-gp-skeleton>
+  </div>
+
+  <div *ngIf="!loading() && cargandoResto()" class="gp-item flex items-center gap-2 text-xs text-slate-500" role="status" aria-live="polite">
+    <span class="gp-spinner" aria-hidden="true"></span>
+    Cargando el resto de los registros…
+  </div>
+
+  <ng-container *ngIf="!loading() && !error()">
+
+    <!-- KPIs — en cero mientras el presupuesto no esté aprobado -->
+    <div class="gp-item grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+      <app-gp-kpi [label]="seccion() === 'cx_cobrar' ? 'Total por cobrar' : 'Total proyectado'" [value]="valorProyectado(resumen()?.totalProyectado)" icon="calendar-clock" variante="default"></app-gp-kpi>
+      <app-gp-kpi [label]="seccion() === 'cx_cobrar' ? 'Cobros atrasados' : 'Pagos atrasados'" [value]="valorProyectado(resumen()?.vencidos)" icon="alert-circle" variante="danger"></app-gp-kpi>
+      <app-gp-kpi label="Próximos 7 días" [value]="valorProyectado(resumen()?.proximos7Dias)" icon="clock" variante="warning"></app-gp-kpi>
+      <app-gp-kpi label="Próximos 30 días" [value]="valorProyectado(resumen()?.proximos30Dias)" icon="calendar-days" variante="default"></app-gp-kpi>
+      <app-gp-kpi [label]="'Ya ' + (seccion() === 'cx_cobrar' ? 'cobrado' : 'pagado') + ' (' + valorProyectado(resumen()?.cantidadPagados) + ')'" [value]="valorProyectado(resumen()?.totalPagado)" icon="check" variante="success"></app-gp-kpi>
+    </div>
+
+    <!-- Reflejo por lotes: cambios que esperan la próxima aprobación global -->
+    <div *ngIf="pagosPendientesReflejo() > 0" class="gp-item gp-reflejo-aviso" role="status">
+      <app-gp-icon name="clock" [size]="15"></app-gp-icon>
+      <span><strong>{{pagosPendientesReflejo()}}</strong> {{pagosPendientesReflejo() === 1 ? 'cambio pendiente' : 'cambios pendientes'}} de aprobación. La card y la sección de Presupuesto se actualizan al volver a <strong>aprobar el presupuesto</strong> (lo ya reflejado se conserva).</span>
+    </div>
+
+    <!-- Sin aprobación global del presupuesto no salen montos ni calendario -->
+    <div *ngIf="pagosBloqueados()" class="gp-item">
+      <app-gp-empty-state icono="shield" titulo="El presupuesto aún no está aprobado"
+        descripcion="Los pagos proyectados se habilitan cuando Gerencia apruebe el presupuesto desde la página Presupuesto. Mientras tanto no se muestran montos ni el calendario de pagos."
+        [pista]="ctx.nombreEmpresa() ?? ''" iconoPista="building"></app-gp-empty-state>
+    </div>
+
+    @if (origen !== 'manual' && !pagosBloqueados()) {
+      <div class="gp-item gp-section-tabs" role="tablist" aria-label="Secciones del presupuesto">
+        @for (s of secciones; track s.id) {
+          <button type="button" role="tab" [attr.aria-selected]="seccion() === s.id" [class.active]="seccion() === s.id"
+            [id]="'tab-seccion-' + s.id" aria-controls="egresos-seccion" (click)="cambiarSeccion(s.id)">
+            {{ s.label }} <span>{{ pagosDeSeccion(s.id).length }}</span>
+          </button>
+        }
+      </div>
+    }
+    <section id="egresos-seccion" *ngIf="!pagosBloqueados()" class="gp-item gp-section-filters" [attr.aria-label]="'Filtros de ' + nombreSeccion()">
+      <label *ngIf="vistaSugeridos">Empresa<select class="field" aria-label="Empresa de pagos sugeridos" [ngModel]="ctx.empresaId()" (ngModelChange)="ctx.seleccionarEnUrl($event)"><option [ngValue]="null" disabled>Selecciona una empresa</option><option *ngFor="let e of ctx.empresas()" [ngValue]="e.id">{{e.name}}</option></select></label>
+      <h2>{{ nombreSeccion() }}</h2>
+      <div>
+        <label *ngIf="!vistaSugeridos && ctx.empresas().length > 1">Empresa<select class="field" aria-label="Buscar pagos por empresa" [ngModel]="ctx.empresaId()" (ngModelChange)="elegirEmpresa($event)"><option value="">Selecciona una empresa</option><option *ngFor="let e of ctx.empresas()" [value]="e.id">{{e.name}}</option></select></label>
+        <label class="gp-section-search">Buscar<input type="search" class="field" [attr.aria-label]="'Buscar en ' + nombreSeccion()" placeholder="Nombre, NIT, concepto, egreso u observación…"
+          [ngModel]="filtroSeccion().busqueda" (ngModelChange)="filtrarSeccion('busqueda', $event)"></label>
+        <label>Categoría<select class="field" aria-label="Categoría de la sección" [ngModel]="filtroSeccion().categoria" (ngModelChange)="filtrarSeccion('categoria', $event)"><option value="">Todas</option>@for(c of categoriasSeccion();track c){<option [value]="c">{{c}}</option>}</select></label>
+        <label>Por página<select class="field" aria-label="Registros por página" [ngModel]="filtroSeccion().size" (ngModelChange)="filtrarSeccion('size', $event)"><option [ngValue]="10">10</option><option [ngValue]="25">25</option><option [ngValue]="50">50</option></select></label>
+        <button type="button" class="btn-ghost" (click)="limpiarSeccion()">Limpiar filtros</button>
+      </div>
+    </section>
+
+
+
+    <!-- Pestañas -->
+    <div *ngIf="origen !== 'manual' && !pagosBloqueados()" class="gp-item gp-tabs" role="tablist" aria-label="Vistas de Pagos Proyectados">
+      <button *ngFor="let t of pestanaOpts" type="button" role="tab" class="gp-tab"
+              [class.gp-tab--activa]="pestana() === t.id" [attr.aria-selected]="pestana() === t.id" [title]="t.desc"
+              (click)="cambiarPestana(t.id)">
+        <app-gp-icon [name]="t.icono" [size]="15"></app-gp-icon>
+        <span>{{ t.label }}</span>
+        <span class="gp-tab__count">{{ contadorTab(t.id) }}</span>
+      </button>
+    </div>
+
+    <div *ngIf="pestana() === 'programados' && !pagosBloqueados()" class="gp-item gp-payment-list">
+      <div *ngIf="vistaSugeridos && puedeAprobar" class="gp-payment-filters">
+        <button class="btn-ghost" (click)="seleccionarTodosPagos()">Seleccionar todos los pagos pendientes</button>
+        <button class="btn-primary" [disabled]="!seleccionPagos().size || procesandoMasivo()" (click)="cambiarAprobacionMasiva(true)">Aprobar seleccionados</button>
+        <button class="btn-ghost" [disabled]="!seleccionPagos().size || procesandoMasivo()" (click)="cambiarAprobacionMasiva(false)">Desaprobar seleccionados</button>
+        <strong>Total seleccionado: {{cp(totalSeleccionados())}}</strong>
+      </div>
+      <div *ngIf="vistaSugeridos" class="card overflow-x-auto">
+        <table class="w-full gp-t"><thead><tr><th>Seleccionar</th><th>Factura / concepto</th><th>Proveedor</th><th>Monto</th><th>Aprobación</th></tr></thead><tbody>
+          <tr *ngFor="let p of pagosSeccionFiltrados()"><td><input *ngIf="puedeAprobar && p.estado === 'proyectado'" type="checkbox" [checked]="seleccionPagos().has(p.id)" (change)="seleccionarPago(p.id)" [attr.aria-label]="'Seleccionar pago ' + p.id"/></td><td>{{p.concepto}}</td><td>{{p.nombre}}</td><td>{{cp(p.montoProyectado)}}</td><td>{{p.aprobado ? 'Aprobado' : 'Pendiente'}}</td></tr>
+        </tbody><tfoot><tr><th colspan="3">Sumatoria de todos los pagos filtrados</th><th>{{cp(totalSeccion())}}</th><th></th></tr></tfoot></table>
+      </div>
+      <div class="gp-payment-filters">
+        <label>Estado<select class="field" aria-label="Estado del egreso" [ngModel]="filtroSeccion().estado" (ngModelChange)="filtrarSeccion('estado', $event)"><option value="">Todos</option><option value="proyectado">Proyectado</option><option value="pagado">Pagado</option><option value="cancelado">Cancelado</option></select></label>
+        <label>Desde<input class="field" aria-label="Fecha del egreso desde" type="date" [ngModel]="filtroSeccion().desde" (ngModelChange)="filtrarSeccion('desde', $event)"></label>
+        <label>Hasta<input class="field" aria-label="Fecha del egreso hasta" type="date" [ngModel]="filtroSeccion().hasta" (ngModelChange)="filtrarSeccion('hasta', $event)"></label>
+      </div>
+      <div class="gp-payment-total">
+        <span class="gp-payment-total__resumen"><app-gp-icon name="layers" [size]="14"/><strong>{{ pagosSeccionFiltrados().length }}</strong> pagos en {{ nombreSeccion() }}</span>
+        <span class="gp-payment-total__monto">Total filtrado <strong>{{ cp(totalSeccion()) }}</strong></span>
+      </div>
+      <section class="gp-payment-group">
+        @for(grupo of paginaPagos().filas; track grupo.id) {
+          <button class="card gp-payment-card" type="button"
+            [class.paid]="grupo.estado === 'pagado'"
+            [class.gp-payment-card--vencido]="grupo.estado === 'proyectado' && grupo.fecha < hoy"
+            [class.gp-payment-card--cancelado]="grupo.estado === 'cancelado'"
+            (click)="abrirGrupo(grupo.id)">
+            <span class="gp-payment-day" [class.overdue]="grupo.estado === 'proyectado' && grupo.fecha < hoy">
+              <small>{{mm(grupo.fecha).mes}}</small>
+              <strong>{{mm(grupo.fecha).dia || '—'}}</strong>
+            </span>
+            <span class="gp-payment-beneficiary">
+              <strong>{{grupo.nombre}}</strong>
+              <span class="gp-payment-meta">
+                @if (grupo.nit) { <code>{{grupo.nit}}</code> }
+                <app-gp-badge-categoria [categoria]="grupo.categoria"/>
+                <small class="gp-payment-pagos"><app-gp-icon name="layers" [size]="11"/>{{grupo.pagos.length}} {{grupo.pagos.length === 1 ? 'pago' : 'pagos'}}</small>
+                <app-gp-estado-badge [estado]="grupo.estado"/>
+                <span *ngIf="grupo.estado==='proyectado' && diasVencido(grupo.fecha); let dias" class="gp-vencida"><app-gp-icon name="alert" [size]="10"/> {{dias}} {{dias === 1 ? 'día' : 'días'}}</span>
+                @if (grupoAprobado(grupo)) {
+                  <span class="gp-aprob-chip gp-aprob-chip--ok"><app-gp-icon name="check" [size]="11"/>Aprobado</span>
+                } @else {
+                  <span class="gp-aprob-chip gp-aprob-chip--pend"><app-gp-icon name="clock" [size]="11"/>Pendiente de Gerencia</span>
+                }
+                @if (grupoConCambiosPendientes(grupo)) {
+                  <span class="gp-aprob-chip gp-aprob-chip--reflejo" title="Se reflejan en la card y la sección del Presupuesto al aprobar de nuevo"><app-gp-icon name="clock" [size]="11"/>Por aprobar de nuevo</span>
+                }
+              </span>
+            </span>
+            <span class="gp-payment-amount gp-payment-amount--egreso"><small>Egreso</small><span *ngIf="grupo.consolidado" class="gp-aprob-chip">Edición restringida</span><span class="gp-payment-egreso" [class.gp-payment-egreso--vacio]="!grupo.egreso">{{grupo.egreso || (grupo.mixto ? 'Varios' : 'Sin registrar')}}</span></span>
+            <span class="gp-payment-amount gp-payment-amount--total"><small>Total</small><strong>{{cp(grupo.total)}}</strong>
+              <span class="gp-payment-aprobado"><span class="gp-payment-aprobado__barra" aria-hidden="true"><i [style.width.%]="pctAprobado(grupo)"></i></span><small>{{cp(grupo.aprobado)}} aprobado</small></span>
+            </span>
+            <span class="gp-payment-go" aria-hidden="true"><app-gp-icon name="chevron" [size]="15"/></span>
+          </button>
+        } @empty {
+          @if (pagosDeSeccion().length) {
+            <div class="card gp-payment-empty">
+              No hay egresos en {{ nombreSeccion() }} con los filtros actuales.
+              <button type="button" class="btn-ghost" (click)="limpiarSeccion()">Limpiar filtros</button>
+            </div>
+          } @else if (seccionesConDatos().length) {
+            <div class="card gp-payment-empty gp-payment-empty--guia">
+              <p><strong>No hay egresos en {{ nombreSeccion() }}</strong></p>
+              <p class="gp-payment-empty__sub">Hay información en otras secciones:</p>
+              <div class="gp-seccion-saltos">
+                @for (s of seccionesConDatos(); track s.id) {
+                  <button type="button" class="btn-ghost" (click)="cambiarSeccion(s.id)">{{ s.label }}<span class="gp-seccion-saltos__n">{{ s.count }}</span></button>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="card gp-payment-empty gp-payment-empty--guia">
+              <p><strong>Sin egresos registrados</strong></p>
+              <p class="gp-payment-empty__sub">No hay pagos registrados para esta empresa.</p>
+            </div>
+          }
+        }
+      </section>
+      <app-gp-paginacion [datos]="paginaPagos()" etiqueta="grupos de egresos" (cambiar)="cambiarPagina('programados', $event)"/>
+    </div>
+    @if(detalleGrupo(); as grupo){
+      <app-gp-modal [titulo]="grupo.nombre" [subtitulo]="grupo.nit || ''" icono="wallet" ancho="lg" (cerrar)="grupoAbierto.set(null)">
+        <div class="gp-payment-detail">
+          <p>Total aprobado: <strong>{{cp(grupo.aprobado)}}</strong> · {{grupo.pagos.length}} pagos</p>
+          @if (grupo.estado === 'cancelado' && grupoAprobado(grupo) && !grupoConsolidado()) {
+            <p class="gp-payment-aviso" role="note">Al guardar el número de egreso, estos pagos aprobados volverán a pendientes.</p>
+          }
+          @if (!grupoAprobado(grupo)) {
+            <p class="gp-payment-aviso" role="note"><app-gp-icon name="alert-circle" [size]="15"/><span><strong>Sin aprobación de Gerencia.</strong> {{ grupo.pagos.length === 1 ? 'Este pago aún no se puede ejecutar' : 'Estos pagos aún no se pueden ejecutar' }}: Gerencia debe aprobarlo{{ grupo.pagos.length === 1 ? '' : 's' }} desde aquí (botón Aprobar) o desde Pagos Sugeridos.</span></p>
+          }
+          @if (!puedeOperar()) {
+            <p class="gp-payment-nota"><app-gp-icon name="shield" [size]="14"/><span>Como <strong>Tesorería</strong> puedes confirmar pagos aprobados; <strong>editar</strong> proyecciones es del Contador o Superadmin.</span></p>
+          }
+          @if (puedeAprobar) {
+            <form class="gp-egreso-pasos" (ngSubmit)="guardarEgresoGrupo()" aria-label="Guardar egreso del proveedor">
+              <!-- Paso 1 · número y fecha (Textract puede completar el número) -->
+              <section class="gp-egreso-paso" [style.--i]="0"
+                       [class.gp-egreso-paso--ok]="datosEgresoListos"
+                       [class.gp-egreso-paso--activo]="pasoActual === 1">
+                <span class="gp-egreso-paso__n" aria-hidden="true">{{datosEgresoListos ? '✓' : '1'}}</span>
+                <div class="gp-egreso-paso__cuerpo">
+                  <strong>Número y fecha del egreso</strong>
+                  <p>Si dejas el número vacío, lo copiamos del que lea Textract en el documento.</p>
+                  <div class="gp-payment-filters">
+                    <label>Número de egreso<input class="field" name="numeroEgreso" [(ngModel)]="numeroEgreso" placeholder="Ej. EG-2026-0001"/></label>
+                    <label>Fecha del egreso<input class="field" type="date" name="fechaEgreso" [(ngModel)]="fechaEgreso"/></label>
+                  </div>
+                  @if (numeroDetectado(); as num) {
+                    <p class="gp-egreso-paso__lectura" role="status">
+                      <app-gp-icon name="check" [size]="13"/> Textract leyó <strong>{{num}}</strong> en el documento — verifica que sea el número correcto.
+                    </p>
+                  }
+                </div>
+                <span class="gp-egreso-paso__chip" [class.gp-egreso-paso__chip--ok]="datosEgresoListos">{{datosEgresoListos ? 'Listo' : 'Pendiente'}}</span>
+              </section>
+
+              <!-- Paso 2 · documento único del proveedor (clic o arrastrar y soltar) -->
+              <section class="gp-egreso-paso" [style.--i]="1"
+                       [class.gp-egreso-paso--ok]="documentoCargado"
+                       [class.gp-egreso-paso--activo]="pasoActual === 2 && !subiendoDocumento()">
+                <span class="gp-egreso-paso__n" aria-hidden="true">{{documentoCargado ? '✓' : '2'}}</span>
+                <div class="gp-egreso-paso__cuerpo">
+                  <strong>Documento del egreso · uno solo por proveedor</strong>
+                  <p>Un único documento agrupa {{grupo.pagos.length}} factura(s) de {{grupo.nombre}}. Queda adjunto al egreso que ve Tesorería en su bandeja.</p>
+                  @if (documentoEgreso(); as doc) {
+                    <div class="gp-doc-egreso__fila">
+                      <span class="gp-doc-egreso__file"><app-gp-icon name="check" [size]="14"/></span>
+                      <span class="gp-doc-egreso__nombre" [title]="doc.nombre">{{doc.nombre}}</span>
+                      @if (doc.tamano) {<span class="gp-doc-egreso__peso">{{tamanoLegible(doc.tamano)}}</span>}
+                      @if (subiendoDocumento()) {
+                        <span class="gp-doc-egreso__spinner" aria-hidden="true"></span>
+                        <span class="gp-doc-egreso__peso">{{faseDocumento() === 'textract' ? 'Leyendo con Textract…' : 'Subiendo…'}}</span>
+                      }
+                      <button type="button" class="btn-ghost" (click)="verDocumentoEgreso()">Ver documento</button>
+                      <label class="btn-ghost gp-doc-egreso__accion" [class.is-disabled]="subiendoDocumento()">Reemplazar<input type="file" accept=".pdf,.png,.jpg,.jpeg" [disabled]="subiendoDocumento()" (change)="subirDocumentoEgreso($event)"/></label>
+                    </div>
+                  } @else if (documentoVinculadoEgreso) {
+                    <div class="gp-doc-egreso__fila">
+                      <span class="gp-doc-egreso__file"><app-gp-icon name="check" [size]="14"/></span>
+                      <span class="gp-doc-egreso__nombre" [title]="documentoVinculadoEgreso.soporteEgresoNombre || ''">{{documentoVinculadoEgreso.soporteEgresoNombre || 'Documento del egreso'}}</span>
+                      <button type="button" class="btn-ghost" (click)="verDocumentoEgreso()">Ver documento</button>
+                    </div>
+                  } @else {
+                    <label class="gp-doc-egreso__subir"
+                           [class.is-disabled]="subiendoDocumento()"
+                           [class.gp-doc-egreso__subir--drag]="arrastrandoDocumento()"
+                           (dragover)="arrastrarSobreDocumento($event)"
+                           (dragleave)="salirArrastreDocumento()"
+                           (drop)="soltarDocumento($event)">
+                      <input type="file" accept=".pdf,.png,.jpg,.jpeg" [disabled]="subiendoDocumento()" (change)="subirDocumentoEgreso($event)"/>
+                      @if (subiendoDocumento()) {
+                        <span class="gp-doc-egreso__spinner" aria-hidden="true"></span>
+                        <span>{{faseDocumento() === 'textract' ? 'Leyendo el documento con Textract…' : 'Subiendo el documento…'}}</span>
+                        @if (faseDocumento() === 'subiendo' && progresoDocumento() !== null) {
+                          <span class="gp-doc-egreso__barra" role="progressbar" aria-label="Progreso de la carga" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="progresoDocumento()"><i [style.width.%]="progresoDocumento()"></i></span>
+                          <span class="gp-doc-egreso__hint">{{progresoDocumento()}}%</span>
+                        } @else {
+                          <span class="gp-doc-egreso__hint">Puede tardar unos segundos</span>
+                        }
+                      } @else {
+                        <app-gp-icon name="upload" [size]="18"></app-gp-icon>
+                        <span><strong>Arrastra el documento aquí</strong> o haz clic para elegirlo</span>
+                        <span class="gp-doc-egreso__hint">PDF, PNG o JPG · Máximo 20 MB</span>
+                      }
+                    </label>
+                  }
+                  @if (errorDocumento()) {
+                    <p class="gp-doc-egreso__error" role="alert"><app-gp-icon name="alert-circle" [size]="13"/> {{errorDocumento()}}</p>
+                  }
+                  @if (!documentoCargado && !subiendoDocumento()) {
+                    <p class="gp-doc-egreso__aviso" role="note"><app-gp-icon name="alert" [size]="12"/> Sin documento adjunto, Tesorería tendrá que cargarlo antes de enviar el egreso a Gerencia Financiera.</p>
+                  }
+                </div>
+                <span class="gp-egreso-paso__chip" [class.gp-egreso-paso__chip--ok]="documentoCargado">{{documentoCargado ? 'Listo' : 'Pendiente'}}</span>
+              </section>
+
+              <!-- Paso 3 · guardar egreso -->
+              <section class="gp-egreso-paso gp-egreso-paso--final" [style.--i]="2"
+                       [class.gp-egreso-paso--activo]="pasoActual === 3 && !grupoYaGuardado"
+                       [class.gp-egreso-paso--ok]="grupoYaGuardado">
+                <span class="gp-egreso-paso__n" aria-hidden="true">{{grupoYaGuardado ? '✓' : '3'}}</span>
+                <div class="gp-egreso-paso__cuerpo">
+                  <strong>{{grupoYaGuardado ? 'Egreso ya guardado' : 'Guardar egreso'}}</strong>
+                  @if (grupoYaGuardado) {
+                    <p class="gp-egreso-paso__resumen" aria-label="Estado del egreso">
+                      <span class="ok">Guardado</span>
+                      <span [class.ok]="documentoCargado">{{documentoCargado ? 'Documento adjunto' : 'Documento pendiente'}}</span>
+                    </p>
+                    <p>Gestiona este egreso desde las facturas de abajo o desde la bandeja de Tesorería.</p>
+                  } @else {
+                    <p class="gp-egreso-paso__resumen" aria-label="Estado del egreso">
+                      <span [class.ok]="!!numeroEgreso.trim()">{{numeroEgreso.trim() || 'Número pendiente'}}</span>
+                      <span [class.ok]="!!fechaEgreso">{{fechaEgreso || 'Fecha pendiente'}}</span>
+                      <span [class.ok]="documentoCargado">{{documentoCargado ? 'Documento adjunto' : 'Documento pendiente'}}</span>
+                    </p>
+                  }
+                </div>
+                @if (!grupoYaGuardado) {
+                  <button type="submit" class="btn-primary" [class.gp-egreso-btn--listo]="listoParaGuardar"
+                          [disabled]="guardandoEgreso() || subiendoDocumento() || !numeroEgreso.trim()"
+                          [title]="!numeroEgreso.trim() ? 'Escribe el número de egreso primero' : subiendoDocumento() ? 'Espera a que termine la carga del documento' : 'Guardar egreso'">
+                    {{guardandoEgreso() ? 'Guardando…' : 'Guardar egreso'}}
+                  </button>
+                }
+              </section>
+            </form>
+          }
+          @for(p of grupo.pagos;track p.id){<article class="card"><div class="gp-payment-detail-title"><div><strong>{{p.concepto || p.nombre}}</strong><p>{{p.fechaProyectada}} <span *ngIf="p.estado==='proyectado' && diasVencido(p.fechaProyectada); let dias" class="gp-vencida"><app-gp-icon name="alert" [size]="10"/> vencida {{dias}} {{dias === 1 ? 'día' : 'días'}}</span></p></div><strong>{{cp(p.montoProyectado)}}</strong><app-gp-estado-badge [estado]="p.estado"/>@if(pendienteReflejo(p)){<span class="gp-aprob-chip gp-aprob-chip--reflejo" title="Pendiente de aprobación global: se refleja al aprobar de nuevo el presupuesto"><app-gp-icon name="clock" [size]="11"/>Pendiente de aprobación</span>}</div><p *ngIf="p.notas">{{p.notas}}</p><p *ngIf="p.aprobado || p.estado!=='proyectado'" class="text-xs text-t3 mt-2">{{motivoEditar(p)}}</p><div class="gp-payment-filters"><button *ngIf="puedeAprobar && !consolidado(p)" class="btn-ghost" (click)="aprobarPago(p,!p.aprobado)">{{p.aprobado?'Quitar aprobación':'Aprobar'}}</button><span *ngIf="p.aprobado" class="text-ok text-xs">Aprobado por {{p.aprobadoPor || 'Gerencia'}}</span><button *ngIf="puedePagar()" class="btn-primary" [disabled]="consolidado(p) || !p.aprobado || p.estado!=='proyectado'" [attr.title]="motivoPago(p)" (click)="pagar(p)">Marcar pagado</button><button class="btn-ghost" [disabled]="bloqueadoMonto(p)" [attr.title]="motivoEditar(p)" (click)="grupoAbierto.set(null);abrirEditar(p)">Editar</button><button *ngIf="puedeModificar(p, true)" class="btn-ghost text-err" (click)="eliminar(p)">Eliminar</button><button *ngIf="!consolidado(p) && permiso('egresos.registrar') && p.aprobado && p.estado==='proyectado' && !egresosVinculados()[p.id]" class="btn-ghost" (click)="cuentaEgreso='';pagoParaEgreso.set(p)">Registrar egreso en Contabilidad</button>@if(egresosVinculados()[p.id]; as egreso){<button class="btn-primary" (click)="egresoTesoreria.set(egreso)">Ver egreso y soporte de Tesorería · {{egreso.estado}}</button>}</div></article>}
+        </div>
+      </app-gp-modal>
+    }
+
+    <!-- ═══════════════ Sugeridos por vencer ═══════════════ -->
+    <div *ngIf="pestana() === 'sugeridos' && !pagosBloqueados()" class="gp-item" @gpSwap>
+      <div class="card gp-panel overflow-hidden" style="--sec:#D97706" @gpPop>
+        <div class="gp-panel-hero">
+          <div class="min-w-0">
+            <h2 class="gp-panel-hero__titulo">Facturas sugeridas por vencer</h2>
+            <p class="gp-panel-hero__desc">Cuentas por Pagar con saldo pendiente, ordenadas por vencimiento — solo se pagan una vez aprobadas por Gerencia</p>
+          </div>
+          <div class="gp-panel-hero__acciones">
+            <button *ngIf="permiso('pagos.aprobar_sugeridas')" type="button" class="gp-hero-btn" (click)="aprobarSeleccionados()"
+                    [disabled]="seleccionSugerido().size === 0"
+                    title="Crea pagos proyectados aprobados para las facturas seleccionadas">
+              <app-gp-icon name="shield" [size]="13"></app-gp-icon>
+              Aprobar seleccionadas ({{ seleccionSugerido().size }})
+            </button>
+            <button type="button" class="gp-hero-btn gp-hero-btn--ghost" (click)="descargarFacturasAutorizadas()"
+                    [disabled]="descargandoPdf()" title="PDF con las facturas que tienen movimiento de origen">
+              <app-gp-icon [name]="descargandoPdf() ? 'clock' : 'download'" [size]="13"></app-gp-icon>
+              {{ descargandoPdf() ? 'Generando…' : 'PDF autorizadas' }}
+            </button>
+            <span class="gp-panel-hero__chip">{{ facturasFiltradas().length }}</span>
+          </div>
+        </div>
+        <div class="gp-panel__body">
+          <div class="gp-payment-filters"><button *ngIf="permiso('pagos.aprobar_sugeridas')" class="btn-ghost" (click)="seleccionarTodasFacturas()">Seleccionar todas las facturas</button><strong>Total seleccionado: {{cp(totalFacturasSeleccionadas())}}</strong></div>
+          <table *ngIf="facturasFiltradas().length > 0" class="w-full gp-t">
+            <thead>
+              <tr>
+                <th class="gp-t__th gp-t__th--numcol">#</th>
+                <th class="gp-t__th gp-t__th--check"></th>
+                <th class="gp-t__th gp-t__th--fecha">Vencimiento</th>
+                <th class="gp-t__th">Tercero</th>
+                <th class="gp-t__th gp-t__th--factura">Factura</th>
+                <th class="gp-t__th gp-t__th--num gp-t__th--monto">Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of paginaFacturas().filas; let i = index; trackBy: trackFactura"
+                  [style.--i]="i" class="gp-fila"
+                  [class.gp-fila--vencida]="s.vencida">
+                <td class="gp-t__td">
+                  <span class="gp-num" [ngClass]="s.vencida ? 'gp-num--vencido' : ''">
+                    <span class="gp-num__dot"></span>{{ paginaFacturas().desde + i }}
+                  </span>
+                </td>
+                <td class="gp-t__td gp-t__td--check">
+                  <input *ngIf="permiso('pagos.aprobar_sugeridas')" type="checkbox" class="gp-check"
+                         [checked]="seleccionSugerido().has(s.nit + '|' + (s.comprobante ?? ''))"
+                         (change)="toggleSugerido(s.nit, s.comprobante ?? '')">
+                </td>
+                <td class="gp-t__td">
+                  <div class="flex items-center gap-2">
+                    <div class="gp-fmini" [ngClass]="s.vencida ? 'gp-fmini--vencido' : ''">
+                      <span class="gp-fmini__mes">{{ mm(s.fechaVencimiento ?? '').mes }}</span>
+                      <span class="gp-fmini__dia">{{ mm(s.fechaVencimiento ?? '').dia || '—' }}</span>
+                    </div>
+                    <span *ngIf="s.vencida" class="gp-vencida">
+                      <app-gp-icon name="alert" [size]="10"></app-gp-icon> VENCIDA
+                    </span>
+                  </div>
+                </td>
+                <td class="gp-t__td">
+                  <div class="flex items-center gap-2.5">
+                    <div class="gp-avatar">{{ (s.nombre || '?').charAt(0) }}</div>
+                    <div class="min-w-0">
+                      <p class="gp-nombre">{{ s.nombre }}</p>
+                      <span class="gp-nit">{{ s.nit }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="gp-t__td"><span class="gp-nit">{{ s.comprobante ?? 'sin comprobante' }}</span></td>
+                <td class="gp-t__td gp-t__td--num"><span class="gp-monto gp-monto--deuda">{{ cp(s.monto) }}</span></td>
+              </tr>
+            </tbody>
+            <tfoot><tr><th colspan="5">Sumatoria de todas las facturas filtradas</th><th>{{cp(facturasFiltradas().reduce(sumarMontoFactura, 0))}}</th></tr></tfoot>
+          </table>
+          <app-gp-paginacion [datos]="paginaFacturas()" etiqueta="facturas" (cambiar)="cambiarPagina('sugeridos', $event)"/>
+          <div *ngIf="facturasFiltradas().length === 0" class="p-8">
+            <app-gp-empty-state icono="check" titulo="Sin facturas sugeridas"
+              descripcion="No hay facturas por vencer para esta sección con los filtros actuales. Las facturas por vencer corresponden a Cuentas por pagar."></app-gp-empty-state>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ Por agendar (candidatos) ═══════════════ -->
+    <div *ngIf="pestana() === 'agendar' && !pagosBloqueados()" class="gp-item" @gpSwap>
+      <div class="card gp-panel overflow-hidden" style="--sec:#0F766E" @gpPop>
+        <div class="gp-panel-hero">
+          <div class="min-w-0">
+            <h2 class="gp-panel-hero__titulo">Obligaciones por agendar</h2>
+            <p class="gp-panel-hero__desc">Saldo pendiente real menos lo ya proyectado — el saldo más antiguo tiene prioridad</p>
+          </div>
+          <div class="gp-panel-hero__acciones">
+            <span class="gp-panel-hero__chip">{{ candidatosFiltrados().length }}</span>
+          </div>
+        </div>
+        <div class="gp-panel__body">
+          <table *ngIf="candidatosFiltrados().length > 0" class="w-full gp-t">
+            <thead>
+              <tr>
+                <th class="gp-t__th gp-t__th--numcol">#</th>
+                <th class="gp-t__th">Tercero</th>
+                <th class="gp-t__th gp-t__th--cat">Categoría</th>
+                <th class="gp-t__th gp-t__th--num gp-t__th--monto">Saldo pendiente</th>
+                <th class="gp-t__th gp-t__th--num gp-t__th--monto">Ya proyectado</th>
+                <th class="gp-t__th gp-t__th--num gp-t__th--monto">Disponible</th>
+                <th class="gp-t__th gp-t__th--acciones">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cc of paginaCandidatos().filas; let i = index; trackBy: trackNit"
+                  [style.--i]="i" class="gp-fila">
+                <td class="gp-t__td">
+                  <span class="gp-num"><span class="gp-num__dot"></span>{{ paginaCandidatos().desde + i }}</span>
+                </td>
+                <td class="gp-t__td">
+                  <div class="flex items-center gap-2.5">
+                    <div class="gp-avatar">{{ (cc.nombre || '?').charAt(0) }}</div>
+                    <div class="min-w-0">
+                      <p class="gp-nombre">{{ cc.nombre }}</p>
+                      <span class="gp-nit">{{ cc.nit }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="gp-t__td"><app-gp-badge-categoria [categoria]="cc.categoria"></app-gp-badge-categoria></td>
+                <td class="gp-t__td gp-t__td--num"><span class="gp-monto gp-monto--deuda">{{ cp(cc.saldoPendiente) }}</span></td>
+                <td class="gp-t__td gp-t__td--num"><span class="gp-monto gp-monto--tenue">{{ cp(cc.yaProyectado) }}</span></td>
+                <td class="gp-t__td gp-t__td--num"><span class="gp-monto gp-monto--disponible">{{ cp(cc.disponible) }}</span></td>
+                <td class="gp-t__td gp-t__td--acciones">
+                  <button type="button" class="gp-btn-agendar" (click)="abrirCrear({ nit: cc.nit, nombre: cc.nombre, disponible: cc.disponible })">
+                    <app-gp-icon name="calendar" [size]="13"></app-gp-icon> Agendar
+                  </button>
+                  <button *ngIf="permiso('pagos.aprobar_sugeridas')" type="button" class="gp-btn-sugerido"
+                          title="Aprueba en bloque las facturas del tercero usando su Pago Sugerido"
+                          (click)="aprobarCandidato(cc)">
+                    <app-gp-icon name="shield" [size]="13"></app-gp-icon> Sugerido
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <app-gp-paginacion [datos]="paginaCandidatos()" etiqueta="obligaciones" (cambiar)="cambiarPagina('agendar', $event)"/>
+          <div *ngIf="candidatosFiltrados().length === 0" class="p-8">
+            <app-gp-empty-state icono="check" titulo="Sin deudas por agendar"
+              descripcion="No hay obligaciones disponibles en esta sección con los filtros actuales."></app-gp-empty-state>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  </ng-container>
+
+  <app-gp-modal *ngIf="modalPago()" [titulo]="editando() ? 'Editar pago' : nit() ? 'Agendar pago' : 'Nuevo pago proyectado'"
+    ancho="formulario" [cargando]="guardandoPago()" (cerrar)="modalPago.set(false)">
+    <form id="gp-payment-form" class="gp-payment-form space-y-4" (ngSubmit)="guardarPago()">
+      <label>Proveedor / beneficiario<input class="field" name="beneficiario" [(ngModel)]="nombre" [disabled]="!!nit()" required placeholder="Nombre del proveedor o beneficiario"/></label>
+      <div class="grid grid-cols-2 gap-3">
+        <label>Categoría<select class="field" name="categoria" [(ngModel)]="categoria"><option value="">— sin categoría —</option><option *ngFor="let c of categorias" [value]="c">{{c}}</option></select></label>
+        <label>Fecha proyectada<input class="field" type="date" name="fecha" [(ngModel)]="fechaProyectada" [disabled]="bloqueadoMonto(editando())" required/></label>
+      </div>
+      <label *ngIf="categoria() === 'OTROS'">¿Cuál otro?<input class="field" name="detalle" [(ngModel)]="categoriaDetalle" placeholder="Ej. Seguro de cumplimiento"/></label>
+      <label>Concepto<input class="field" name="concepto" [(ngModel)]="concepto" placeholder="Ej. Pago parcial factura FC-2-20260328"/></label>
+      <label>Monto a proyectar<div class="gp-payment-money"><span>$</span><input class="field field-mono" name="monto" inputmode="decimal" [ngModel]="montoFormateado()" (ngModelChange)="actualizarMonto($event)" [disabled]="bloqueadoMonto(editando())" required placeholder="0"/></div><small *ngIf="protegido(editando()) && !superadmin()">Ya está marcado como pagado — el monto y la fecha no se pueden cambiar aquí. Si hay un error real, pide a un superadmin que lo corrija.</small></label>
+      <div *ngIf="puedePagar()" class="gp-payment-executed">
+        <label class="gp-payment-check"><input type="checkbox" name="pagado" [ngModel]="yaPagado()" (ngModelChange)="cambiarPagado($event)" [disabled]="!puedeRegistrarPago() || guardandoPago()"/>¿Ya se pagó? (ejecutado)</label>
+        <small *ngIf="!puedeRegistrarPago() && !protegido(editando())">Requiere una proyección aprobada por Gerencia.</small>
+        <label *ngIf="yaPagado()">Fecha de pago<input class="field" type="date" name="fechaReal" [(ngModel)]="fechaPagoReal" required/></label>
+      </div>
+      <label>Notas<textarea class="field" name="notas" [(ngModel)]="notas" placeholder="Observaciones…"></textarea></label>
+    </form>
+    <div pie><button type="submit" form="gp-payment-form" class="btn-primary text-sm" [disabled]="guardandoPago() || !puedeOperar()"><app-gp-icon name="check" [size]="14"/>{{guardandoPago() ? 'Guardando…' : editando() ? 'Guardar cambios' : 'Agendar pago'}}</button></div>
+  </app-gp-modal>
+
+  <!-- Modal de confirmación estilizada (pagar / eliminar / cancelar) -->
+  <app-gp-modal *ngIf="modalConfirmar()" [titulo]="modalConfirmar()?.titulo ?? ''" icono="alert"
+                ancho="sm" (cerrar)="modalConfirmar.set(null)">
+    <div class="space-y-4 text-sm">
+      <div class="flex items-start gap-3" [ngClass]="modalConfirmar()?.peligro ? 'gp-confirm gp-confirm--peligro' : 'gp-confirm'">
+        <span class="gp-confirm__icono" [ngClass]="modalConfirmar()?.peligro ? 'gp-confirm__icono--rojo' : 'gp-confirm__icono--verde'">
+          <app-gp-icon [name]="modalConfirmar()?.icono ?? 'alert'" [size]="18"></app-gp-icon>
+        </span>
+        <p class="text-t2 leading-relaxed">{{ modalConfirmar()?.mensaje }}</p>
+      </div>
+    </div>
+    <div pie>
+      <button class="gp-confirm-ok !py-2 !px-5 !text-sm"
+              [ngClass]="modalConfirmar()?.peligro ? 'gp-confirm-ok--peligro' : ''"
+              (click)="ejecutarConfirmar()">
+        <span class="flex items-center gap-2">
+          <app-gp-icon [name]="modalConfirmar()?.icono ?? 'check'" [size]="14"></app-gp-icon>
+          {{ modalConfirmar()?.textoOk }}
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+  <!-- Resultado de importación: motivos por los que se rechazaron filas -->
+  <app-gp-modal *ngIf="modalErroresImportacion()" titulo="Resultado de la importación" icono="alert" ancho="lg"
+                (cerrar)="modalErroresImportacion.set(false)">
+    <div class="space-y-4 text-sm">
+      <div class="flex items-start gap-3" [ngClass]="importadosImportacion() > 0 ? 'gp-confirm' : 'gp-confirm gp-confirm--peligro'">
+        <span class="gp-confirm__icono" [ngClass]="importadosImportacion() > 0 ? 'gp-confirm__icono--verde' : 'gp-confirm__icono--rojo'">
+          <app-gp-icon [name]="importadosImportacion() > 0 ? 'check' : 'alert'" [size]="18"></app-gp-icon>
+        </span>
+        <p class="text-t2 leading-relaxed">
+          <strong>{{ importadosImportacion() }}</strong> fila(s) importada(s).
+          <strong>{{ erroresImportacion().length }}</strong> fila(s) no se pudieron importar:
+        </p>
+      </div>
+      <div class="max-h-[55vh] space-y-3 overflow-y-auto pr-1">
+        @for (grupo of erroresAgrupados(); track grupo.mensaje) {
+          <div class="rounded-xl border border-rose-200 bg-rose-50 p-3">
+            <p class="font-semibold text-rose-700">{{ grupo.mensaje }}</p>
+            <p class="mt-1 text-xs text-rose-600">Filas: {{ filasTexto(grupo.filas) }}</p>
+          </div>
+        }
+      </div>
+      <p class="text-xs text-slate-500">
+        Corrige el archivo y vuelve a importarlo. Las filas rechazadas no se guardaron.
+      </p>
+    </div>
+    <div pie>
+      <button class="gp-confirm-ok !py-2 !px-5 !text-sm" (click)="modalErroresImportacion.set(false)">
+        <span class="flex items-center gap-2"><app-gp-icon name="check" [size]="14"></app-gp-icon> Entendido</span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+  <!-- Modal Limpiar workspace (solo superadmin) -->
+  <app-gp-confirmar-limpieza *ngIf="mostrarLimpiar()" [empresa]="ctx.nombreEmpresa()" mensaje="Esto borra los pagos de esta empresa. No se puede deshacer." [borrados]="['Todos los Pagos Proyectados (pagados, programados y cancelados)','El Pago Sugerido de todos los proveedores']" [conservados]="['El Flujo de Caja: disponible inicial, ingresos y egresos digitados a mano o importados','El Contrato y los movimientos importados de los módulos']" [ocupado]="limpiandoWs()" (cancelar)="mostrarLimpiar.set(false)" (confirmar)="limpiarWorkspace()"/>
+
+  <!-- Modal Limpiar provisiones (otros pagos) -->
+  <app-gp-confirmar-limpieza *ngIf="confirmarLimpiezaProvisiones()" [titulo]="'Limpiar provisiones'" [empresa]="ctx.nombreEmpresa()"
+    [mensaje]="'Esto borra las provisiones sin pagar (digitadas o importadas) del mes ' + mesLimpiezaProvisionesTexto() + ' únicamente; los demás meses no se tocan. Las provisiones ya pagadas del mes se conservan, y las que conservan egresos en Tesorería impiden la limpieza hasta resolverse. No se puede deshacer.'"
+    [ocupado]="limpiandoProvisiones()" (cancelar)="confirmarLimpiezaProvisiones.set(false)" (confirmar)="limpiarProvisiones(true)"/>
+
+  <!-- Modal: previsualizar aprobación con Pago Sugerido (Gerencia) -->
+  <app-gp-modal *ngIf="previewSugerido()" titulo="Aprobar con Pago Sugerido" icono="shield"
+                subtitulo="{{ previewSugerido()?.nombre }} — {{ previewSugerido()?.nit }}"
+                ancho="md" [cargando]="aprobandoPreview()" (cerrar)="previewSugerido.set(null)">
+    <div class="space-y-4 text-sm">
+      <div class="grid grid-cols-3 gap-3">
+        <div class="gp-preview-box">
+          <p class="gp-preview-box__label">Pago Sugerido</p>
+          <p class="gp-preview-box__value">{{ cp(previewSugerido()?.sugerido) }}</p>
+        </div>
+        <div class="gp-preview-box gp-preview-box--ok">
+          <p class="gp-preview-box__label">Se aprobaría</p>
+          <p class="gp-preview-box__value">{{ cp(previewSugerido()?.totalAprobar) }}</p>
+        </div>
+        <div class="gp-preview-box gp-preview-box--ambar">
+          <p class="gp-preview-box__label">Queda sin usar</p>
+          <p class="gp-preview-box__value">{{ cp(previewSugerido()?.saldoPendiente) }}</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-t3">
+        Facturas enteras (Proveedores + Cuentas por Pagar) de la más antigua a la más reciente, sin pasarse del Pago Sugerido.
+      </p>
+
+      <div class="rounded-xl border border-slate-100 overflow-hidden">
+        <table class="w-full gp-t gp-t--compacta">
+          <thead>
+            <tr>
+              <th class="gp-t__th">Factura</th>
+              <th class="gp-t__th gp-t__th--medio">Vence</th>
+              <th class="gp-t__th gp-t__th--num gp-t__th--monto">Monto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of previewSugerido()?.facturas" class="gp-fila">
+              <td class="gp-t__td">
+                <p class="gp-nombre">{{ f.comprobante || 'Sin comprobante' }}</p>
+                <span class="gp-nit">{{ formatearFecha(f.fecha) }}</span>
+              </td>
+              <td class="gp-t__td text-t3 text-xs">{{ formatearFecha(f.fechaVencimiento) }}</td>
+              <td class="gp-t__td gp-t__td--num"><span class="gp-monto">{{ cp(f.monto) }}</span></td>
+            </tr>
+            <tr *ngIf="!previewSugerido()?.facturas?.length">
+              <td colspan="3" class="px-4 py-6 text-center text-t3 text-sm">
+                <ng-container *ngIf="previewSugerido()?.totalMovimientosPendientes != null && (previewSugerido()?.totalMovimientosPendientes ?? 0) > 0; else sinPendientesSugerido">
+                  Movimientos pendientes en el sistema: {{ previewSugerido()?.totalMovimientosPendientes }}, pero ninguno cumple las condiciones para ser aprobado en este momento.
+                </ng-container>
+                <ng-template #sinPendientesSugerido>
+                  Sin facturas pendientes para este tercero en este módulo.
+                </ng-template>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p *ngIf="previewSugerido()?.primeraFacturaOmitida" class="gp-modal-aviso gp-modal-aviso--ambar">
+        <app-gp-icon name="alert" [size]="13"></app-gp-icon>
+        Se omitirá la factura {{ previewSugerido()?.primeraFacturaOmitida }} (no cabe en el Pago Sugerido).
+      </p>
+    </div>
+    <div pie>
+      <button class="btn-primary !py-2 !px-5 !text-sm" [disabled]="aprobandoPreview() || (previewSugerido()?.facturas?.length ?? 0) === 0"
+              (click)="confirmarAprobarProveedor()">
+        <span class="flex items-center gap-2">
+          <app-gp-icon [name]="aprobandoPreview() ? 'clock' : 'shield'" [size]="14"></app-gp-icon>
+          {{ aprobandoPreview() ? 'Aprobando…' : 'Aprobar facturas' }}
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+<!-- Modal Observaciones -->
+<app-gp-modal
+  *ngIf="modalObservaciones()"
+  titulo="Observaciones del Gerente"
+  icono="chat"
+  (cerrar)="cerrarObservaciones()">
+  <div cuerpo class="p-1 flex flex-col gap-3">
+    <p class="text-sm text-t3 font-medium">
+      Pago: <span class="text-t1">{{ pagoObservando()?.nombre }}</span>
+      — <span class="text-t1">{{ pagoObservando()?.montoProyectado | currency:'COP':'symbol':'1.0-0' }}</span>
+    </p>
+    <textarea
+      class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-400 resize-none"
+      rows="5"
+      placeholder="Escriba su observación aquí..."
+      [readOnly]="!pagoObservando() || !puedeModificar(pagoObservando()!)"
+      [value]="notaTexto()"
+      (input)="notaTexto.set($any($event.target).value)"
+    ></textarea>
+  </div>
+  <div pie>
+
+    <button class="btn-primary !py-2 !px-5 !text-sm ml-2" [disabled]="guardandoNota() || !pagoObservando() || !puedeModificar(pagoObservando()!)" (click)="guardarObservaciones()">
+      {{ guardandoNota() ? 'Guardando...' : 'Guardar observación' }}
+    </button>
+  </div>
+</app-gp-modal>
+
+</div>
+</div>
+
+<app-gp-modal *ngIf="pagoParaEgreso() as p" titulo="Registrar egreso en Contabilidad" (cerrar)="pagoParaEgreso.set(null)">
+ <div cuerpo class="space-y-4">
+  <p>{{ p.nombre }} · {{ p.fechaProyectada }} · {{ p.montoProyectado | currency:'COP':'symbol':'1.2-2' }}</p>
+  <p *ngIf="p.moduloOrigen === 'nomina'">Nómina agregada de {{ ctx.nombreEmpresa() }}. Se conserva el concepto y el período, sin beneficiarios individuales.</p>
+  <label *ngIf="p.moduloOrigen !== 'nomina'" class="block">Cuenta del beneficiario
+   <input [(ngModel)]="cuentaEgreso" class="mt-2 w-full rounded border p-2" placeholder="Cuenta bancaria de destino">
+  </label>
+  <p>El egreso quedará registrado para revisión y envío a Tesorería.</p>
+ </div>
+ <div pie><button class="btn-primary" (click)="crearEgreso()" [disabled]="creandoEgreso() || (p.moduloOrigen !== 'nomina' && !cuentaEgreso.trim())">Registrar egreso</button></div>
+</app-gp-modal>
+
+@if(egresoTesoreria(); as egreso){
+  <app-gp-modal titulo="Egreso y trámite de Tesorería" icono="wallet" ancho="lg" (cerrar)="egresoTesoreria.set(null);cargar()">
+    <app-egreso-financiero [egreso]="egreso"/>
+  </app-gp-modal>
+}

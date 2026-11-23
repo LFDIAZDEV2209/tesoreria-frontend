@@ -1,0 +1,572 @@
+:host {
+  display: block;
+  min-height: 60vh;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   "Todas las Empresas" — mismo lenguaje visual que Roles y Permisos:
+   tarjetas blancas, bordes suaves, chips y micro-interacciones.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Barra de herramientas (fija al hacer scroll) ─────────────────────── */
+.toolbar {
+  position: sticky;
+  top: 10px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid #e8edf3;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.09);
+}
+
+.toolbar__buscador {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 240px;
+  min-width: 200px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgb(var(--bdr-rgb) / .12);
+  background: var(--bg-elevated);
+  color: var(--tx-3);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.toolbar__buscador:focus-within {
+  border-color: rgba(4, 92, 148, 0.45);
+  box-shadow: 0 0 0 3px rgba(4, 92, 148, 0.1);
+  background: var(--bg-surface);
+}
+
+.toolbar__buscador input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--tx-1);
+}
+
+.toolbar__buscador input::placeholder { color: #b6c0cd; }
+
+.toolbar__buscador button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tx-3);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.toolbar__buscador button:hover {
+  color: #be123c;
+  background: rgba(225, 29, 72, 0.08);
+}
+
+.toolbar__chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar__conteo {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--tx-1);
+  background: rgba(4, 92, 148, 0.07);
+  border: 1px solid rgba(4, 92, 148, 0.14);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Chips de filtro rápido ───────────────────────────────────────────── */
+.chip-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--bdr-rgb) / .12);
+  background: var(--bg-elevated);
+  color: #334155;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.chip-filtro:hover {
+  border-color: rgba(4, 92, 148, 0.35);
+  background: rgba(4, 92, 148, 0.06);
+  transform: translateY(-1px);
+}
+
+.chip-filtro--activo {
+  border-color: var(--tx-1);
+  background: linear-gradient(90deg, var(--tx-1), var(--acc-solid));
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(4, 92, 148, 0.28);
+}
+
+.chip-filtro__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  padding: 0 5px;
+  height: 16px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--acc-solid);
+  background: rgba(4, 92, 148, 0.1);
+}
+
+.chip-filtro--activo .chip-filtro__num {
+  color: var(--tx-1);
+  background: #FFB71B;
+}
+
+/* ── Botón mini (limpiar filtros) ─────────────────────────────────────── */
+.btn-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid rgb(var(--bdr-rgb) / .12);
+  background: var(--bg-elevated);
+  color: #334155;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+}
+
+.btn-mini:hover {
+  border-color: rgba(4, 92, 148, 0.35);
+  background: rgba(4, 92, 148, 0.06);
+  transform: translateY(-1px);
+}
+
+/* ── Encabezado navy de la tabla ──────────────────────────────────────── */
+.gp-tabla-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background:
+    radial-gradient(120% 220% at 92% -30%, rgba(255, 183, 27, 0.16) 0%, transparent 55%),
+    linear-gradient(90deg, var(--tx-1) 0%, var(--tx-1) 55%, var(--acc-solid) 100%);
+}
+
+.gp-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gp-hero-pill--gold {
+  color: #FFD35C;
+  background: rgba(255, 183, 27, 0.14);
+  border-color: rgba(255, 183, 27, 0.4);
+}
+
+/* ── Tarjeta de ejecución global ──────────────────────────────────────── */
+.gp-chart-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.25s ease;
+}
+
+.card:hover .gp-chart-icon {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+.gp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.gp-chip--ok {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.08);
+  border-color: rgba(5, 150, 105, 0.25);
+}
+
+.gp-chip--warn {
+  color: #b45309;
+  background: rgba(255, 183, 27, 0.14);
+  border-color: rgba(255, 183, 27, 0.4);
+}
+
+.gp-chip--info {
+  color: var(--acc-solid);
+  background: rgba(4, 92, 148, 0.07);
+  border-color: rgba(4, 92, 148, 0.2);
+}
+
+/* ── Barras de progreso ───────────────────────────────────────────────── */
+.gp-barra {
+  position: relative;
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background: #edf1f6;
+  overflow: hidden;
+}
+
+.gp-barra--mini {
+  display: inline-block;
+  width: 76px;
+  height: 7px;
+  flex-shrink: 0;
+}
+
+.gp-barra-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--acc-solid), var(--tx-1));
+  transform-origin: left center;
+  animation: gpBarraCrece 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Brillo sutil que recorre la barra global */
+.gp-barra--global .gp-barra-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 46px;
+  left: -46px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  animation: gpBarraBrillo 2.8s ease-in-out infinite;
+}
+
+.gp-barra-fill { position: relative; overflow: hidden; }
+
+.gp-barra--global {
+  height: 12px;
+  box-shadow: inset 0 1px 2px rgba(33, 48, 83, 0.08);
+}
+
+.gp-barra__pct {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--tx-1);
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+  text-align: right;
+}
+
+.ejecucion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 132px;
+}
+
+.ejecucion__pct {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--tx-3);
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+}
+
+/* ── Tabla ────────────────────────────────────────────────────────────── */
+.tabla-empresas {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+}
+
+.gp-thead {
+  background: var(--bg-elevated);
+  border-bottom: 2px solid rgba(33, 48, 83, 0.1);
+}
+
+.gp-thead th {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg-elevated);
+  color: var(--tx-1);
+  padding: 0.75rem 1rem;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.gp-thead th:first-child { padding-left: 1.35rem; }
+.gp-thead th.num { text-align: right; }
+
+.th-orden {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.th-orden:hover { color: var(--acc-solid); }
+
+.flecha {
+  margin-left: 4px;
+  font-size: 10px;
+  opacity: 0.55;
+}
+
+.tabla-empresas tbody td {
+  padding: 0.78rem 1rem;
+  vertical-align: middle;
+}
+
+.tabla-empresas tbody td:first-child { padding-left: 1.35rem; }
+.tabla-empresas td.num { text-align: right; }
+
+/* Filas: hover degradado sutil como la bandeja */
+.gp-fila {
+  cursor: pointer;
+  outline: none;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gp-fila:hover,
+.gp-fila:focus-visible {
+  background: linear-gradient(135deg, rgba(4, 92, 148, 0.03) 0%, rgba(16, 185, 129, 0.06) 100%);
+}
+
+.gp-fila:focus-visible {
+  box-shadow: inset 0 0 0 2px rgba(4, 92, 148, 0.35);
+}
+
+/* Avatar de la empresa */
+.emp-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.emp-avatar--0 { background: linear-gradient(135deg, var(--acc-solid), var(--tx-1)); }
+.emp-avatar--1 { background: linear-gradient(135deg, #0F766E, #14B8A6); }
+.emp-avatar--2 { background: linear-gradient(135deg, #7C3AED, #A855F7); }
+.emp-avatar--3 { background: linear-gradient(135deg, #C2410C, #F59E0B); }
+.emp-avatar--4 { background: linear-gradient(135deg, #15803D, #22C55E); }
+.emp-avatar--5 { background: linear-gradient(135deg, #9D174D, #EC4899); }
+
+.gp-fila:hover .emp-avatar { transform: scale(1.07) rotate(-3deg); }
+
+.emp-nombre {
+  margin: 0;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tx-1);
+}
+
+.emp-resp {
+  margin: 2px 0 0;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--tx-3);
+}
+
+.emp-resp--vacio { font-style: italic; color: #cbd5e1; }
+
+/* Montos */
+.monto {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--tx-1);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.monto--cero { color: #cbd5e1; font-weight: 600; }
+.monto--warn { color: #b45309; }
+.monto--ok { color: #059669; }
+.monto--liq { color: var(--acc-solid); }
+
+.chip-sin-config {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tx-3);
+  background: var(--bg-elevated);
+  border: 1px dashed #cbd5e1;
+  white-space: nowrap;
+}
+
+/* Chip de estado */
+.estado-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.22rem 0.62rem;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.estado-chip--ok {
+  color: #059669;
+  background: rgba(5, 150, 105, 0.1);
+  border-color: rgba(5, 150, 105, 0.3);
+}
+
+.estado-chip--pendiente {
+  color: #b45309;
+  background: rgba(255, 183, 27, 0.16);
+  border-color: rgba(255, 183, 27, 0.45);
+}
+
+.estado-chip--sin-config {
+  color: var(--tx-3);
+  background: rgba(100, 116, 139, 0.1);
+  border-color: rgba(100, 116, 139, 0.25);
+}
+
+.estado-chip--sin-movimiento {
+  color: var(--tx-3);
+  background: var(--bg-elevated);
+  border-color: #e8edf3;
+}
+
+/* Flecha de la fila */
+.col-flecha { width: 44px; text-align: right; }
+
+.gp-fila-arrow {
+  color: #cbd5e1;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.gp-fila:hover .gp-fila-arrow {
+  color: var(--acc-solid);
+  transform: translateX(3px);
+}
+
+/* ── Leyenda ──────────────────────────────────────────────────────────── */
+.leyenda {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--tx-3);
+  margin: 0 0 0 4px;
+}
+
+.leyenda b { color: var(--tx-3); }
+
+/* ── Spin (botón actualizar) ──────────────────────────────────────────── */
+.gp-spin { animation: gpSpin 1s linear infinite; }
+
+/* ── Animaciones ──────────────────────────────────────────────────────── */
+@keyframes gpSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gpBarraCrece {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes gpBarraBrillo {
+  0% { left: -46px; }
+  60%, 100% { left: 100%; }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .col-ejecucion { display: none; }
+}
+
+@media (max-width: 1024px) {
+  .col-estado { display: none; }
+}
+
+@media (max-width: 640px) {
+  .emp-nombre,
+  .emp-resp { max-width: 180px; }
+  .toolbar { position: static; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gp-barra-fill,
+  .gp-barra--global .gp-barra-fill::after,
+  .gp-spin,
+  .emp-avatar,
+  .gp-fila-arrow { animation: none; transition: none; }
+}

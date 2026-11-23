@@ -1,0 +1,688 @@
+<div class="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#eef2f7] to-[#e0e7f1] relative overflow-hidden" @pageEnter>
+
+  <!-- ═══ ANIMATED BACKGROUND ELEMENTS ═══ -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <!-- ═══ TOAST NOTIFICATIONS ═══ -->
+  <div class="fixed top-4 right-4 z-[99999] flex flex-col gap-2">
+    <div
+      *ngFor="let toast of toasts"
+      @toastAnimation
+      class="toast-item"
+      [ngClass]="{
+        'toast-success': toast.type === 'success',
+        'toast-error': toast.type === 'error',
+        'toast-info': toast.type === 'info'
+      }"
+      (click)="removeToast(toast.id)"
+    >
+      <svg *ngIf="toast.type === 'success'" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <svg *ngIf="toast.type === 'error'" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <span class="text-sm font-medium">{{ toast.message }}</span>
+    </div>
+  </div>
+
+  <!-- ═══ SUCCESS OVERLAY ═══ -->
+  <div *ngIf="created()" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="success-card" @successAnimation>
+      <div class="success-icon-wrapper">
+        <svg class="w-16 h-16 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-[#213053] mt-4">¡Banco Creado!</h2>
+      <p class="text-gray-500 mt-2">La cuenta bancaria fue registrada exitosamente</p>
+      <div class="mt-4 flex items-center gap-2 text-sm text-gray-400">
+        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        Redirigiendo al listado...
+      </div>
+    </div>
+  </div>
+
+  <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ═══ TOP NAV BAR ═══ -->
+    <div class="flex items-center justify-between mb-6" @slideInLeft>
+      <button
+        (click)="goBack()"
+        class="back-button group"
+      >
+        <div class="back-icon">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider group-hover:text-[#045C94] transition-colors">Volver a</p>
+          <p class="text-sm font-bold text-[#213053] group-hover:text-[#045C94] transition-colors">Control de Bancos</p>
+        </div>
+      </button>
+
+      <div class="flex items-center gap-3">
+        <div class="completion-badge">
+          <svg class="completion-ring" viewBox="0 0 36 36">
+            <path
+              class="completion-ring-bg"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+            <path
+              class="completion-ring-fill"
+              [attr.stroke-dasharray]="completionPercentage + ', 100'"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+          </svg>
+          <span class="completion-text">{{ completionPercentage }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="page-header" @fadeInUp>
+      <div class="header-content">
+        <div class="header-icon-wrapper">
+          <div class="header-icon">
+            <svg class="w-8 h-8 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M12 4v16m8-8H4"/>
+            </svg>
+          </div>
+          <div class="header-icon-ring"></div>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-bold mb-1">
+            Nueva Cuenta Bancaria
+          </p>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Registrar Banco
+          </h1>
+          <p class="text-white/60 text-sm mt-1">
+            Complete el formulario para registrar una nueva cuenta bancaria
+          </p>
+        </div>
+      </div>
+
+      <!-- ═══ STEP INDICATOR ═══ -->
+      <div class="step-tracker">
+        <div class="step-item" [class.step-active]="formStep() >= 1" [class.step-done]="formStep() > 1" (click)="goToStep(1)">
+          <div class="step-number">
+            <span *ngIf="formStep() <= 1">1</span>
+            <svg *ngIf="formStep() > 1" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="step-label">
+            <span class="step-title">Datos Bancarios</span>
+            <span class="step-subtitle">Cuenta y entidad</span>
+          </div>
+        </div>
+
+        <div class="step-connector" [class.step-connector-done]="formStep() > 1">
+          <div class="step-connector-fill"></div>
+        </div>
+
+        <div class="step-item" [class.step-active]="formStep() >= 2" [class.step-done]="formStep() > 2" (click)="goToStep(2)">
+          <div class="step-number">
+            <span *ngIf="formStep() <= 2">2</span>
+            <svg *ngIf="formStep() > 2" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div class="step-label">
+            <span class="step-title">Contacto</span>
+            <span class="step-subtitle">Titular y datos</span>
+          </div>
+        </div>
+
+        <div class="step-connector" [class.step-connector-done]="formStep() > 2">
+          <div class="step-connector-fill"></div>
+        </div>
+
+        <div class="step-item" [class.step-active]="formStep() >= 3">
+          <div class="step-number">
+            <span>3</span>
+          </div>
+          <div class="step-label">
+            <span class="step-title">Documentos</span>
+            <span class="step-subtitle">Archivos adjuntos</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MAIN CONTENT AREA ═══ -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+
+      <!-- ═══ FORM PANEL (2 cols) ═══ -->
+      <div class="lg:col-span-2" @cardFloat>
+        <form [formGroup]="bancoForm" (ngSubmit)="saveBanco()">
+          <div class="form-card">
+
+            <!-- ────── STEP 1: Datos Bancarios ────── -->
+            <div *ngIf="formStep() === 1" class="form-step-content" @stepTransition>
+              <div class="form-section-header">
+                <div class="section-icon section-icon-blue">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-[#213053]">Datos Bancarios</h3>
+                  <p class="text-xs text-gray-400">Información de la cuenta y la entidad bancaria</p>
+                </div>
+              </div>
+
+              <div class="form-grid" @staggerIn>
+                <!-- Entidad Bancaria -->
+                <div class="form-field stagger-item">
+                  <label for="banco">
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/>
+                      </svg>
+                    </span>
+                    Entidad Bancaria
+                  </label>
+                  <div class="input-wrapper">
+                    <select id="banco" formControlName="banco" class="form-input form-select"
+                      [class.input-valid]="isFieldValid('banco')" [class.input-error]="isFieldInvalid('banco')">
+                      <option value="">Seleccionar banco...</option>
+                      <option *ngFor="let b of entidadesBancarias" [value]="b">{{ b }}</option>
+                    </select>
+                    <div class="input-indicator" *ngIf="isFieldValid('banco')">
+                      <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <span *ngIf="isFieldInvalid('banco')" class="form-error" @slideDown>Seleccione una entidad bancaria</span>
+                </div>
+
+                <!-- Nombre de la Cuenta -->
+                <div class="form-field stagger-item">
+                  <label for="nombreBanco">
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
+                      </svg>
+                    </span>
+                    Nombre de la Cuenta
+                  </label>
+                  <div class="input-wrapper">
+                    <input id="nombreBanco" type="text" formControlName="nombreBanco" class="form-input"
+                      [class.input-valid]="isFieldValid('nombreBanco')" [class.input-error]="isFieldInvalid('nombreBanco')"
+                      placeholder="Ej: Cuenta Principal Nómina" />
+                    <div class="input-indicator" *ngIf="isFieldValid('nombreBanco')">
+                      <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <span *ngIf="isFieldInvalid('nombreBanco')" class="form-error" @slideDown>El nombre es obligatorio</span>
+                </div>
+
+                <!-- Número de Cuenta -->
+                <div class="form-field stagger-item">
+                  <label for="numeroCuenta">
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                      </svg>
+                    </span>
+                    Número de Cuenta
+                  </label>
+                  <div class="input-wrapper">
+                    <input id="numeroCuenta" type="text" formControlName="numeroCuenta" class="form-input font-mono"
+                      [class.input-valid]="isFieldValid('numeroCuenta')" [class.input-error]="isFieldInvalid('numeroCuenta')"
+                      placeholder="0000-0000-0000" />
+                    <div class="input-indicator" *ngIf="isFieldValid('numeroCuenta')">
+                      <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <span *ngIf="isFieldInvalid('numeroCuenta')" class="form-error" @slideDown>Mínimo 6 caracteres</span>
+                </div>
+
+                <!-- Tipo de Cuenta -->
+                <div class="form-field stagger-item">
+                  <label>
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                      </svg>
+                    </span>
+                    Tipo de Cuenta
+                  </label>
+                  <div class="tipo-cuenta-group">
+                    <label
+                      *ngFor="let tipo of tiposCuenta"
+                      class="tipo-cuenta-card"
+                      [class.tipo-selected]="bancoForm.get('tipoCuenta')?.value === tipo"
+                    >
+                      <input type="radio" formControlName="tipoCuenta" [value]="tipo" class="hidden" />
+                      <div class="tipo-icon">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path *ngIf="tipo === 'Corriente'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                          <path *ngIf="tipo === 'Ahorros'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                        </svg>
+                      </div>
+                      <span class="tipo-label">{{ tipo }}</span>
+                      <div class="tipo-check" *ngIf="bancoForm.get('tipoCuenta')?.value === tipo">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Saldo Principal -->
+                <div class="form-field stagger-item">
+                  <label for="saldoPrincipal">
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1"/>
+                      </svg>
+                    </span>
+                    Saldo Principal
+                  </label>
+                  <div class="input-wrapper">
+                    <span class="input-prefix">COP</span>
+                    <input id="saldoPrincipal" type="number" formControlName="saldoPrincipal" class="form-input pl-14"
+                      [class.input-valid]="isFieldValid('saldoPrincipal')" [class.input-error]="isFieldInvalid('saldoPrincipal')"
+                      placeholder="0" />
+                  </div>
+                  <span *ngIf="isFieldInvalid('saldoPrincipal')" class="form-error" @slideDown>El saldo debe ser mayor o igual a 0</span>
+                </div>
+
+                <!-- Fecha de Apertura -->
+                <div class="form-field stagger-item">
+                  <label for="fechaApertura">
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      </svg>
+                    </span>
+                    Fecha de Apertura
+                  </label>
+                  <div class="input-wrapper">
+                    <input id="fechaApertura" type="date" formControlName="fechaApertura" class="form-input"
+                      [class.input-valid]="isFieldValid('fechaApertura')" [class.input-error]="isFieldInvalid('fechaApertura')" />
+                  </div>
+                  <span *ngIf="isFieldInvalid('fechaApertura')" class="form-error" @slideDown>La fecha es obligatoria</span>
+                </div>
+
+                <!-- Estado -->
+                <div class="form-field col-span-full stagger-item">
+                  <label>
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </span>
+                    Estado
+                  </label>
+                  <div class="flex items-center gap-3 mt-1">
+                    <label class="estado-option" [class.estado-active]="bancoForm.get('estado')?.value === 'Activo'">
+                      <input type="radio" formControlName="estado" value="Activo" class="hidden" />
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-200"></span>
+                      <span>Activo</span>
+                    </label>
+                    <label class="estado-option" [class.estado-inactive]="bancoForm.get('estado')?.value === 'Inactivo'">
+                      <input type="radio" formControlName="estado" value="Inactivo" class="hidden" />
+                      <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+                      <span>Inactivo</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ────── STEP 2: Contacto ────── -->
+            <div *ngIf="formStep() === 2" class="form-step-content" @stepTransition>
+              <div class="form-section-header">
+                <div class="section-icon section-icon-purple">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-[#213053]">Contacto y Titular</h3>
+                  <p class="text-xs text-gray-400">Datos del titular y contacto de la cuenta</p>
+                </div>
+              </div>
+
+              <div class="form-grid" @staggerIn>
+                <!-- Titular -->
+                <div class="form-field stagger-item">
+                  <label for="titular">
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                      </svg>
+                    </span>
+                    Titular de la Cuenta
+                  </label>
+                  <div class="input-wrapper">
+                    <input id="titular" type="text" formControlName="titular" class="form-input"
+                      [class.input-valid]="isFieldValid('titular')" [class.input-error]="isFieldInvalid('titular')"
+                      placeholder="Nombre del titular" />
+                    <div class="input-indicator" *ngIf="isFieldValid('titular')">
+                      <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <span *ngIf="isFieldInvalid('titular')" class="form-error" @slideDown>El titular es obligatorio</span>
+                </div>
+
+                <!-- Cédula -->
+                <div class="form-field stagger-item">
+                  <label for="cedula">
+                    <span class="field-label-icon">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/>
+                      </svg>
+                    </span>
+                    NIT / Cédula
+                  </label>
+                  <div class="input-wrapper">
+                    <input id="cedula" type="text" formControlName="cedula" class="form-input"
+                      placeholder="Número de documento" />
+                  </div>
+                </div>
+
+
+              </div>
+            </div>
+
+            <!-- ────── STEP 3: Documentos ────── -->
+            <div *ngIf="formStep() === 3" class="form-step-content" @stepTransition>
+              <div class="form-section-header">
+                <div class="section-icon section-icon-amber">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-[#213053]">Documentos Adjuntos</h3>
+                  <p class="text-xs text-gray-400">Certificados, resoluciones y comprobantes</p>
+                </div>
+              </div>
+
+              <div @staggerIn>
+                <!-- Drop Zone -->
+                <div
+                  class="dropzone stagger-item"
+                  (click)="fileInput.click()"
+                  (dragover)="$event.preventDefault()"
+                  (drop)="$event.preventDefault(); onFileSelected($event)"
+                >
+                  <input
+                    #fileInput
+                    type="file"
+                    multiple
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.gif"
+                    class="hidden"
+                    (change)="onFileSelected($event)"
+                  />
+                  <div class="dropzone-content">
+                    <div class="dropzone-icon">
+                      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                      </svg>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-sm font-semibold text-gray-600">
+                        Arrastra archivos aquí o <span class="text-[#045C94] font-bold underline cursor-pointer hover:text-[#0a7ac5]">haz clic para explorar</span>
+                      </p>
+                      <p class="text-xs text-gray-400 mt-1">PDF, Word, Excel, Imágenes — Máximo 10MB por archivo</p>
+                    </div>
+                    <div class="flex items-center gap-4 mt-3">
+                      <div class="format-badge format-pdf">PDF</div>
+                      <div class="format-badge format-doc">DOC</div>
+                      <div class="format-badge format-xls">XLS</div>
+                      <div class="format-badge format-img">IMG</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- File List -->
+                <div *ngIf="pendingDocuments.length > 0" class="mt-4 space-y-2">
+                  <div
+                    *ngFor="let file of pendingDocuments; let i = index"
+                    class="file-item stagger-item"
+                    @slideDown
+                  >
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                      <div class="file-icon" [ngClass]="{
+                          'file-icon-pdf': getFileIcon(file.name) === 'pdf',
+                          'file-icon-image': getFileIcon(file.name) === 'image',
+                          'file-icon-word': getFileIcon(file.name) === 'word',
+                          'file-icon-excel': getFileIcon(file.name) === 'excel',
+                          'file-icon-default': getFileIcon(file.name) === 'file'
+                        }">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold text-[#213053] truncate">{{ file.name }}</p>
+                        <p class="text-[10px] text-gray-400">{{ formatFileSize(file.size) }}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      (click)="removeFile(i)"
+                      class="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 flex-shrink-0"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Empty state for documents -->
+                <div *ngIf="pendingDocuments.length === 0" class="mt-4 text-center py-6 stagger-item">
+                  <div class="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                  </div>
+                  <p class="text-sm text-gray-400 font-medium">No hay documentos adjuntos</p>
+                  <p class="text-xs text-gray-300 mt-1">Los documentos son opcionales</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ FORM FOOTER ═══ -->
+            <div class="form-footer">
+              <div class="flex items-center gap-3">
+                <button
+                  *ngIf="formStep() > 1"
+                  type="button"
+                  (click)="prevStep()"
+                  class="btn-secondary"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                  </svg>
+                  Anterior
+                </button>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  (click)="goBack()"
+                  class="btn-ghost"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  *ngIf="formStep() < 3"
+                  type="button"
+                  (click)="nextStep()"
+                  class="btn-primary"
+                >
+                  Siguiente
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </button>
+
+                <button
+                  *ngIf="formStep() === 3"
+                  type="button"
+                  (click)="saveBanco()"
+                  [disabled]="saving()"
+                  class="btn-create"
+                >
+                  <svg *ngIf="saving()" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                  <svg *ngIf="!saving()" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  {{ saving() ? 'Creando...' : 'Crear Banco' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- ═══ SIDE PANEL (Preview Card) ═══ -->
+      <div class="lg:col-span-1 space-y-5" @slideInRight>
+
+        <!-- Live Preview Card -->
+        <div class="preview-card">
+          <div class="preview-header">
+            <svg class="w-4 h-4 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            <span class="text-xs font-bold text-white uppercase tracking-wider">Vista Previa</span>
+          </div>
+
+          <div class="preview-body">
+            <!-- Bank Card Preview -->
+            <div class="bank-preview-card">
+              <div class="bank-preview-top">
+                <div
+                  class="bank-avatar"
+                  [style.background]="'linear-gradient(135deg, ' + getSelectedBankColor() + ', ' + getSelectedBankColor() + '99)'"
+                >
+                  <span class="text-white text-lg font-black">{{ getSelectedBankInitials() }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-[#213053] truncate">
+                    {{ bancoForm.get('nombreBanco')?.value || 'Nombre de la cuenta' }}
+                  </p>
+                  <p class="text-xs text-gray-400 truncate">
+                    {{ bancoForm.get('banco')?.value || 'Entidad Bancaria' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="bank-preview-details">
+                <div class="preview-detail-row">
+                  <span class="preview-label">N° Cuenta</span>
+                  <span class="preview-value font-mono">{{ bancoForm.get('numeroCuenta')?.value || '----' }}</span>
+                </div>
+                <div class="preview-detail-row">
+                  <span class="preview-label">Tipo</span>
+                  <span class="preview-badge" [ngClass]="bancoForm.get('tipoCuenta')?.value === 'Corriente' ? 'badge-blue' : 'badge-amber'">
+                    {{ bancoForm.get('tipoCuenta')?.value || '--' }}
+                  </span>
+                </div>
+                <div class="preview-detail-row">
+                  <span class="preview-label">Saldo</span>
+                  <span class="preview-value text-emerald-600 font-bold">
+                    {{ (bancoForm.get('saldoPrincipal')?.value || 0) | currency : "COP" : "symbol" : "1.0-0" }}
+                  </span>
+                </div>
+                <div class="preview-detail-row">
+                  <span class="preview-label">Estado</span>
+                  <span
+                    class="inline-flex items-center gap-1 text-[10px] font-semibold"
+                    [ngClass]="bancoForm.get('estado')?.value === 'Activo' ? 'text-emerald-600' : 'text-gray-400'"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full" [ngClass]="bancoForm.get('estado')?.value === 'Activo' ? 'bg-emerald-400' : 'bg-gray-400'"></span>
+                    {{ bancoForm.get('estado')?.value || 'Activo' }}
+                  </span>
+                </div>
+                <div class="preview-detail-row" *ngIf="bancoForm.get('titular')?.value">
+                  <span class="preview-label">Titular</span>
+                  <span class="preview-value truncate">{{ bancoForm.get('titular')?.value }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="tips-card">
+          <h4 class="text-xs font-bold text-[#213053] uppercase tracking-wider mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Consejos
+          </h4>
+          <div class="space-y-3">
+            <div class="tip-item" *ngIf="formStep() === 1">
+              <div class="tip-icon tip-icon-blue">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01"/>
+                </svg>
+              </div>
+              <p class="text-[11px] text-gray-500 leading-relaxed">Use un <strong>nombre descriptivo</strong> para identificar fácilmente la cuenta</p>
+            </div>
+            <div class="tip-item" *ngIf="formStep() === 1">
+              <div class="tip-icon tip-icon-amber">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/>
+                </svg>
+              </div>
+              <p class="text-[11px] text-gray-500 leading-relaxed">Verifique el <strong>número de cuenta</strong> antes de continuar</p>
+            </div>
+            <div class="tip-item" *ngIf="formStep() === 2">
+              <div class="tip-icon tip-icon-purple">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                </svg>
+              </div>
+              <p class="text-[11px] text-gray-500 leading-relaxed">El <strong>titular</strong> debe coincidir con el nombre registrado en el banco</p>
+            </div>
+            <div class="tip-item" *ngIf="formStep() === 3">
+              <div class="tip-icon tip-icon-green">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586"/>
+                </svg>
+              </div>
+              <p class="text-[11px] text-gray-500 leading-relaxed">Adjuntar el <strong>certificado bancario</strong> ayuda a la validación</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

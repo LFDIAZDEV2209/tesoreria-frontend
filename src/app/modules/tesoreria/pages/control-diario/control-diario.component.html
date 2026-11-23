@@ -1,0 +1,74 @@
+<section class="control-shell">
+  <header class="control-header">
+    <div>
+      <p>Control Diario de Pagos</p>
+      <h1>Replica operativa de conciliacion diaria</h1>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button color="primary" type="button" (click)="volverBandeja()">{{ modalMode ? 'Cerrar' : 'Volver' }}</button>
+      <button mat-flat-button color="primary" type="button" (click)="guardar()">
+        <svg class="save-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        Guardar
+      </button>
+    </div>
+  </header>
+
+  <mat-card>
+    <div class="table-wrapper" *ngIf="!loading; else loadingTpl">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Banco</th>
+            <th>Cuenta</th>
+            <th>Empresa / UT</th>
+            <th>Saldo inicial</th>
+            <th>Ingresos por cliente</th>
+            <th>Ingresos por API</th>
+            <th>Otros ingresos</th>
+            <th>Total ingresos</th>
+            <th>Pagos proveedores</th>
+            <th>Pagos presupuesto</th>
+            <th>Pagos nomina</th>
+            <th>Rechazos</th>
+            <th>Gastos bancarios</th>
+            <th>Saldo final</th>
+            <th>Saldo bancario</th>
+            <th>Diferencia</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td><input type="date" [(ngModel)]="row.fecha" /></td>
+            <td><input type="text" [(ngModel)]="row.banco" /></td>
+            <td><input type="text" [(ngModel)]="row.cuenta" /></td>
+            <td><input type="text" [(ngModel)]="row.empresaUt" /></td>
+            <td><input type="number" [(ngModel)]="row.saldoInicial" /></td>
+            <td><input type="number" [(ngModel)]="row.ingresosCliente" /></td>
+            <td><input type="number" [(ngModel)]="row.ingresosApi" /></td>
+            <td><input type="number" [(ngModel)]="row.otrosIngresos" /></td>
+            <td class="calc">{{ totalIngresos(row) | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+            <td><input type="number" [(ngModel)]="row.pagosProveedores" /></td>
+            <td><input type="number" [(ngModel)]="row.pagosPresupuesto" /></td>
+            <td><input type="number" [(ngModel)]="row.pagosNomina" /></td>
+            <td><input type="number" [(ngModel)]="row.rechazos" /></td>
+            <td><input type="number" [(ngModel)]="row.gastosBancarios" /></td>
+            <td class="calc">{{ saldoFinal(row) | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+            <td><input type="number" [(ngModel)]="row.saldoBancario" /></td>
+            <td [class.diferencia-ok]="diferenciaSaldo(row) === 0" [class.diferencia-ko]="diferenciaSaldo(row) !== 0">
+              {{ diferenciaSaldo(row) | currency: 'COP' : 'symbol' : '1.0-0' }}
+            </td>
+            <td><input type="text" [(ngModel)]="row.observaciones" /></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #loadingTpl>
+      <p class="loading">Cargando control diario...</p>
+    </ng-template>
+  </mat-card>
+</section>

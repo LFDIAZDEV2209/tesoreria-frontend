@@ -1,0 +1,18 @@
+<section class="gp-budget-compare">
+  <app-historicos-tabs active="comparar" />
+  <header class="gp-compare-heading"><div><h1>Comparar presupuestos</h1><p>{{ctx.nombreEmpresa()}} · Dos vistas independientes de solo lectura.</p></div><button type="button" class="btn-ghost" (click)="intercambiar()">Intercambiar lados</button></header>
+  <div class="gp-compare-controls"><label>Presupuesto izquierdo<input class="field" type="month" aria-label="Mes del presupuesto izquierdo" [ngModel]="origen()" (ngModelChange)="cambiar('origen',$event)" /></label><label>Presupuesto derecho<input class="field" type="month" aria-label="Mes del presupuesto derecho" [ngModel]="destino()" (ngModelChange)="cambiar('destino',$event)" /></label></div>
+  <div class="gp-compare-panels" appAlinearModulos>
+    @for(panel of paneles();track $index){
+      <article class="gp-compare-panel" [attr.aria-label]="($index===0?'Presupuesto izquierdo: ':'Presupuesto derecho: ')+etiqueta(panel.periodo)">
+        <header class="gp-compare-panel-heading" data-compare-slot="0"><h2>{{etiqueta(panel.periodo)}}</h2><span>{{panel.error?'Consulta pendiente':panel.foto?'Histórico consolidado · Solo lectura':panel.loading?'Consultando…':'Sin información consolidada'}}</span></header>
+        @if(panel.loading){<div class="gp-compare-state" role="status">Consultando presupuesto…</div>}
+        @else if(panel.error){<div class="gp-compare-state" role="alert"><app-gp-empty-state icono="calendar" titulo="Consulta pendiente" [descripcion]="panel.error"><button acciones class="btn-primary" (click)="periodos.recargar()">Actualizar consulta</button></app-gp-empty-state></div>}
+        @else if(panel.foto){
+          <app-historico-presupuesto [consulta]="panel.foto" />
+        }
+        @else{<div class="gp-compare-state"><app-gp-empty-state icono="calendar" [titulo]="'Sin datos en '+etiqueta(panel.periodo)" descripcion="No hay un histórico consolidado de esta empresa para este mes. No se muestran datos de otro período." /></div>}
+      </article>
+    }
+  </div>
+</section>

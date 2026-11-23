@@ -1,0 +1,14 @@
+<div class="gp-native-page module-page" style="--module-accent:#7C3AED;max-width:1280px">
+  <app-gp-page-header icono="building" color="#7C3AED" titulo="Todas las Empresas" descripcion="Panorámica conjunta — aprobado, pagado y liquidez de cada contador">
+    <button acciones class="btn-ghost text-xs" (click)="cargar()" [disabled]="loading()"><app-gp-icon name="refresh" [size]="14"/>{{loading()?'Actualizando…':'Actualizar'}}</button>
+  </app-gp-page-header>
+  <div *ngIf="loading()" class="space-y-5"><app-gp-skeleton tipo="kpis"/><app-gp-skeleton tipo="table"/></div>
+  <app-gp-error-state *ngIf="error() && !loading()" [mensaje]="error()!" (reintentar)="cargar()"/>
+  <ng-container *ngIf="!loading() && !error()">
+    <div *ngIf="!filas().length" class="card p-10 text-center text-sm text-t2">No hay contadores activos todavía.</div>
+    <ng-container *ngIf="filas().length">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6"><app-gp-kpi label="Total pagado (todas)" [value]="totalPagado()" icon="wallet" variante="success"/><app-gp-kpi label="Aprobado, pendiente de pago" [value]="totalPendiente()" icon="clock" variante="warning"/><app-gp-kpi label="Liquidez disponible proyectada" [value]="totalLiquidez()" icon="credit-card"/></div>
+      <div class="card overflow-auto !p-0"><table class="w-full text-sm"><thead><tr class="bg-elevated text-t3 text-[11px] uppercase tracking-wider"><th class="px-4 py-3 text-left">Empresa</th><th class="px-4 py-3 text-right">Aprobado (total)</th><th class="px-4 py-3 text-right text-warn">Pendiente de pago</th><th class="px-4 py-3 text-right text-ok">Pagado</th><th class="px-4 py-3 text-right">Liquidez disponible</th><th></th></tr></thead><tbody>@for(f of filas();track f.empresaId){<tr class="border-b border-bdr/10 hover:bg-acc/5 cursor-pointer" (click)="ir(f)"><td class="px-4 py-3"><button class="text-left font-semibold text-t1" (click)="$event.stopPropagation();ir(f)">{{f.nombreEmpresa}}</button><p class="text-xs text-t3">{{f.responsable}}</p></td><td class="px-4 py-3 text-right font-semibold text-t1 whitespace-nowrap">{{cp(f.totalAprobado)}}</td><td class="px-4 py-3 text-right font-semibold text-warn whitespace-nowrap">{{cp(f.totalPendientePago)}}</td><td class="px-4 py-3 text-right font-semibold text-ok whitespace-nowrap">{{cp(f.totalPagado)}}</td><td class="px-4 py-3 text-right font-semibold text-t1 whitespace-nowrap">{{f.totalDisponible===null?'Sin configurar':cp(f.totalDisponible)}}</td><td class="px-4 py-3"><app-gp-icon name="arrow-right" [size]="14"/></td></tr>}</tbody></table></div>
+    </ng-container>
+  </ng-container>
+</div>

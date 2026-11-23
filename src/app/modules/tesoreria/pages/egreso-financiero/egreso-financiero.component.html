@@ -1,0 +1,190 @@
+<section class="ef-page">
+  <a routerLink="/tesoreria/bandeja" class="ef-back">← Volver a Cargue de C. Egreso</a>
+
+  <!-- === HERO === -->
+  <header class="ef-hero">
+    <div>
+      <span class="ef-eyebrow">Cargue de C. Egreso</span>
+      <h1>Egreso {{ e.numeroEgreso || e.numeroFactura }}</h1>
+      <p>{{ e.proveedorNombre || e.conceptoPresupuestal || 'Egreso de nómina' }}</p>
+      <small>
+        {{ e.empresaNombre || '' }}
+        <span *ngIf="e.nitProveedor"> · NIT {{ e.nitProveedor }}</span>
+        <span *ngIf="e.fecha"> · {{ e.fecha }}</span>
+      </small>
+    </div>
+    <div class="ef-hero__amount">
+      <span>Neto a pagar</span>
+      <strong>{{ formatear(e.valorNetoPagar ?? e.valor) }}</strong>
+      <span class="ef-status">{{ estadoTexto }}</span>
+    </div>
+  </header>
+
+  <!-- === DEVUELTO / NEGADO POR GERENCIA FINANCIERA === -->
+  @if (estado === 'REGISTRADO' && e.motivoRevision) {
+    <section class="ef-panel ef-next ef-next--warn" style="margin-bottom: 18px;">
+      <span class="ef-next__icon" aria-hidden="true">{{ e.motivoRevision.startsWith('NEGACIÓN') ? '✕' : '↩' }}</span>
+      <div>
+        <strong>
+          {{ e.motivoRevision.startsWith('NEGACIÓN') ? 'Egreso negado por Gerencia Financiera' : 'Egreso devuelto por Gerencia Financiera' }}
+        </strong>
+        <p>Causal: {{ e.motivoRevision }}</p>
+        <p style="margin-top: 0.35rem;">
+          Puedes reemplazar el comprobante de egreso y volver a enviarlo a aprobación.
+        </p>
+      </div>
+    </section>
+  }
+
+  <!-- === PASOS === -->
+  <ol class="ef-steps" aria-label="Avance del egreso">
+    <li class="is-complete" [class.is-current]="puedeCargar && !tieneDocumento">
+      <b>{{ tieneDocumento ? '✓' : '1' }}</b>
+      <span>Cargar C. Egreso<small>Adjuntar el comprobante de egreso</small></span>
+    </li>
+    <li [class.is-complete]="enRevision || aprobado" [class.is-current]="puedeEnviar">
+      <b>{{ enRevision || aprobado ? '✓' : '2' }}</b>
+      <span>Enviar a aprobación<small>Gerencia Financiera revisa el egreso</small></span>
+    </li>
+    <li [class.is-complete]="aprobado" [class.is-current]="enRevision">
+      <b>{{ aprobado ? '✓' : '3' }}</b>
+      <span>Aprobado<small>Pasa al módulo de Tesorería para el pago</small></span>
+    </li>
+  </ol>
+
+  <!-- === FEEDBACK === -->
+  @if (error()) {
+    <p role="alert" class="ef-feedback ef-feedback--error">{{ error() }}</p>
+  }
+  @if (mensaje()) {
+    <p role="status" class="ef-feedback ef-feedback--success">✓ {{ mensaje() }}</p>
+  }
+
+  <!-- === COMPROBANTE DE EGRESO (único documento) === -->
+  <section class="ef-panel">
+    <div class="ef-panel__heading">
+      <span class="ef-step-number">1</span>
+      <div>
+        <h2>Comprobante de egreso</h2>
+        <p>Adjunta el documento de egreso (una sola vez). Es el soporte con el que Tesorería comparará el comprobante de pago.</p>
+      </div>
+      @if (tieneDocumento) {
+        <span class="ef-doc-badge">Cargado</span>
+      }
+    </div>
+
+    @if (tieneDocumento) {
+      <div class="ef-doc-row">
+        <div class="ef-doc-row__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="ef-doc-row__info">
+          <strong>{{ nombreDocumento }}</strong>
+          <span>Documento de egreso adjunto</span>
+        </div>
+        <div class="ef-doc-row__actions">
+          <button type="button" class="ef-secondary" (click)="verDocumento()">Ver documento</button>
+          @if (puedeCargar) {
+            <label class="ef-secondary ef-secondary--file" [class.is-disabled]="subiendo()">
+              Reemplazar
+              <input type="file" accept=".pdf,.png,.jpg,.jpeg" [disabled]="subiendo()" (change)="seleccionarArchivo($event)">
+            </label>
+          }
+        </div>
+      </div>
+    } @else if (puedeCargar) {
+      <label class="ef-upload" [class.is-disabled]="subiendo()" [class.ef-upload--drag]="arrastrando()"
+             (dragover)="arrastrarSobreArchivo($event)" (dragleave)="salirArrastreArchivo()" (drop)="soltarArchivo($event)">
+        <span class="ef-upload__icon" aria-hidden="true">↑</span>
+        <strong>{{ arrastrando() ? 'Suelta el documento aquí' : 'Carga el comprobante de egreso' }}</strong>
+        <span><strong>Arrastra el documento aquí</strong> o usa el botón «Seleccionar archivo»</span>
+        <input type="file" accept=".pdf,.png,.jpg,.jpeg" [disabled]="subiendo()" (change)="seleccionarArchivo($event)">
+        <small>PDF, PNG o JPG · Hasta 20 MB · Debe corresponder al egreso {{ e.numeroEgreso || e.numeroFactura }} de {{ e.proveedorNombre || 'la empresa' }}.</small>
+      </label>
+    } @else {
+      <p class="ef-feedback">Sin comprobante de egreso adjunto.</p>
+    }
+
+    @if (subiendo()) {
+      <div class="ef-upload-progress" role="status">
+        <p>Subiendo comprobante de egreso… <strong>{{ progreso() === null ? '' : progreso() + '%' }}</strong></p>
+        <div role="progressbar" aria-label="Carga del comprobante de egreso" aria-valuemin="0" aria-valuemax="100"
+          [attr.aria-valuenow]="progreso()">
+          <i [style.width.%]="progreso() ?? 10"></i>
+        </div>
+      </div>
+    }
+  </section>
+
+  <!-- === FACTURAS DEL PROVEEDOR QUE CUBRE EL EGRESO (un egreso por proveedor) === -->
+  @if (facturas.length) {
+    <section class="ef-panel">
+      <div class="ef-panel__heading">
+        <span class="ef-step-number ef-step-number--check">✓</span>
+        <div>
+          <h2>Facturas aprobadas del proveedor</h2>
+          <p>Todas las facturas que cubre este egreso; el comprobante es único por proveedor.</p>
+        </div>
+        <span class="ef-counter">{{ facturas.length }} factura(s) · {{ formatear(totalFacturas) }}</span>
+      </div>
+      <div class="ef-facturas">
+        @for (f of facturas; track f.pagoId; let i = $index) {
+          <div class="ef-factura">
+            <span class="ef-factura__n">{{ i + 1 }}</span>
+            <div class="ef-factura__info">
+              <strong>{{ f.concepto || 'Factura' }}</strong>
+              <small>Vence {{ fechaCorta(f.fecha) }}</small>
+            </div>
+            <span class="ef-factura__estado" [ngClass]="claseEstadoFactura(f)">{{ estadoFactura(f) }}</span>
+            <strong class="ef-factura__monto">{{ formatear(f.monto) }}</strong>
+          </div>
+        }
+      </div>
+      <div class="ef-facturas__total">
+        <span>Total {{ facturas.length }} factura(s)</span>
+        <strong>{{ formatear(totalFacturas) }}</strong>
+      </div>
+    </section>
+  }
+
+  <!-- === ACCIONES SEGÚN ESTADO === -->
+  @if (estado === 'REGISTRADO') {
+    <section class="ef-panel ef-panel--accion">
+      <div class="ef-panel__heading">
+        <span class="ef-step-number">2</span>
+        <div>
+          <h2>Enviar a aprobación</h2>
+          <p>Al enviarlo, Gerencia Financiera lo revisa y aprueba. Solo entonces pasa al módulo de Tesorería para el pago.</p>
+        </div>
+      </div>
+      <div class="ef-panel__footer">
+        <span>{{ tieneDocumento ? 'Comprobante de egreso listo.' : 'Adjunta el comprobante de egreso para poder enviarlo.' }}</span>
+        <button type="button" class="ef-primary" [disabled]="!puedeEnviar || ocupado()" (click)="enviarAprobacion()">
+          Enviar a aprobación de Gerencia Financiera <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    </section>
+  } @else if (enRevision) {
+    <section class="ef-panel ef-next ef-next--warn">
+      <span class="ef-next__icon" aria-hidden="true">⏳</span>
+      <div>
+        <strong>Egreso en revisión de Gerencia Financiera</strong>
+        <p>Cuando sea aprobado pasará automáticamente al módulo de Tesorería para adjuntar el comprobante de pago.</p>
+      </div>
+    </section>
+  } @else if (aprobado) {
+    <section class="ef-panel ef-next ef-next--success">
+      <span class="ef-next__icon" aria-hidden="true">✓</span>
+      <div>
+        <strong>Egreso aprobado por Gerencia Financiera</strong>
+        <p>Continúa en el módulo de Tesorería: adjunta el comprobante de pago; se comparará con este documento de egreso y el proceso quedará conciliado.</p>
+      </div>
+      <a class="ef-primary" [routerLink]="['/tesoreria/pagos']" [queryParams]="{ egreso: e.id }">
+        Ir al módulo de Tesorería <span aria-hidden="true">→</span>
+      </a>
+    </section>
+  }
+</section>

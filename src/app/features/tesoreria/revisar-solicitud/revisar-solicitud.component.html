@@ -1,0 +1,868 @@
+<div class="rv-page">
+
+  <!-- ═══ ANIMATED BACKGROUND ═══ -->
+  <div class="rv-bg" aria-hidden="true">
+    <div class="rv-bg__orb rv-bg__orb--1"></div>
+    <div class="rv-bg__orb rv-bg__orb--2"></div>
+    <div class="rv-bg__orb rv-bg__orb--3"></div>
+    <div class="rv-bg__grid"></div>
+  </div>
+
+  <div class="rv-container">
+
+    <!-- ═══ TOP NAV ═══ -->
+    <div class="rv-topnav">
+      <button class="rv-back-btn" (click)="volver()">
+        <div class="rv-back-btn__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </div>
+        <div class="rv-back-btn__text">
+          <span class="rv-back-btn__label">Volver a</span>
+          <span class="rv-back-btn__title">Bandeja de Solicitudes</span>
+        </div>
+      </button>
+
+      @if (solicitud()) {
+        <span class="rv-estado-badge"
+          [class.rv-estado-badge--pending]="solicitud()!.estado === 'PENDIENTE_ENVIO_COMPRAS'"
+          [class.rv-estado-badge--sent]="solicitud()!.estado === 'ENVIADA_COMPRAS'"
+          [class.rv-estado-badge--rejected]="solicitud()!.estado === 'RECHAZADA_COMPRAS'">
+          <span class="rv-estado-badge__dot"></span>
+          {{ getEstadoLabel(solicitud()!.estado) }}
+        </span>
+      }
+    </div>
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="rv-header">
+      <div class="rv-header__content">
+        <div class="rv-header__icon-wrap">
+          <div class="rv-header__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+          </div>
+          <div class="rv-header__icon-ring"></div>
+        </div>
+        <div>
+          <p class="rv-header__eyebrow">Tesorería</p>
+          @if (loading()) {
+            <h1 class="rv-header__title">Cargando solicitud...</h1>
+          } @else if (solicitud()) {
+            <h1 class="rv-header__title">Revisar Solicitud</h1>
+            <p class="rv-header__subtitle">
+              <span class="rv-header__code">S-{{ ('000' + solicitud()!.id).slice(-3) }}</span>
+              · {{ getTipoLabel(solicitud()!.tipoRequerimiento) }}
+            </p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ LOADING ═══ -->
+    @if (loading()) {
+      <div class="rv-loading">
+        <div class="rv-spinner"></div>
+        <p>Cargando solicitud...</p>
+      </div>
+    }
+
+    <!-- ═══ ERROR ═══ -->
+    @if (!loading() && errorMsg()) {
+      <div class="rv-error">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p>{{ errorMsg() }}</p>
+        <button (click)="volver()">Volver a la bandeja</button>
+      </div>
+    }
+
+    <!-- ═══ MAIN CONTENT ═══ -->
+    @if (!loading() && !errorMsg() && solicitud()) {
+      <div class="rv-layout">
+
+        <!-- LEFT: Content -->
+        <div class="rv-main">
+
+          <!-- Tabs -->
+          <div class="rv-tabs">
+            <button class="rv-tab" [class.rv-tab--active]="activeSection() === 'info'" (click)="setSection('info')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Solicitante
+            </button>
+            <button class="rv-tab" [class.rv-tab--active]="activeSection() === 'detalles'" (click)="setSection('detalles')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Detalles
+            </button>
+            <button class="rv-tab" [class.rv-tab--active]="activeSection() === 'historial'" (click)="setSection('historial')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Historial
+            </button>
+          </div>
+
+          <!-- ─── Solicitante ─── -->
+          @if (activeSection() === 'info') {
+            <div class="rv-card rv-card--animate">
+              <div class="rv-section-header">
+                <div class="rv-section-icon rv-section-icon--blue">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="rv-section-title">Información del Solicitante</h3>
+                  <p class="rv-section-subtitle">Datos personales y de contacto</p>
+                </div>
+              </div>
+
+              <!-- ─── Subsección: Datos del Solicitante ─── -->
+              <div class="rv-subsec">
+                <div class="rv-subsec__header rv-subsec__header--blue">
+                  <div class="rv-subsec__header-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <span class="rv-subsec__label">Datos del Solicitante</span>
+                    <span class="rv-subsec__hint">Información personal y de contacto</span>
+                  </div>
+                </div>
+                <div class="rv-subsec__body">
+                  <div class="rv-profile">
+                    <div class="rv-avatar">{{ getAvatarLetter() }}</div>
+                    <div class="rv-profile__info">
+                      <h3 class="rv-profile__name">{{ solicitud()!.nombre }}</h3>
+                      <p class="rv-profile__role">{{ solicitud()!.cargo || '—' }}</p>
+                    </div>
+                  </div>
+                  <div class="rv-info-grid">
+                    <div class="rv-field">
+                      <label>Área / Departamento</label>
+                      <p>{{ solicitud()!.areaDepartamento || '—' }}</p>
+                    </div>
+                    <div class="rv-field">
+                      <label>Empresa / Centro de Costos</label>
+                      <p>{{ solicitud()!.empresaCentroCostos || '—' }}</p>
+                    </div>
+                    <div class="rv-field">
+                      <label>Correo Electrónico</label>
+                      <p class="rv-field--email">{{ solicitud()!.correoElectronico || '—' }}</p>
+                    </div>
+                    <div class="rv-field">
+                      <label>Teléfono de Contacto</label>
+                      <p>{{ solicitud()!.telefonoContacto || '—' }}</p>
+                    </div>
+                    <div class="rv-field">
+                      <label>Fecha de Solicitud</label>
+                      <p>{{ formatFecha(solicitud()!.fechaSolicitud) }}</p>
+                    </div>
+                    <div class="rv-field">
+                      <label>¿Es Compra?</label>
+                      <p>
+                        <span class="rv-bool-badge" [class.rv-bool-badge--yes]="solicitud()!.esCompra">
+                          {{ solicitud()!.esCompra ? 'Sí' : 'No' }}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                  @if (solicitud()!.observaciones) {
+                    <div class="rv-obs-block">
+                      <label>Observaciones del Solicitante</label>
+                      <p>{{ solicitud()!.observaciones }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+            </div>
+          }
+
+          <!-- ─── Detalles del Requerimiento ─── -->
+          @if (activeSection() === 'detalles') {
+            <div class="rv-card rv-card--animate">
+              <div class="rv-section-header">
+                <div class="rv-section-icon rv-section-icon--purple">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="rv-section-title">{{ getTipoLabel(solicitud()!.tipoRequerimiento) }}</h3>
+                  <p class="rv-section-subtitle">
+                    @if (solicitud()!.otroRequerimiento) {
+                      {{ solicitud()!.otroRequerimiento }}
+                    } @else {
+                      Datos específicos del requerimiento
+                    }
+                  </p>
+                </div>
+              </div>
+
+              @if (solicitud()!.tipoRequerimiento === 'MATERIA_PRIMA') {
+                <!-- ═══ MATERIA PRIMA VIEWER ═══ -->
+                <div class="mp-viewer">
+
+                  <!-- Datos del solicitante -->
+                  <div class="mp-viewer__solicitante">
+                    <p class="mp-viewer__subsec-title">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                      Datos del Solicitante
+                    </p>
+                    <div class="mp-viewer__sol-grid">
+                      <div class="mp-viewer__sol-field">
+                        <label>Empresa</label>
+                        <span class="mp-viewer__sol-val">{{ solicitud()!.empresaCentroCostos || 'No seleccionada' }}</span>
+                      </div>
+                      <div class="mp-viewer__sol-field">
+                        <label>Área</label>
+                        <span class="mp-viewer__sol-val">{{ solicitud()!.areaDepartamento || 'No seleccionada' }}</span>
+                      </div>
+                    </div>
+                    @if (getMPFechaEntrega()) {
+                      <div class="mp-viewer__fecha-row">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <label>Fecha de Entrega</label>
+                        <span class="mp-viewer__fecha-badge">
+                          {{ getMPFechaEntrega() }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+
+                  <div class="mp-viewer__divider"></div>
+
+                  <!-- Planeaciones de Materia Prima -->
+                  <div class="mp-viewer__planeaciones">
+                    <div class="mp-viewer__planeaciones-header">
+                      <p class="mp-viewer__subsec-title">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                        Planeaciones de Materia Prima
+                      </p>
+                      @if (getMPArchivos().length > 0) {
+                        <span class="mp-viewer__badge">{{ getMPArchivos().length }}/{{ getMPArchivos().length }}</span>
+                      }
+                    </div>
+
+                    @if (getMPArchivos().length === 0) {
+                      <div class="mp-viewer__empty-files">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <p>No se adjuntaron planeaciones de materia prima</p>
+                      </div>
+                    }
+
+                  @for (archivo of getMPArchivos(); track archivo.nombre; let ai = $index) {
+                    <div class="mp-viewer__archivo"
+                         [class.mp-viewer__archivo--expanded]="mpArchivoExpandido() === ai">
+
+                      <!-- Archivo header -->
+                      <div class="mp-viewer__archivo-header" (click)="mpToggleExpand(ai)">
+                        <div class="mp-viewer__archivo-left">
+                          <span class="mp-viewer__archivo-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                          </span>
+                          <div class="mp-viewer__archivo-info">
+                            <span class="mp-viewer__arch-num">Planeación {{ ai + 1 }}</span>
+                            <p class="mp-viewer__archivo-nombre">{{ archivo.nombre }}</p>
+                            <p class="mp-viewer__archivo-meta">
+                              {{ archivo.tamano }}
+                              @if (archivo.hojas?.length > 0) {
+                                <span class="mp-viewer__sep">·</span>
+                                <span>{{ archivo.hojas[0].nombre }}</span>
+                              }
+                            </p>
+                          </div>
+                        </div>
+                        <div class="mp-viewer__archivo-right">
+                          <span class="mp-viewer__archivo-status">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Procesado
+                          </span>
+                          @if (archivo.fileUrl) {
+                            <a class="mp-viewer__archivo-view" [href]="archivo.fileUrl" target="_blank" rel="noopener noreferrer" (click)="$event.stopPropagation()" title="Ver documento original">
+                              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </a>
+                          }
+                          <svg class="mp-viewer__archivo-chevron" [class.mp-viewer__archivo-chevron--open]="mpArchivoExpandido() === ai" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                          </svg>
+                        </div>
+                      </div>
+
+                      <!-- Archivo body (expanded) -->
+                      @if (mpArchivoExpandido() === ai) {
+                        <div class="mp-viewer__archivo-body">
+
+                          <!-- Hojas tabs + vista toggle -->
+                          <div class="mp-viewer__toolbar">
+                            <div class="mp-viewer__hojas-tabs">
+                              @for (hoja of archivo.hojas; track hoja.nombre; let hi = $index) {
+                                <button class="mp-viewer__hoja-tab"
+                                        [class.mp-viewer__hoja-tab--active]="mpGetHojaActiva(ai, archivo) === hi"
+                                        (click)="mpCambiarHoja(ai, hi); $event.stopPropagation()">
+                                  <span class="mp-viewer__hoja-dot"></span>
+                                  {{ hoja.nombre }}
+                                  <span class="mp-viewer__hoja-count">{{ hoja.totalFilas }}</span>
+                                </button>
+                              }
+                            </div>
+                            <div class="mp-viewer__vista-toggle">
+                              <button class="mp-viewer__vista-btn"
+                                      [class.mp-viewer__vista-btn--active]="mpGetVista(ai) === 'resumen'"
+                                      (click)="mpSetVista(ai, 'resumen'); $event.stopPropagation()">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                                Resumen
+                              </button>
+                              <button class="mp-viewer__vista-btn"
+                                      [class.mp-viewer__vista-btn--active]="mpGetVista(ai) === 'detalle'"
+                                      (click)="mpSetVista(ai, 'detalle'); $event.stopPropagation()">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                                Detalle
+                              </button>
+                            </div>
+                          </div>
+
+                          <!-- Bodega / datos de entrega y consumo -->
+                          <div class="mp-viewer__bodega">
+                            <div class="mp-viewer__bodega-header">
+                              <div class="mp-viewer__bodega-header-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                              </div>
+                              <div class="mp-viewer__bodega-header-text">
+                                <span class="mp-viewer__bodega-title">{{ archivo.hojas[mpGetHojaActiva(ai, archivo)]?.nombre || 'Bodega' }}</span>
+                                <span class="mp-viewer__bodega-subtitle">Datos de entrega y consumo para esta bodega</span>
+                              </div>
+                              <span class="mp-viewer__bodega-status"
+                                    [class.mp-viewer__bodega-status--done]="mpGetCostoPorCategoria(archivo, mpGetHojaActiva(ai, archivo)).length > 0">
+                                <span class="mp-viewer__bodega-status-dot"></span>
+                                {{ mpGetCostoPorCategoria(archivo, mpGetHojaActiva(ai, archivo)).length > 0 ? 'Datos procesados' : 'Pendiente' }}
+                              </span>
+                            </div>
+
+                            <!-- Observaciones (read-only) -->
+                            <div class="mp-viewer__bodega-obs">
+                              <div class="mp-viewer__bodega-section-label">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                                <div>
+                                  <span class="mp-viewer__bodega-section-title">Observaciones</span>
+                                  <span class="mp-viewer__bodega-section-hint">Notas o instrucciones especiales</span>
+                                </div>
+                              </div>
+                              <div class="mp-viewer__bodega-obs-text">
+                                {{ mpGetDatosBodega(archivo, mpGetHojaActiva(ai, archivo)).observaciones || 'Sin observaciones registradas' }}
+                              </div>
+                            </div>
+
+                            <!-- Fechas de consumo por categoría (read-only) -->
+                            @if (mpGetCategoriasDeHoja(archivo, mpGetHojaActiva(ai, archivo)).length > 0) {
+                              <div class="mp-viewer__bodega-categorias">
+                                <div class="mp-viewer__bodega-cat-header">
+                                  <div class="mp-viewer__bodega-cat-header-left">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    <div>
+                                      <span class="mp-viewer__bodega-section-title">Fechas de Consumo por Categoría</span>
+                                      <span class="mp-viewer__bodega-section-hint">Fecha de consumo asignada por el solicitante</span>
+                                    </div>
+                                  </div>
+                                  <span class="mp-viewer__bodega-cat-count">
+                                    {{ mpGetCategoriasDeHoja(archivo, mpGetHojaActiva(ai, archivo)).length }}
+                                    <span class="mp-viewer__bodega-cat-count-label">categorías</span>
+                                  </span>
+                                </div>
+                                <div class="mp-viewer__bodega-cat-grid">
+                                  @for (cat of mpGetCategoriasDeHoja(archivo, mpGetHojaActiva(ai, archivo)); track cat) {
+                                    <div class="mp-viewer__bodega-cat-card"
+                                         [class.mp-viewer__bodega-cat-card--filled]="mpGetDatosBodega(archivo, mpGetHojaActiva(ai, archivo)).fechasConsumoCategoria?.[cat]">
+                                      <div class="mp-viewer__bodega-cat-indicator"
+                                           [class.mp-viewer__bodega-cat-indicator--active]="mpGetDatosBodega(archivo, mpGetHojaActiva(ai, archivo)).fechasConsumoCategoria?.[cat]">
+                                        @if (mpGetDatosBodega(archivo, mpGetHojaActiva(ai, archivo)).fechasConsumoCategoria?.[cat]) {
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                        }
+                                      </div>
+                                      <span class="mp-viewer__bodega-cat-name" [title]="cat">{{ cat }}</span>
+                                      <span class="mp-viewer__bodega-cat-fecha">
+                                        {{ mpGetDatosBodega(archivo, mpGetHojaActiva(ai, archivo)).fechasConsumoCategoria?.[cat] || 'Sin fecha' }}
+                                      </span>
+                                    </div>
+                                  }
+                                </div>
+                              </div>
+                            }
+                          </div>
+
+                          <!-- ═══ VISTA RESUMEN ═══ -->
+                          @if (mpGetVista(ai) === 'resumen') {
+                            <div class="mp-viewer__resumen">
+
+                              @if (mpGetInfoHojaActiva(archivo, mpGetHojaActiva(ai, archivo)).length > 0) {
+                                <div class="mp-viewer__resumen-section">
+                                  <p class="mp-viewer__resumen-section-title">INFORMACIÓN GENERAL</p>
+                                  <div class="mp-viewer__kv-cards">
+                                    @for (kv of mpGetInfoHojaActiva(archivo, mpGetHojaActiva(ai, archivo)); track kv.key) {
+                                      <div class="mp-viewer__kv-card">
+                                        <span class="mp-viewer__kv-label">{{ kv.key }}</span>
+                                        <span class="mp-viewer__kv-value">{{ kv.value || '—' }}</span>
+                                      </div>
+                                    }
+                                  </div>
+                                </div>
+                              }
+
+                              @let resumen = mpGetResumen(archivo, ai);
+                              <div class="mp-viewer__resumen-section">
+                                <p class="mp-viewer__resumen-section-title">ESTADÍSTICAS</p>
+                                <div class="mp-viewer__stats-row">
+                                  @if (mpGetInfoHojaActiva(archivo, mpGetHojaActiva(ai, archivo)).length > 0) {
+                                    <div class="mp-viewer__destino-card">
+                                      <label>DESTINO</label>
+                                      <span>{{ mpGetInfoHojaActiva(archivo, mpGetHojaActiva(ai, archivo))[0]?.value || archivo.hojas[mpGetHojaActiva(ai, archivo)]?.nombre || '—' }}</span>
+                                    </div>
+                                  }
+                                  <div class="mp-viewer__stat-card">
+                                    <span class="mp-viewer__stat-num">{{ resumen.totalFilas }}</span>
+                                    <span class="mp-viewer__stat-label">Productos Total</span>
+                                  </div>
+                                  @if (resumen.categorias.length > 0) {
+                                    <div class="mp-viewer__stat-card">
+                                      <span class="mp-viewer__stat-num">{{ resumen.categorias.length }}</span>
+                                      <span class="mp-viewer__stat-label">Categorías</span>
+                                    </div>
+                                  }
+                                  <div class="mp-viewer__stat-card mp-viewer__stat-card--money">
+                                    <span class="mp-viewer__stat-num">{{ mpFormatMoneda(resumen.totalCosto) }}</span>
+                                    <span class="mp-viewer__stat-label">Costo Total</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              @if (archivo.hojas?.length > 1) {
+                                <div class="mp-viewer__resumen-section">
+                                  <p class="mp-viewer__resumen-section-title">HOJA DE DATOS</p>
+                                  <div class="mp-viewer__sede-list">
+                                    @for (hoja of archivo.hojas; track hoja.nombre; let hi = $index) {
+                                      <div class="mp-viewer__sede-card"
+                                           (click)="mpCambiarHoja(ai, hi); mpSetVista(ai, 'detalle'); $event.stopPropagation()">
+                                        <div class="mp-viewer__sede-card-header">
+                                          <span class="mp-viewer__sede-card-name">{{ hoja.nombre }}</span>
+                                          <span class="mp-viewer__sede-card-badge">{{ hoja.totalFilas }} items</span>
+                                        </div>
+                                        <div class="mp-viewer__sede-card-cols">
+                                          @for (col of hoja.encabezados.slice(0, 5); track col) {
+                                            <span class="mp-viewer__sede-card-col">{{ col }}</span>
+                                          }
+                                          @if (hoja.encabezados.length > 5) {
+                                            <span class="mp-viewer__sede-card-col mp-viewer__sede-card-col--more">+{{ hoja.encabezados.length - 5 }} más</span>
+                                          }
+                                        </div>
+                                        <span class="mp-viewer__sede-card-action">Ver detalle →</span>
+                                      </div>
+                                    }
+                                  </div>
+                                </div>
+                              }
+
+                              @if (resumen.categorias.length > 0) {
+                                <div class="mp-viewer__resumen-section">
+                                  <p class="mp-viewer__resumen-section-title">CATEGORÍAS ENCONTRADAS</p>
+                                  <div class="mp-viewer__cat-tags">
+                                    @for (cat of resumen.categorias; track cat) {
+                                      <span class="mp-viewer__cat-tag">{{ cat }}</span>
+                                    }
+                                  </div>
+                                </div>
+                              }
+
+                              @if (mpGetCostoPorCategoria(archivo, mpGetHojaActiva(ai, archivo)).length > 0) {
+                                <div class="mp-viewer__resumen-section mp-viewer__resumen-section--costos">
+                                  <div class="mp-viewer__costos-header">
+                                    <div class="mp-viewer__costos-header-left">
+                                      <div class="mp-viewer__costos-icon">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                      </div>
+                                      <p class="mp-viewer__resumen-section-title">COSTOS POR CATEGORÍA</p>
+                                    </div>
+                                    <span class="mp-viewer__costos-total-badge">
+                                      {{ mpFormatMoneda(mpGetCostoTotal(archivo, mpGetHojaActiva(ai, archivo))) }}
+                                    </span>
+                                  </div>
+                                  <div class="mp-viewer__costos-grid">
+                                    @for (item of mpGetCostoPorCategoria(archivo, mpGetHojaActiva(ai, archivo)); track item.categoria; let ci = $index) {
+                                      <div class="mp-viewer__costo-card" [style.--card-hue]="(ci * 55) + 200">
+                                        <div class="mp-viewer__costo-card-icon">
+                                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                        </div>
+                                        <div class="mp-viewer__costo-card-info">
+                                          <span class="mp-viewer__costo-categoria">{{ item.categoria }}</span>
+                                          <span class="mp-viewer__costo-amount">{{ mpFormatMoneda(item.costo) }}</span>
+                                        </div>
+                                        <div class="mp-viewer__costo-bar">
+                                          <div class="mp-viewer__costo-bar-fill"
+                                               [style.width.%]="mpGetCostoTotal(archivo, mpGetHojaActiva(ai, archivo)) > 0 ? (item.costo / mpGetCostoTotal(archivo, mpGetHojaActiva(ai, archivo)) * 100) : 0"
+                                               [style.--card-hue]="(ci * 55) + 200"></div>
+                                        </div>
+                                        <span class="mp-viewer__costo-percent">
+                                          {{ mpGetCostoTotal(archivo, mpGetHojaActiva(ai, archivo)) > 0 ? ((item.costo / mpGetCostoTotal(archivo, mpGetHojaActiva(ai, archivo))) * 100 | number:'1.1-1') : '0.0' }}%
+                                        </span>
+                                      </div>
+                                    }
+                                  </div>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                          <!-- ═══ VISTA DETALLE ═══ -->
+                          @if (mpGetVista(ai) === 'detalle') {
+                            <div class="mp-viewer__detalle">
+                              <div class="mp-viewer__detalle-searchbar">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                <input type="text"
+                                       [placeholder]="'Buscar en ' + (archivo.hojas[mpGetHojaActiva(ai, archivo)]?.nombre || 'tabla') + '...'"
+                                       [value]="mpGetBusqueda(ai)"
+                                       (input)="mpOnBusqueda(ai, $event)"
+                                       (click)="$event.stopPropagation()" />
+                                <span class="mp-viewer__detalle-count">
+                                  {{ mpGetFilasVisibles(archivo, ai).length }} de {{ archivo.hojas[mpGetHojaActiva(ai, archivo)]?.totalFilas || 0 }} filas
+                                </span>
+                              </div>
+
+                              @if (archivo.hojas[mpGetHojaActiva(ai, archivo)]; as hoja) {
+                                <div class="mp-viewer__table-wrap">
+                                  <table class="mp-viewer__table">
+                                    <thead>
+                                      <tr>
+                                        <th class="mp-viewer__table-num">#</th>
+                                        @for (col of hoja.encabezados; track col; let ci = $index) {
+                                          <th class="mp-viewer__table-th"
+                                              (click)="mpSortBy(ai, ci); $event.stopPropagation()"
+                                              [title]="col">
+                                            {{ col }}<span>{{ mpGetSortIndicator(ai, ci) }}</span>
+                                          </th>
+                                        }
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      @for (fila of mpGetFilasVisibles(archivo, ai); track $index; let ri = $index) {
+                                        <tr class="mp-viewer__table-row">
+                                          <td class="mp-viewer__table-num">{{ ri + 1 }}</td>
+                                          @for (celda of fila; track $index) {
+                                            <td class="mp-viewer__table-td"
+                                                [class.mp-viewer__table-td--number]="mpIsNumericCell(celda)"
+                                                [class.mp-viewer__table-td--empty]="!celda"
+                                                [title]="celda">
+                                              {{ celda }}
+                                            </td>
+                                          }
+                                        </tr>
+                                      }
+                                      @if (mpGetFilasVisibles(archivo, ai).length === 0) {
+                                        <tr>
+                                          <td [attr.colspan]="(hoja.encabezados.length || 1) + 1" class="mp-viewer__table-empty">
+                                            {{ mpGetBusqueda(ai) ? 'Sin resultados para "' + mpGetBusqueda(ai) + '"' : 'Sin datos en esta hoja' }}
+                                          </td>
+                                        </tr>
+                                      }
+                                    </tbody>
+                                    @if (mpGetColumnTotals(archivo, ai).length > 0) {
+                                      <tfoot>
+                                        <tr class="mp-viewer__table-totals">
+                                          <td class="mp-viewer__table-num">Σ</td>
+                                          @for (total of mpGetColumnTotals(archivo, ai); track $index) {
+                                            <td class="mp-viewer__table-td"
+                                                [class.mp-viewer__table-td--number]="total !== null">
+                                              {{ total || '' }}
+                                            </td>
+                                          }
+                                        </tr>
+                                      </tfoot>
+                                    }
+                                  </table>
+                                </div>
+                              }
+                            </div>
+                          }
+
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+
+                <!-- ¿Corresponde a una compra? -->
+                <div class="mp-viewer__divider"></div>
+                <div class="mp-viewer__compra">
+                  <label class="mp-viewer__compra-toggle" [class.mp-viewer__compra-toggle--on]="solicitud()!.esCompra">
+                    <span class="mp-viewer__compra-knob"></span>
+                  </label>
+                  <div class="mp-viewer__compra-text">
+                    <p class="mp-viewer__compra-title">¿Corresponde a una compra?</p>
+                    <p class="mp-viewer__compra-desc">Indica si el requerimiento implica una orden de compra</p>
+                  </div>
+                  <span class="mp-viewer__compra-badge" [class.mp-viewer__compra-badge--yes]="solicitud()!.esCompra">
+                    {{ solicitud()!.esCompra ? 'Sí' : 'No' }}
+                  </span>
+                </div>
+
+              </div>
+              <!-- END MATERIA PRIMA VIEWER -->
+
+            } @else {
+              <!-- Generic key-value display for non-MP types -->
+              @if (getDatosKeys().length > 0) {
+                <div class="rv-datos-grid">
+                  @for (key of getDatosKeys(); track key) {
+                    <div class="rv-dato-item">
+                      <label>{{ getDatoLabel(key) }}</label>
+                      <p>{{ getDatoValue(key) }}</p>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="rv-empty">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                  <p>No hay datos adicionales para este tipo de requerimiento</p>
+                </div>
+              }
+            }
+          </div>
+        }
+
+          <!-- ─── Historial ─── -->
+          @if (activeSection() === 'historial') {
+            <div class="rv-card rv-card--animate">
+              <div class="rv-section-header">
+                <div class="rv-section-icon rv-section-icon--amber">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="rv-section-title">Historial de Cambios</h3>
+                  <p class="rv-section-subtitle">Seguimiento de estados de la solicitud</p>
+                </div>
+              </div>
+
+              @if (loadingHistorial()) {
+                <div class="rv-loading-inline">
+                  <div class="rv-mini-spinner"></div>
+                  <span>Cargando historial...</span>
+                </div>
+              } @else if (historial().length === 0) {
+                <div class="rv-empty">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p>No hay historial para esta solicitud</p>
+                </div>
+              } @else {
+                <div class="rv-timeline">
+                  @for (h of historial(); track h.id) {
+                    <div class="rv-timeline__item">
+                      <div class="rv-timeline__dot"
+                        [class.rv-timeline__dot--approve]="h.estadoNuevo === 'ENVIADA_COMPRAS'"
+                        [class.rv-timeline__dot--reject]="h.estadoNuevo === 'RECHAZADA_COMPRAS'">
+                      </div>
+                      <div class="rv-timeline__content">
+                        <div class="rv-timeline__head">
+                          <span class="rv-timeline__estado">
+                            {{ getHistorialEstadoLabel(h.estadoAnterior || '—') }}
+                            →
+                            {{ getHistorialEstadoLabel(h.estadoNuevo) }}
+                          </span>
+                          <span class="rv-timeline__date">{{ formatFecha(h.fecha) }}</span>
+                        </div>
+                        <p class="rv-timeline__user">Por: {{ h.usuario || 'Sistema' }}</p>
+                        @if (h.observaciones) {
+                          <p class="rv-timeline__obs">{{ h.observaciones }}</p>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- RIGHT: Decision Sidebar -->
+        <aside class="rv-sidebar">
+          <div class="rv-decision-card">
+            <div class="rv-decision-card__header">
+              <div class="rv-decision-card__icon-wrap">
+                <div class="rv-decision-card__icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div class="rv-decision-card__icon-ring"></div>
+              </div>
+              <div>
+                <span class="rv-decision-card__eyebrow">Panel de Control</span>
+                <h3 class="rv-decision-card__title">Decisión</h3>
+              </div>
+            </div>
+
+            <div class="rv-decision-card__body">
+              <!-- Observaciones -->
+              <div class="rv-decision-obs">
+                <label>
+                  Observaciones
+                  @if (showRejectConfirm()) {
+                    <span class="rv-decision-obs__required">*obligatorio</span>
+                  }
+                </label>
+                <textarea
+                  placeholder="Escriba observaciones sobre esta solicitud..."
+                  [value]="observaciones()"
+                  (input)="onObservaciones($event)"
+                  rows="4">
+                </textarea>
+              </div>
+
+              @if (isPending()) {
+                @if (!showRejectConfirm() && !showApproveConfirm()) {
+                  <div class="rv-decision-actions">
+                    <button class="rv-btn rv-btn--reject"
+                      (click)="toggleRejectConfirm()"
+                      [disabled]="processing()">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Rechazar
+                    </button>
+                    <button class="rv-btn rv-btn--approve"
+                      (click)="toggleApproveConfirm()"
+                      [disabled]="processing()">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      Aprobar y Enviar
+                    </button>
+                  </div>
+                }
+
+                @if (showApproveConfirm()) {
+                  <div class="rv-confirm rv-confirm--approve">
+                    <div class="rv-confirm__msg">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>¿Confirmar aprobación? Se enviará a Compras.</span>
+                    </div>
+                    <div class="rv-confirm__btns">
+                      <button class="rv-btn rv-btn--cancel" (click)="cancelConfirm()" [disabled]="processing()">Cancelar</button>
+                      <button class="rv-btn rv-btn--approve-confirm" (click)="aprobar()" [disabled]="processing()">
+                        @if (processing()) {
+                          <div class="rv-btn-spinner"></div> Aprobando...
+                        } @else {
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Confirmar
+                        }
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                @if (showRejectConfirm()) {
+                  <div class="rv-confirm rv-confirm--reject">
+                    <div class="rv-confirm__msg">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span>¿Confirmar rechazo?</span>
+                    </div>
+                    @if (!observaciones().trim()) {
+                      <p class="rv-confirm__required">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Debe escribir el motivo del rechazo
+                      </p>
+                    }
+                    <div class="rv-confirm__btns">
+                      <button class="rv-btn rv-btn--cancel" (click)="cancelConfirm()" [disabled]="processing()">Cancelar</button>
+                      <button class="rv-btn rv-btn--reject-confirm" (click)="rechazar()" [disabled]="processing() || !observaciones().trim()">
+                        @if (processing()) {
+                          <div class="rv-btn-spinner"></div> Rechazando...
+                        } @else {
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          Confirmar Rechazo
+                        }
+                      </button>
+                    </div>
+                  </div>
+                }
+
+              } @else {
+                <div class="rv-readonly">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <p>Esta solicitud ya fue procesada.</p>
+                  <span class="rv-readonly__estado">{{ getEstadoLabel(solicitud()!.estado) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- Toast -->
+@if (showToast()) {
+  <div class="rv-toast"
+    [class.rv-toast--success]="toastType() === 'success'"
+    [class.rv-toast--error]="toastType() === 'error'"
+    [class.rv-toast--warning]="toastType() === 'warning'"
+    [class.rv-toast--info]="toastType() === 'info'">
+    @if (toastType() === 'success') {
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    } @else if (toastType() === 'error') {
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    } @else {
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    }
+    <span>{{ toastMessage() }}</span>
+  </div>
+}

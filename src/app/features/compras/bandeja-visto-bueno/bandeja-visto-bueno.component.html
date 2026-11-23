@@ -1,0 +1,934 @@
+<div class="bvb-root" [class.bvb-root--loaded]="!loading()">
+  <!-- BG -->
+  <div class="bvb-bg" aria-hidden="true">
+    <div class="bvb-bg__orb bvb-bg__orb--1"></div>
+    <div class="bvb-bg__orb bvb-bg__orb--2"></div>
+    <div class="bvb-bg__orb bvb-bg__orb--3"></div>
+  </div>
+
+  <!-- TOAST -->
+  @if (showToast()) {
+    <div
+      class="bvb-toast"
+      [class.bvb-toast--success]="toastType() === 'success'"
+      [class.bvb-toast--error]="toastType() === 'error'"
+      [class.bvb-toast--warning]="toastType() === 'warning'"
+      [class.bvb-toast--info]="toastType() === 'info'"
+    >
+      <svg
+        class="bvb-toast__icon"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        @if (toastType() === "success") {
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        } @else if (toastType() === "error") {
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        } @else {
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        }
+      </svg>
+      {{ toastMessage() }}
+    </div>
+  }
+
+  <!-- HERO -->
+  <header class="bvb-hero">
+    <div class="bvb-hero__inner">
+      <div class="bvb-hero__icon-wrap">
+        <div class="bvb-hero__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+            />
+          </svg>
+        </div>
+        <div class="bvb-hero__icon-ring"></div>
+      </div>
+      <div class="bvb-hero__copy">
+        <span class="bvb-hero__eyebrow">
+          <span class="bvb-hero__eyebrow-dot"></span>
+          Jefatura de Compras
+        </span>
+        <h1 class="bvb-hero__title">Bandeja de Visto Bueno</h1>
+        <p class="bvb-hero__subtitle">
+          Revision y aprobacion de ordenes de compra
+        </p>
+      </div>
+    </div>
+    <button
+      class="bvb-hero__refresh"
+      (click)="cargarDatos()"
+      [disabled]="loading()"
+    >
+      <svg
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        [class.bvb-spin]="loading()"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+        />
+      </svg>
+      <span>Actualizar</span>
+    </button>
+  </header>
+
+  <!-- STATS -->
+  @if (!loading()) {
+    <section class="bvb-stats">
+      <button
+        class="bvb-stat bvb-stat--pending"
+        [class.bvb-stat--active]="activeTab() === 'pendientes'"
+        (click)="setTab('pendientes')"
+      >
+        <div class="bvb-stat__glow"></div>
+        <div class="bvb-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="bvb-stat__data">
+          <span class="bvb-stat__num">{{ tramitesPendientes().length }}</span>
+          <span class="bvb-stat__label">Pendientes</span>
+        </div>
+        <div class="bvb-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-opacity=".15"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                getTotalTramites()
+                  ? 100.5 -
+                    (tramitesPendientes().length / getTotalTramites()) * 100.5
+                  : 100.5
+              "
+              stroke-linecap="round"
+              transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        class="bvb-stat bvb-stat--rejected"
+        [class.bvb-stat--active]="activeTab() === 'rechazados'"
+        (click)="setTab('rechazados')"
+      >
+        <div class="bvb-stat__glow"></div>
+        <div class="bvb-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="bvb-stat__data">
+          <span class="bvb-stat__num">{{ tramitesRechazados().length }}</span>
+          <span class="bvb-stat__label">Rechazados</span>
+        </div>
+        <div class="bvb-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-opacity=".15"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                getTotalTramites()
+                  ? 100.5 -
+                    (tramitesRechazados().length / getTotalTramites()) * 100.5
+                  : 100.5
+              "
+              stroke-linecap="round"
+              transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        class="bvb-stat bvb-stat--accepted"
+        [class.bvb-stat--active]="activeTab() === 'aceptados'"
+        (click)="setTab('aceptados')"
+      >
+        <div class="bvb-stat__glow"></div>
+        <div class="bvb-stat__icon-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div class="bvb-stat__data">
+          <span class="bvb-stat__num">{{ tramitesAceptados().length }}</span>
+          <span class="bvb-stat__label">Aprobados</span>
+        </div>
+        <div class="bvb-stat__ring">
+          <svg viewBox="0 0 40 40">
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-opacity=".15"
+            />
+            <circle
+              cx="20"
+              cy="20"
+              r="16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              [attr.stroke-dasharray]="100.5"
+              [attr.stroke-dashoffset]="
+                getTotalTramites()
+                  ? 100.5 -
+                    (tramitesAceptados().length / getTotalTramites()) * 100.5
+                  : 100.5
+              "
+              stroke-linecap="round"
+              transform="rotate(-90 20 20)"
+            />
+          </svg>
+        </div>
+      </button>
+    </section>
+  }
+
+  <!-- TOOLBAR -->
+  @if (!loading()) {
+    <div class="bvb-toolbar">
+      @if (selectionMode()) {
+        <!-- ===== SELECTION BAR ===== -->
+        <div class="bvb-selbar">
+          <div class="bvb-selbar__left">
+            <button class="bvb-selbar__back" (click)="exitSelectionMode()">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <span class="bvb-selbar__count">
+              <strong>{{ selectedCount() }}</strong>
+              {{ selectedCount() === 1 ? "seleccionado" : "seleccionados" }}
+            </span>
+          </div>
+          <div class="bvb-selbar__right">
+            <button
+              class="bvb-selbar__btn bvb-selbar__btn--selectall"
+              (click)="toggleSelectAll()"
+            >
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                />
+              </svg>
+              {{
+                allPendientesSelected() ? "Deseleccionar" : "Seleccionar"
+              }}
+              todo
+            </button>
+            @if (selectedCount() > 0) {
+              <button
+                class="bvb-selbar__btn bvb-selbar__btn--approve"
+                (click)="openBulkConfirm('APROBADO')"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Aprobar
+              </button>
+              <button
+                class="bvb-selbar__btn bvb-selbar__btn--reject"
+                (click)="openBulkConfirm('RECHAZADO')"
+              >
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Rechazar
+              </button>
+            }
+          </div>
+        </div>
+      } @else {
+        <!-- ===== NORMAL TOOLBAR ===== -->
+        <div class="bvb-search">
+          <svg
+            class="bvb-search__icon"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <input
+            class="bvb-search__input"
+            type="text"
+            placeholder="Buscar por requisicion, solicitante, area..."
+            [value]="busqueda()"
+            (input)="onBusqueda($event)"
+          />
+          <span class="bvb-search__count"
+            >{{ currentFilteredList().length }} resultado{{
+              currentFilteredList().length !== 1 ? "s" : ""
+            }}</span
+          >
+        </div>
+
+        <!-- Selection mode toggle (pendientes only) -->
+        @if (activeTab() === "pendientes" && pendientesFiltrados().length > 0) {
+          <button class="bvb-selmode-btn" (click)="toggleSelectionMode()">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
+            </svg>
+            <span>Seleccionar</span>
+          </button>
+        }
+      }
+    </div>
+  }
+
+  <!-- LOADING -->
+  @if (loading()) {
+    <div class="bvb-loader">
+      <div class="bvb-loader__spinner">
+        <div class="bvb-loader__ring bvb-loader__ring--a"></div>
+        <div class="bvb-loader__ring bvb-loader__ring--b"></div>
+        <div class="bvb-loader__core"></div>
+      </div>
+      <p class="bvb-loader__text">Cargando bandeja de visto bueno&hellip;</p>
+      <div class="bvb-skeletons">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="bvb-skel">
+            <div class="bvb-skel__stripe"></div>
+            <div class="bvb-skel__head">
+              <div class="bvb-skel__avatar"></div>
+              <div class="bvb-skel__lines">
+                <div class="bvb-skel__bar" style="width: 36%"></div>
+                <div class="bvb-skel__bar" style="width: 60%"></div>
+              </div>
+            </div>
+            <div class="bvb-skel__progbar"></div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- EMPTY -->
+  @if (!loading() && currentFilteredList().length === 0) {
+    <div class="bvb-empty">
+      <div class="bvb-empty__visual">
+        <div class="bvb-empty__ring bvb-empty__ring--outer"></div>
+        <div class="bvb-empty__ring bvb-empty__ring--inner"></div>
+        <div class="bvb-empty__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            @if (busqueda()) {
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            } @else {
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+              />
+            }
+          </svg>
+        </div>
+      </div>
+      <h3 class="bvb-empty__title">
+        @if (busqueda()) {
+          Sin resultados para "{{ busqueda() }}"
+        } @else if (activeTab() === "pendientes") {
+          Bandeja vacia
+        } @else if (activeTab() === "rechazados") {
+          Sin rechazos
+        } @else {
+          Sin aprobados
+        }
+      </h3>
+      <p class="bvb-empty__desc">
+        @if (busqueda()) {
+          Intenta con otro termino de busqueda.
+        } @else if (activeTab() === "pendientes") {
+          No hay tramites pendientes de visto bueno.
+        } @else if (activeTab() === "rechazados") {
+          No hay tramites rechazados.
+        } @else {
+          No hay tramites aprobados aun.
+        }
+      </p>
+    </div>
+  }
+
+  <!-- TABLE -->
+  @if (!loading() && currentFilteredList().length > 0) {
+    <div class="bvb-table-wrap">
+      <table class="bvb-table">
+        <thead>
+          <tr>
+            @if (selectionMode() && activeTab() === 'pendientes') {
+              <th class="bvb-table__th bvb-table__th--check">
+                <input type="checkbox"
+                  class="bvb-table__checkbox"
+                  [checked]="allPendientesSelected()"
+                  [indeterminate]="somePendientesSelected()"
+                  (change)="toggleSelectAll()" />
+              </th>
+            }
+            <th class="bvb-table__th">Requisición</th>
+            <th class="bvb-table__th">Estado</th>
+            <th class="bvb-table__th">Solicitante</th>
+            <th class="bvb-table__th">Área / Centro Costo</th>
+            <th class="bvb-table__th">Tipo Compra</th>
+            <th class="bvb-table__th">Descripción</th>
+            <th class="bvb-table__th bvb-table__th--right">OC</th>
+            <th class="bvb-table__th bvb-table__th--right">Valor Total</th>
+            <th class="bvb-table__th">Tiempo</th>
+            <th class="bvb-table__th">Observaciones</th>
+            <th class="bvb-table__th bvb-table__th--actions">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tramite of currentFilteredList(); track tramite.id; let idx = $index) {
+            <tr class="bvb-table__row"
+              [style.--idx]="idx"
+              [class.bvb-table__row--pending]="activeTab() === 'pendientes'"
+              [class.bvb-table__row--rejected]="activeTab() === 'rechazados'"
+              [class.bvb-table__row--accepted]="activeTab() === 'aceptados'"
+              [class.bvb-table__row--selected]="isSelected(tramite.id!)"
+              (click)="selectionMode() && activeTab() === 'pendientes' ? toggleSelect(tramite.id!) : null">
+
+              @if (selectionMode() && activeTab() === 'pendientes') {
+                <td class="bvb-table__td bvb-table__td--check">
+                  <input type="checkbox"
+                    class="bvb-table__checkbox"
+                    [checked]="isSelected(tramite.id!)"
+                    (change)="toggleSelect(tramite.id!)"
+                    (click)="$event.stopPropagation()" />
+                </td>
+              }
+
+              <td class="bvb-table__td">
+                <span class="bvb-table__reqnum">{{ tramite.requisicion.numeroRequisicion }}</span>
+              </td>
+
+              <td class="bvb-table__td">
+                <span class="bvb-table__badge"
+                  [class.bvb-table__badge--pending]="activeTab() === 'pendientes'"
+                  [class.bvb-table__badge--rejected]="activeTab() === 'rechazados'"
+                  [class.bvb-table__badge--accepted]="activeTab() === 'aceptados'">
+                  <span class="bvb-table__badge-dot"></span>
+                  {{ getEstadoConfig(tramite.estadoTramite).label }}
+                </span>
+              </td>
+
+              <td class="bvb-table__td">
+                <div class="bvb-table__user">
+                  <span class="bvb-table__avatar">{{ getAvatarLetter(tramite) }}</span>
+                  <span>{{ tramite.requisicion.solicitante || '—' }}</span>
+                </div>
+              </td>
+
+              <td class="bvb-table__td">{{ tramite.requisicion.areaCentroCosto || '—' }}</td>
+
+              <td class="bvb-table__td">{{ tramite.requisicion.tipoCompra || '—' }}</td>
+
+              <td class="bvb-table__td bvb-table__td--desc">
+                <span class="bvb-table__desc-text">{{ tramite.requisicion.descripcionBreve || '—' }}</span>
+              </td>
+
+              <td class="bvb-table__td bvb-table__td--right">
+                <span class="bvb-table__oc-count">{{ tramite.ordenesCargadas.length }}</span>
+              </td>
+
+              <td class="bvb-table__td bvb-table__td--right">
+                <span class="bvb-table__money">{{ formatCurrency(getTotalValor(tramite)) }}</span>
+              </td>
+
+              <td class="bvb-table__td">
+                <span class="bvb-table__time">{{ calcularTiempoEspera(tramite.fechaCreacion) }}</span>
+              </td>
+
+              <td class="bvb-table__td bvb-table__td--obs">
+                @if (tramite.vistoBuenoJefe?.motivoRechazo) {
+                  <span class="bvb-table__obs bvb-table__obs--reject" [title]="tramite.vistoBuenoJefe!.motivoRechazo!">
+                    Rechazo: {{ tramite.vistoBuenoJefe!.motivoRechazo }}
+                  </span>
+                } @else if (tramite.vistoBuenoJefe?.causacionNovedad) {
+                  <span class="bvb-table__obs bvb-table__obs--warning" [title]="tramite.vistoBuenoJefe!.causacionNovedad!">
+                    Novedad: {{ tramite.vistoBuenoJefe!.causacionNovedad }}
+                  </span>
+                } @else if (tramite.vistoBuenoJefe?.observaciones) {
+                  <span class="bvb-table__obs bvb-table__obs--info" [title]="tramite.vistoBuenoJefe!.observaciones!">
+                    {{ tramite.vistoBuenoJefe!.observaciones }}
+                  </span>
+                } @else {
+                  <span class="bvb-table__obs bvb-table__obs--empty">—</span>
+                }
+              </td>
+
+              <td class="bvb-table__td bvb-table__td--actions">
+                <button class="bvb-table__action-btn" (click)="revisarTramite(tramite); $event.stopPropagation()"
+                  title="Revisar trámite">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  <span>Revisar</span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- MODAL: CONFIRMACION ACCION MASIVA -->
+@if (showBulkConfirm()) {
+  <div class="bvb-overlay" (click)="closeBulkConfirm()">
+    <div class="bvb-modal" (click)="$event.stopPropagation()">
+      <div
+        class="bvb-modal__header"
+        [class.bvb-modal__header--approve]="bulkAction() === 'APROBADO'"
+        [class.bvb-modal__header--reject]="bulkAction() === 'RECHAZADO'"
+      >
+        <div
+          class="bvb-modal__icon"
+          [class.bvb-modal__icon--approve]="bulkAction() === 'APROBADO'"
+          [class.bvb-modal__icon--reject]="bulkAction() === 'RECHAZADO'"
+        >
+          @if (bulkAction() === "APROBADO") {
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          } @else {
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          }
+        </div>
+        <div>
+          <h3 class="bvb-modal__title">
+            {{ bulkAction() === "APROBADO" ? "Aprobar" : "Rechazar" }} tramites
+            seleccionados
+          </h3>
+          <p class="bvb-modal__subtitle">
+            Se {{ bulkAction() === "APROBADO" ? "aprobaran" : "rechazaran" }}
+            <strong>{{ selectedCount() }}</strong>
+            {{ selectedCount() === 1 ? "tramite" : "tramites" }}
+          </p>
+        </div>
+      </div>
+
+      <div class="bvb-modal__body">
+        <label class="bvb-modal__label">
+          Observaciones
+          {{ bulkAction() === "RECHAZADO" ? "(requerido)" : "(opcional)" }}
+        </label>
+        <textarea
+          class="bvb-modal__textarea"
+          [value]="bulkObservaciones()"
+          (input)="bulkObservaciones.set($any($event.target).value)"
+          rows="3"
+          [placeholder]="
+            bulkAction() === 'APROBADO'
+              ? 'Ej: Aprobado segun revision de documentacion...'
+              : 'Indique el motivo del rechazo...'
+          "
+        >
+        </textarea>
+        @if (bulkAction() === "RECHAZADO" && !bulkObservaciones().trim()) {
+          <p class="bvb-modal__warn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            Debe indicar el motivo del rechazo
+          </p>
+        }
+      </div>
+
+      <div class="bvb-modal__footer">
+        <button
+          class="bvb-modal__btn bvb-modal__btn--cancel"
+          (click)="closeBulkConfirm()"
+          [disabled]="bulkProcessing()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="bvb-modal__btn"
+          [class.bvb-modal__btn--approve]="bulkAction() === 'APROBADO'"
+          [class.bvb-modal__btn--reject]="bulkAction() === 'RECHAZADO'"
+          (click)="executeBulkAction()"
+          [disabled]="
+            bulkProcessing() ||
+            otpSending() ||
+            (bulkAction() === 'RECHAZADO' && !bulkObservaciones().trim())
+          "
+        >
+          @if (bulkProcessing() || otpSending()) {
+            <div class="bvb-modal__spinner"></div>
+            {{ otpSending() ? "Enviando código…" : "Procesando..." }}
+          } @else {
+            {{ bulkAction() === "APROBADO" ? "Aprobar" : "Rechazar" }}
+            {{ selectedCount() }}
+            {{ selectedCount() === 1 ? "tramite" : "tramites" }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: PRE-OTP CONFIRMATION (show email, ask to send code) -->
+@if (showPreOtpModal()) {
+  <div class="bvb-overlay" (click)="otpSending() ? null : closePreOtpModal()">
+    <div class="bvb-pre-otp" (click)="$event.stopPropagation()">
+      <!-- Sending overlay -->
+      @if (otpSending()) {
+        <div class="bvb-pre-otp__sending-overlay">
+          <div class="bvb-pre-otp__sending-spinner"></div>
+          <p class="bvb-pre-otp__sending-title">
+            Enviando código de verificación
+          </p>
+          <p class="bvb-pre-otp__sending-subtitle">
+            Estamos enviando el código a tu correo electrónico, por favor espera
+            un momento…
+          </p>
+        </div>
+      }
+
+      <!-- Header -->
+      <div
+        class="bvb-pre-otp__header"
+        [class.bvb-pre-otp__header--dimmed]="otpSending()"
+      >
+        <div class="bvb-pre-otp__icon-ring">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+        </div>
+        <h3 class="bvb-pre-otp__title">Verificación de Seguridad</h3>
+        <p class="bvb-pre-otp__subtitle">
+          Para aprobar
+          <strong
+            >{{ selectedCount() }}
+            {{ selectedCount() === 1 ? "trámite" : "trámites" }}</strong
+          >, enviaremos un código de verificación a tu correo electrónico.
+        </p>
+      </div>
+
+      <!-- Email info card -->
+      <div
+        class="bvb-pre-otp__body"
+        [class.bvb-pre-otp__body--dimmed]="otpSending()"
+      >
+        <div class="bvb-pre-otp__email-card">
+          <div class="bvb-pre-otp__email-icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <div class="bvb-pre-otp__email-info">
+            <span class="bvb-pre-otp__email-label"
+              >Se enviará el código a:</span
+            >
+            <span class="bvb-pre-otp__email-value">{{
+              userEmailMasked()
+            }}</span>
+          </div>
+        </div>
+
+        <div class="bvb-pre-otp__notice">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span
+            >El código será válido durante <strong>5 minutos</strong>. Revisa tu
+            bandeja de entrada y carpeta de spam.</span
+          >
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div
+        class="bvb-pre-otp__footer"
+        [class.bvb-pre-otp__footer--dimmed]="otpSending()"
+      >
+        <button
+          class="bvb-modal__btn bvb-modal__btn--cancel"
+          (click)="closePreOtpModal()"
+          [disabled]="otpSending()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="bvb-modal__btn bvb-pre-otp__send-btn"
+          (click)="confirmSendOtp()"
+          [disabled]="otpSending()"
+        >
+          @if (otpSending()) {
+            <div class="bvb-modal__spinner"></div>
+            Enviando…
+          } @else {
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              style="width: 16px; height: 16px"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+            Enviar Código
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL: OTP VERIFICATION (input code) -->
+@if (showOtpModal()) {
+  <div class="bvb-overlay" (click)="closeOtpModal()">
+    <div class="bvb-otp-modal" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="bvb-otp-modal__header">
+        <div class="bvb-otp-modal__lock">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
+          </svg>
+        </div>
+        <h3 class="bvb-otp-modal__title">Verificación de Identidad</h3>
+        <p class="bvb-otp-modal__desc">
+          Hemos enviado un código de 6 dígitos a
+        </p>
+        <p class="bvb-otp-modal__email">{{ otpEmailMasked() }}</p>
+      </div>
+
+      <!-- Body -->
+      <div class="bvb-otp-modal__body">
+        <label class="bvb-otp-modal__label"
+          >Ingrese el código de verificación</label
+        >
+
+        <input
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          [value]="otpCodigo()"
+          (input)="onOtpInput($event)"
+          (keydown.enter)="verifyOtpAndSubmit()"
+          class="bvb-otp-modal__input"
+          placeholder="000000"
+          autocomplete="one-time-code"
+        />
+
+        @if (otpError()) {
+          <p class="bvb-otp-modal__error">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            {{ otpError() }}
+          </p>
+        }
+
+        <!-- Resend -->
+        <div class="bvb-otp-modal__resend">
+          <span>¿No recibiste el código?</span>
+          @if (otpResendCooldown() > 0) {
+            <span class="bvb-otp-modal__resend-wait"
+              >Reenviar en {{ otpResendCooldown() }}s</span
+            >
+          } @else {
+            <button
+              (click)="resendOtpCode()"
+              class="bvb-otp-modal__resend-btn"
+              [disabled]="otpSending()"
+            >
+              Reenviar código
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="bvb-otp-modal__footer">
+        <button
+          class="bvb-modal__btn bvb-modal__btn--cancel"
+          (click)="closeOtpModal()"
+          [disabled]="otpVerifying()"
+        >
+          Cancelar
+        </button>
+        <button
+          class="bvb-modal__btn bvb-modal__btn--approve"
+          (click)="verifyOtpAndSubmit()"
+          [disabled]="otpVerifying() || otpCodigo().length < 6"
+        >
+          @if (otpVerifying()) {
+            <div class="bvb-modal__spinner"></div>
+            Verificando…
+          } @else {
+            <svg
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              style="width: 16px; height: 16px"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Verificar y Aprobar
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

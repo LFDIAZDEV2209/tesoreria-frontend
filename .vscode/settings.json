@@ -1,0 +1,11 @@
+{
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "angular.log": "info",
+  "chat.tools.terminal.autoApprove": {
+    "git checkout": true,
+    "git add": true,
+    "git commit": true
+  }
+}

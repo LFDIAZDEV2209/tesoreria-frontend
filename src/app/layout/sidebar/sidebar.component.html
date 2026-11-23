@@ -1,0 +1,97 @@
+<aside class="sidebar" [class.sidebar--collapsed]="collapsed()" aria-label="Navegación principal">
+  <header class="sidebar-brand">
+    <img src="assets/images/Fombi1.png" alt="Nexa" width="40" height="40" />
+    <div *ngIf="!collapsed()" class="brand-label">
+      <span class="brand-name">Nexa</span>
+      <span class="brand-description">Sistema de Gestión</span>
+    </div>
+  </header>
+
+  <button type="button" class="sidebar-toggle" (click)="toggleSidebar()"
+    [attr.aria-label]="collapsed() ? 'Expandir menú lateral' : 'Minimizar menú lateral'"
+    [attr.title]="collapsed() ? 'Expandir menú lateral' : 'Minimizar menú lateral'">
+    <app-gp-icon [name]="collapsed() ? 'chevron' : 'arrow-left'" [size]="16" />
+  </button>
+
+  <nav class="sidebar-nav" aria-label="Módulos" (scroll)="closeFlyout()">
+    <div *ngFor="let entry of entries(); trackBy: trackEntry" class="sidebar-entry">
+      <a *ngIf="entry.path; else group" class="sidebar-control" [routerLink]="entry.path"
+        routerLinkActive="sidebar-control--active" ariaCurrentWhenActive="page"
+        [attr.aria-label]="entry.label" [attr.title]="collapsed() ? entry.label : null"
+        (mouseenter)="closeFlyout()" (focus)="closeFlyout()" (click)="closeFlyout()">
+        <app-gp-icon [name]="entry.icon" [size]="22" />
+        <span *ngIf="!collapsed()" class="sidebar-label">{{ entry.label }}</span>
+      </a>
+
+      <ng-template #group>
+        <button type="button" class="sidebar-control sidebar-group" cdkOverlayOrigin #origin="cdkOverlayOrigin"
+          [class.sidebar-control--active]="isActive(entry)" [class.sidebar-control--open]="collapsed() && isExpanded(entry)"
+          [attr.aria-label]="entry.label" [attr.aria-controls]="submenuId(entry)" [attr.aria-expanded]="isExpanded(entry)"
+          (click)="activateGroup(entry, origin, $event)" (mouseenter)="openFlyout(entry, origin)"
+          (mouseleave)="scheduleClose()" (focusout)="scheduleClose()"
+          (keydown)="onTriggerKeydown($event, entry, origin)">
+          <app-gp-icon [name]="entry.icon" [size]="22" />
+          <span *ngIf="!collapsed()" class="sidebar-label">{{ entry.label }}</span>
+          <app-gp-icon *ngIf="!collapsed()" class="group-chevron" [class.group-chevron--expanded]="isExpanded(entry)"
+            name="chevron" [size]="16" />
+          <span *ngIf="collapsed()" class="group-indicator" aria-hidden="true"></span>
+        </button>
+        <div *ngIf="!collapsed()" class="sidebar-submenu" [id]="submenuId(entry)" [hidden]="!isExpanded(entry)">
+          <ng-container *ngTemplateOutlet="submenu; context: { $implicit: entry }" />
+        </div>
+      </ng-template>
+    </div>
+  </nav>
+
+  <footer class="sidebar-footer">
+    <button type="button" class="sidebar-control sidebar-logout" (click)="onLogout()"
+      aria-label="Cerrar sesión" [attr.title]="collapsed() ? 'Cerrar sesión' : null" (mouseenter)="closeFlyout()" (focus)="closeFlyout()">
+      <app-gp-icon name="logout" [size]="22" />
+      <span *ngIf="!collapsed()" class="sidebar-label">Cerrar sesión</span>
+    </button>
+    <a routerLink="/mi-perfil" class="sidebar-profile" aria-label="Mi perfil" title="Mi perfil"
+      (mouseenter)="closeFlyout()" (focus)="closeFlyout()" (click)="closeFlyout()">
+      <span class="profile-avatar" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></svg>
+      </span>
+      <span *ngIf="!collapsed()" class="profile-label">
+        <span class="profile-caption">Sesión activa</span>
+        <span class="profile-name">{{ currentUser()?.username || 'Usuario' }}</span>
+      </span>
+      <app-gp-icon *ngIf="!collapsed()" name="chevron" [size]="16" />
+    </a>
+  </footer>
+</aside>
+
+<!-- Una sola plantilla de enlaces para el menú expandido y el panel flotante. -->
+<ng-template #submenu let-entry>
+  <a *ngFor="let link of entry.links; trackBy: trackLink" class="sidebar-submenu-link" [routerLink]="link.path"
+    routerLinkActive="sidebar-submenu-link--active" ariaCurrentWhenActive="page" (click)="closeFlyout()">
+    <app-gp-icon [name]="link.icon" [size]="18" /><span>{{ link.label }}</span>
+  </a>
+  <ng-container *ngIf="entry.adminLinks?.length">
+    <p class="sidebar-submenu-heading">Administración</p>
+    <a *ngFor="let link of entry.adminLinks; trackBy: trackLink" class="sidebar-submenu-link" [routerLink]="link.path"
+      routerLinkActive="sidebar-submenu-link--active" ariaCurrentWhenActive="page" (click)="closeFlyout()">
+      <app-gp-icon [name]="link.icon" [size]="18" /><span>{{ link.label }}</span>
+    </a>
+  </ng-container>
+</ng-template>
+
+<ng-container *ngIf="flyoutEntry() as entry">
+  <ng-template cdkConnectedOverlay [cdkConnectedOverlayOrigin]="flyoutOrigin!" [cdkConnectedOverlayOpen]="true"
+    [cdkConnectedOverlayPositions]="flyoutPositions" [cdkConnectedOverlayViewportMargin]="12"
+    [cdkConnectedOverlayPush]="true" [cdkConnectedOverlayFlexibleDimensions]="true"
+    (overlayOutsideClick)="onOutsideClick($event)" (overlayKeydown)="onPanelKeydown($event)">
+    <section class="sidebar-flyout" [id]="submenuId(entry)" [attr.aria-label]="entry.label"
+      (mouseenter)="cancelClose()" (mouseleave)="scheduleClose()" (focusin)="cancelClose()" (focusout)="scheduleClose()">
+      <header class="flyout-heading">
+        <app-gp-icon [name]="entry.icon" [size]="20" /><h2>{{ entry.label }}</h2>
+      </header>
+      <nav class="flyout-links" [attr.aria-label]="entry.label">
+        <ng-container *ngTemplateOutlet="submenu; context: { $implicit: entry }" />
+      </nav>
+    </section>
+  </ng-template>
+</ng-container>

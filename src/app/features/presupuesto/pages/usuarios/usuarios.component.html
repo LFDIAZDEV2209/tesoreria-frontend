@@ -1,0 +1,684 @@
+<div class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3">
+  <div class="space-y-5">
+
+    <!-- Miga -->
+    <div class="flex items-center gap-2 text-sm text-gray-400">
+      <span>Configuraciones Superadmin</span>
+      <span>›</span>
+      <span class="font-semibold text-[#045C94]">Usuarios y Accesos</span>
+    </div>
+
+    <!-- Header -->
+    <app-gp-page-header icono="users" eyebrow="Configuraciones Superadmin"
+                        titulo="Usuarios y Accesos"
+                        descripcion="Quién puede entrar a NEXA y qué empresas del Gestor Presupuestal ve cada persona"
+                        chip="solo superadmin">
+      <button acciones type="button" class="btn-primary !py-2.5 !px-4 !text-sm" (click)="abrirCrear()">
+        <span class="flex items-center gap-2">
+          <app-gp-icon name="user" [size]="15"></app-gp-icon>
+          Añadir usuario
+        </span>
+      </button>
+    </app-gp-page-header>
+
+    <div *ngIf="error()">
+      <app-gp-error-state [mensaje]="error()!" (reintentar)="cargar()"></app-gp-error-state>
+    </div>
+
+    <div *ngIf="loading()">
+      <app-gp-skeleton tipo="table"></app-gp-skeleton>
+    </div>
+
+    <ng-container *ngIf="!loading() && !error()">
+
+      <!-- Resumen (totales calculados en la base de datos) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="stat-card">
+          <span class="stat-card__icono"><app-gp-icon name="users" [size]="17"></app-gp-icon></span>
+          <div>
+            <p class="stat-card__valor">{{ stats().total }}</p>
+            <p class="stat-card__label">Cuentas de acceso</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__icono stat-card__icono--ok"><app-gp-icon name="check" [size]="17"></app-gp-icon></span>
+          <div>
+            <p class="stat-card__valor">{{ stats().activos }}</p>
+            <p class="stat-card__label">Activas</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__icono stat-card__icono--warn"><app-gp-icon name="key" [size]="17"></app-gp-icon></span>
+          <div>
+            <p class="stat-card__valor">{{ stats().clavesTemporales }}</p>
+            <p class="stat-card__label">Con clave temporal</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__icono stat-card__icono--info"><app-gp-icon name="building" [size]="17"></app-gp-icon></span>
+          <div>
+            <p class="stat-card__valor">{{ stats().sinEmpresa }}</p>
+            <p class="stat-card__label">Sin empresa asignada</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Paso 1 · Dar acceso ══ -->
+      <div>
+        <p class="paso-titulo">
+          <span class="paso-numero">1</span>
+          Da acceso a personas nuevas
+        </p>
+
+        <div class="cta-card">
+          <span class="cta-card__icono">
+            <app-gp-icon name="users" [size]="22"></app-gp-icon>
+          </span>
+          <div class="cta-card__texto">
+            <p class="cta-card__titulo">¿Falta alguien por entrar?</p>
+            <p class="cta-card__desc">
+              El acceso a NEXA se da únicamente a las <b>personas de la base de datos</b>. Búscalas,
+              dales acceso y asígnales su rol, empresas y clave temporal: con esa cuenta podrán ingresar.
+            </p>
+          </div>
+          <div class="cta-card__acciones">
+            <button type="button" class="btn-primary !py-2.5 !px-4 !text-sm" (click)="abrirCrear()">
+              <span class="flex items-center gap-2">
+                <app-gp-icon name="search" [size]="14"></app-gp-icon>
+                Ver usuarios de la base de datos
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ Paso 2 · Gestionar cuentas ══ -->
+      <div>
+        <p class="paso-titulo">
+          <span class="paso-numero">2</span>
+          Gestiona las cuentas con acceso
+          <span class="paso-conteo">{{ totalRegistros() }} en total</span>
+        </p>
+
+        <!-- Barra de herramientas (fija al hacer scroll) -->
+        <div class="toolbar">
+          <label class="toolbar__buscador">
+            <app-gp-icon name="search" [size]="15"></app-gp-icon>
+            <input type="text" placeholder="Buscar por usuario, nombre o correo…" autocomplete="off"
+                   [ngModel]="busqueda()" (ngModelChange)="setBusqueda($event)" />
+            <button *ngIf="busqueda()" type="button" title="Limpiar búsqueda" (click)="setBusqueda('')">
+              <app-gp-icon name="x" [size]="13"></app-gp-icon>
+            </button>
+          </label>
+
+          <div class="filtros">
+            <button *ngFor="let f of filtros()" type="button" class="filtro-chip"
+                    [class.filtro-chip--activo]="filtro() === f.valor"
+                    (click)="setFiltro(f.valor)">
+              {{ f.label }}
+              <span class="filtro-chip__conteo">{{ f.conteo }}</span>
+            </button>
+          </div>
+
+          <button type="button" class="btn-mini" (click)="refrescar()">
+            <app-gp-icon name="refresh" [size]="13" [class.gp-girando]="loading()"></app-gp-icon>
+            Actualizar
+          </button>
+        </div>
+
+        <!-- Cargando la página -->
+        <div *ngIf="loading()" class="grid grid-cols-1 xl:grid-cols-2 gap-3 mb-3">
+          <div class="card-usuario-skel" *ngFor="let i of [1, 2, 3, 4]">
+            <span class="skeleton" style="height: 14px; width: 45%"></span>
+            <span class="skeleton" style="height: 11px; width: 65%"></span>
+            <span class="skeleton" style="height: 11px; width: 38%"></span>
+          </div>
+        </div>
+
+        <!-- Sin resultados -->
+        <div *ngIf="!loading() && usuarios().length === 0" class="card-vacio">
+          <app-gp-icon name="search" [size]="26"></app-gp-icon>
+          <p class="font-semibold text-[#213053]">
+            {{ totalRegistros() === 0 && filtro() === 'todos' && !busqueda() ? 'Todavía no hay cuentas de acceso' : 'Ninguna cuenta coincide con la búsqueda' }}
+          </p>
+          <button *ngIf="filtro() !== 'todos' || busqueda()" type="button" class="btn-secondary !py-2 !px-4 !text-sm"
+                  (click)="limpiarFiltros()">
+            Limpiar filtros
+          </button>
+        </div>
+
+        <!-- Grupo: Gerencia -->
+        <div *ngIf="!loading() && groupGerencia().length > 0" class="grupo-usuarios">
+          <div class="grupo-header">
+            <span class="grupo-header__icono grupo-header__icono--gerencia">
+              <app-gp-icon name="shield" [size]="15"></app-gp-icon>
+            </span>
+            <p class="grupo-header__titulo">Gerencia</p>
+            <span class="grupo-header__desc">Ven todas las empresas sin necesidad de asignación</span>
+            <span class="grupo-header__conteo">{{ groupGerencia().length }}</span>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            <ng-container *ngFor="let u of groupGerencia()">
+              <ng-container *ngTemplateOutlet="tarjetaUsuario; context: { $implicit: u }"></ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Grupo: Operativos -->
+        <div *ngIf="!loading() && groupOperativos().length > 0" class="grupo-usuarios">
+          <div class="grupo-header">
+            <span class="grupo-header__icono grupo-header__icono--operativo">
+              <app-gp-icon name="users" [size]="15"></app-gp-icon>
+            </span>
+            <p class="grupo-header__titulo">Operativos</p>
+            <span class="grupo-header__desc">Solo ven las empresas que les asignes</span>
+            <span class="grupo-header__conteo">{{ groupOperativos().length }}</span>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
+            <ng-container *ngFor="let u of groupOperativos()">
+              <ng-container *ngTemplateOutlet="tarjetaUsuario; context: { $implicit: u }"></ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Paginación (la página la resuelve el backend) -->
+        <div *ngIf="!loading() && totalRegistros() > 0" class="gp-paginador">
+          <span class="gp-paginador__rango">{{ rangoTexto() }} cuentas</span>
+
+          <label class="gp-paginador__tamano">
+            <span>Mostrar</span>
+            <select [ngModel]="tamano()" (ngModelChange)="cambiarTamano($event)">
+              <option [ngValue]="12">12</option>
+              <option [ngValue]="24">24</option>
+              <option [ngValue]="48">48</option>
+            </select>
+          </label>
+
+          <div class="gp-paginador__controles" *ngIf="totalPaginas() > 1">
+            <button type="button" class="gp-paginador__btn" title="Primera página"
+                    [disabled]="pagina() === 0" (click)="irPagina(0)">
+              <app-gp-icon name="arrow-left" [size]="13"></app-gp-icon>
+              <app-gp-icon name="arrow-left" [size]="13" style="margin-left: -7px;"></app-gp-icon>
+            </button>
+            <button type="button" class="gp-paginador__btn" title="Anterior"
+                    [disabled]="pagina() === 0" (click)="irPagina(pagina() - 1)">
+              <app-gp-icon name="arrow-left" [size]="13"></app-gp-icon>
+            </button>
+            <button *ngFor="let p of paginasVisibles()" type="button" class="gp-paginador__num"
+                    [class.gp-paginador__num--activo]="p === pagina()" (click)="irPagina(p)">
+              {{ p + 1 }}
+            </button>
+            <button type="button" class="gp-paginador__btn" title="Siguiente"
+                    [disabled]="pagina() >= totalPaginas() - 1" (click)="irPagina(pagina() + 1)">
+              <app-gp-icon name="arrow-right" [size]="13"></app-gp-icon>
+            </button>
+            <button type="button" class="gp-paginador__btn" title="Última página"
+                    [disabled]="pagina() >= totalPaginas() - 1" (click)="irPagina(totalPaginas() - 1)">
+              <app-gp-icon name="arrow-right" [size]="13"></app-gp-icon>
+              <app-gp-icon name="arrow-right" [size]="13" style="margin-left: -7px;"></app-gp-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ═══ Tarjeta de usuario (plantilla) ═══ -->
+  <ng-template #tarjetaUsuario let-u>
+    <div class="usuario-card" [class.usuario-card--off]="!u.activo">
+      <div class="usuario-card__cabecera">
+        <span class="usuario-card__avatar">{{ iniciales(u) }}</span>
+        <div class="min-w-0 flex-1">
+          <p class="usuario-card__username">
+            {{ u.username }}
+            <span *ngIf="u.requirePasswordChange" class="cupo-chip cupo-chip--warn"
+                  title="Debe cambiar la clave en el próximo ingreso">clave temporal</span>
+          </p>
+          <p class="usuario-card__nombre">{{ u.nombreCompleto ?? 'Cuenta sin empleado asociado' }}</p>
+          <p class="usuario-card__email">{{ u.email ?? 'Sin correo' }}</p>
+        </div>
+        <button type="button" class="gp-estado-toggle" [class.gp-estado-toggle--off]="!u.activo"
+                [title]="u.activo ? 'Clic para desactivar' : 'Clic para activar'" (click)="toggleActivo(u)">
+          <span class="gp-estado-dot"></span>
+          {{ u.activo ? 'Activo' : 'Inactivo' }}
+        </button>
+      </div>
+
+      <div class="usuario-card__cuerpo">
+        <div class="usuario-card__bloque">
+          <span class="usuario-card__label">Rol en la plataforma</span>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span *ngFor="let r of u.roles" class="gp-rol-chip">{{ etiquetaRol(r) }}</span>
+            <span *ngIf="u.roles.length === 0" class="text-gray-300 text-xs">Sin rol</span>
+            <button type="button" class="gp-icon-btn" title="Cambiar rol" (click)="abrirRol(u)">
+              <app-gp-icon name="edit" [size]="12"></app-gp-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="usuario-card__bloque">
+          <span class="usuario-card__label">Empresas del Gestor Presupuestal</span>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span *ngFor="let id of u.empresaIds" class="gp-empresa-chip">{{ nombreEmpresa(id) }}</span>
+            <span *ngIf="u.empresaIds.length === 0" class="text-xs text-gray-400">
+              {{ esGerencia(u) ? 'Todas (gerencia)' : 'Sin asignar' }}
+            </span>
+            <button type="button" class="gp-icon-btn" title="Asignar empresas" (click)="abrirEmpresas(u)">
+              <app-gp-icon name="building" [size]="12"></app-gp-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="usuario-card__pie">
+        <button type="button" class="gp-permiso-chip"
+                [ngClass]="u.puedeAprobar === true ? 'gp-permiso-chip--ok' : (u.puedeAprobar === false ? 'gp-permiso-chip--no' : '')"
+                [title]="u.puedeAprobar === null || u.puedeAprobar === undefined ? 'Hereda del rol — clic para autorizar' : 'Clic para cambiar'"
+                (click)="togglePuedeAprobar(u)">
+          {{ etiquetaAprobar(u) }}
+        </button>
+        <span class="flex-1"></span>
+        <button type="button" class="btn-mini" (click)="abrirReset(u)">
+          <app-gp-icon name="key" [size]="13"></app-gp-icon>
+          Restablecer contraseña
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- ═══ Modal: Añadir usuario ═══ -->
+  <app-gp-modal *ngIf="modalCrear()" titulo="Añadir usuario" icono="user" subtitulo="Acceso a NEXA"
+                ancho="lg" [cargando]="guardandoCrear()" [hero]="true" (cerrar)="modalCrear.set(false)">
+
+    <!-- Paso 1 · elegir de la base de datos -->
+    <ng-container *ngIf="pasoCrear() === 'elegir'">
+      <div class="modal-intro">
+        <span class="modal-intro__icono"><app-gp-icon name="users" [size]="18"></app-gp-icon></span>
+        <div>
+          <p class="modal-intro__titulo">Personas de la base de datos sin cuenta</p>
+          <p class="modal-intro__desc">
+            Dale acceso a una eligiéndola de la lista y completa su rol, empresas y clave temporal.
+          </p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 mt-3">
+        <label class="toolbar__buscador !flex-[1_1_280px]">
+          <app-gp-icon name="search" [size]="14"></app-gp-icon>
+          <input type="text" placeholder="Buscar por nombre, cédula o correo…" autocomplete="off"
+                 [ngModel]="busquedaCandidatos()" (ngModelChange)="setBusquedaCandidatos($event)" />
+          <button *ngIf="busquedaCandidatos()" type="button" title="Limpiar búsqueda"
+                  (click)="setBusquedaCandidatos('')">
+            <app-gp-icon name="x" [size]="13"></app-gp-icon>
+          </button>
+        </label>
+        <button type="button" class="btn-mini" [disabled]="cargandoCandidatos()" (click)="buscarCandidatos()">
+          <app-gp-icon name="refresh" [size]="13" [class.gp-girando]="cargandoCandidatos()"></app-gp-icon>
+          Actualizar
+        </button>
+        <span class="modal-conteo" *ngIf="!cargandoCandidatos() && candTotal() > 0">
+          {{ candTotal() }} personas sin cuenta
+        </span>
+      </div>
+
+      <div class="mt-4 max-h-[46vh] overflow-auto rounded-xl border border-gray-100">
+        <!-- Cargando -->
+        <ng-container *ngIf="cargandoCandidatos()">
+          <div class="candidato-skel" *ngFor="let i of [1, 2, 3, 4, 5]">
+            <span class="skeleton" style="height: 34px; width: 34px; border-radius: 12px"></span>
+            <span class="flex-1">
+              <span class="skeleton" style="height: 12px; width: 40%"></span>
+              <span class="skeleton" style="height: 10px; width: 62%; margin-top: 6px"></span>
+            </span>
+          </div>
+        </ng-container>
+
+        <!-- Vacío -->
+        <div *ngIf="!cargandoCandidatos() && candidatos().length === 0"
+             class="px-4 py-10 text-center text-sm text-gray-400">
+          {{ busquedaCandidatos()
+              ? 'Sin coincidencias. Prueba con otro nombre, cédula o correo.'
+              : 'Presiona “Ver usuarios de la base de datos” o busca por nombre, cédula o correo.' }}
+        </div>
+
+        <!-- Personas -->
+        <button *ngFor="let c of candidatos()" type="button" class="candidato-fila" (click)="seleccionarCandidato(c)">
+          <span class="candidato-fila__avatar">{{ (c.nombreCompleto || '?').charAt(0) }}</span>
+          <span class="min-w-0 flex-1 text-left">
+            <span class="candidato-fila__nombre">{{ c.nombreCompleto }}</span>
+            <span class="candidato-fila__meta">
+              <span *ngIf="c.idNumber">CC {{ c.idNumber }}</span>
+              <span *ngIf="c.cargo">· {{ c.cargo }}</span>
+              <span *ngIf="c.area">· {{ c.area }}</span>
+              <span *ngIf="c.empresa">· {{ c.empresa }}</span>
+            </span>
+            <span class="candidato-fila__email">{{ c.email ?? 'Sin correo en la BD' }}</span>
+          </span>
+          <span class="candidato-fila__accion">
+            Dar acceso
+            <app-gp-icon name="arrow-right" [size]="14"></app-gp-icon>
+          </span>
+        </button>
+      </div>
+
+      <!-- Paginación de personas (páginas resueltas en el backend) -->
+      <div *ngIf="!cargandoCandidatos() && candTotal() > 0" class="gp-paginador gp-paginador--modal">
+        <span class="gp-paginador__rango">{{ rangoCandidatos() }} personas</span>
+        <div class="gp-paginador__controles" *ngIf="candPaginas() > 1">
+          <button type="button" class="gp-paginador__btn" title="Anterior"
+                  [disabled]="candPagina() === 0" (click)="irPaginaCandidatos(candPagina() - 1)">
+            <app-gp-icon name="arrow-left" [size]="13"></app-gp-icon>
+          </button>
+          <button *ngFor="let p of candPaginasVisibles()" type="button" class="gp-paginador__num"
+                  [class.gp-paginador__num--activo]="p === candPagina()" (click)="irPaginaCandidatos(p)">
+            {{ p + 1 }}
+          </button>
+          <button type="button" class="gp-paginador__btn" title="Siguiente"
+                  [disabled]="candPagina() >= candPaginas() - 1" (click)="irPaginaCandidatos(candPagina() + 1)">
+            <app-gp-icon name="arrow-right" [size]="13"></app-gp-icon>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Paso 2 · rol, accesos y clave -->
+    <ng-container *ngIf="pasoCrear() === 'form'">
+      <button type="button" class="volver-link" (click)="volverAElegir()">
+        <app-gp-icon name="arrow-left" [size]="13"></app-gp-icon>
+        Volver a la lista
+      </button>
+
+      <div *ngIf="candidatoSeleccionado()" class="persona-card mt-3">
+        <span class="candidato-fila__avatar">{{ (candidatoSeleccionado()!.nombreCompleto || '?').charAt(0) }}</span>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-bold text-[#213053]">{{ candidatoSeleccionado()!.nombreCompleto }}</p>
+          <p class="text-[11px] text-gray-400">
+            CC {{ candidatoSeleccionado()!.idNumber ?? '—' }} · {{ candidatoSeleccionado()!.cargo ?? 'Sin cargo' }}
+          </p>
+        </div>
+        <span class="persona-card__chip">De la base de datos</span>
+      </div>
+
+      <p class="modal-sec">
+        <span class="modal-sec__icono" style="background:rgba(4,92,148,.10); color:#045C94;">
+          <app-gp-icon name="key" [size]="12"></app-gp-icon>
+        </span>
+        <span class="modal-sec__txt" style="color:#045C94;">Credenciales de acceso</span>
+        <span class="modal-sec__linea"></span>
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label class="block">
+          <span class="campo-label">Nombre de usuario *</span>
+          <input type="text" class="campo-input" autocomplete="off"
+                 [ngModel]="formUsername()" (ngModelChange)="formUsername.set($event)" />
+        </label>
+        <label class="block">
+          <span class="campo-label">Correo *</span>
+          <input type="email" class="campo-input" autocomplete="off"
+                 [ngModel]="formEmail()" (ngModelChange)="formEmail.set($event)" />
+        </label>
+
+        <label class="block">
+          <span class="campo-label">Rol en la plataforma *</span>
+          <select class="campo-input cursor-pointer" [ngModel]="formRol()" (ngModelChange)="formRol.set($event)">
+            <option value="" disabled>Selecciona un rol</option>
+            <option *ngFor="let r of rolesNexa()" [value]="r.name">{{ etiquetaRol(r.name) }}</option>
+          </select>
+          <span *ngIf="formRol()" class="campo-ayuda">{{ descripcionRol(formRol()) }}</span>
+        </label>
+
+        <label class="block">
+          <span class="campo-label">Contraseña temporal *</span>
+          <span class="campo-password">
+            <input [type]="mostrarPassword() ? 'text' : 'password'" class="campo-input" autocomplete="new-password"
+                   [ngModel]="formPassword()" (ngModelChange)="formPassword.set($event)" />
+            <button type="button" class="campo-password__btn" title="Mostrar / ocultar"
+                    (click)="mostrarPassword.set(!mostrarPassword())">
+              <app-gp-icon [name]="mostrarPassword() ? 'ban' : 'search'" [size]="14"></app-gp-icon>
+            </button>
+            <button type="button" class="campo-password__btn" title="Generar otra" (click)="regenerarPassword()">
+              <app-gp-icon name="refresh" [size]="14"></app-gp-icon>
+            </button>
+          </span>
+          <span class="campo-ayuda">La persona deberá cambiarla en su primer ingreso.</span>
+        </label>
+      </div>
+
+      <p class="modal-sec">
+        <span class="modal-sec__icono" style="background:rgba(124,58,237,.10); color:#7C3AED;">
+          <app-gp-icon name="shield" [size]="12"></app-gp-icon>
+        </span>
+        <span class="modal-sec__txt" style="color:#7C3AED;">Permisos y estado</span>
+        <span class="modal-sec__linea"></span>
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <span class="campo-label">Permiso de aprobar (Gestor Presupuestal)</span>
+          <div class="radio-grupo">
+            <label class="radio-opcion" [class.radio-opcion--activo]="formPuedeAprobar() === 'hereda'">
+              <input type="radio" name="aprobar" [checked]="formPuedeAprobar() === 'hereda'"
+                     (change)="formPuedeAprobar.set('hereda')" />
+              Hereda del rol
+            </label>
+            <label class="radio-opcion" [class.radio-opcion--activo]="formPuedeAprobar() === 'si'">
+              <input type="radio" name="aprobar" [checked]="formPuedeAprobar() === 'si'"
+                     (change)="formPuedeAprobar.set('si')" />
+              Sí puede
+            </label>
+            <label class="radio-opcion" [class.radio-opcion--activo]="formPuedeAprobar() === 'no'">
+              <input type="radio" name="aprobar" [checked]="formPuedeAprobar() === 'no'"
+                     (change)="formPuedeAprobar.set('no')" />
+              No puede
+            </label>
+          </div>
+        </div>
+        <div>
+          <span class="campo-label">Estado de la cuenta</span>
+          <button type="button" class="gp-estado-toggle !px-0" (click)="formActivo.set(!formActivo())">
+            <span class="gp-estado-dot" [style.background]="formActivo() ? '#10B981' : '#CBD5E1'"></span>
+            {{ formActivo() ? 'Activa — podrá entrar al aprobar el alta' : 'Inactiva — no podrá entrar' }}
+          </button>
+        </div>
+      </div>
+
+      <p class="modal-sec">
+        <span class="modal-sec__icono" style="background:rgba(15,118,110,.10); color:#0F766E;">
+          <app-gp-icon name="building" [size]="12"></app-gp-icon>
+        </span>
+        <span class="modal-sec__txt" style="color:#0F766E;">Empresas del Gestor Presupuestal</span>
+        <span class="modal-sec__linea"></span>
+      </p>
+
+      <div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button type="button" class="btn-mini !py-1 !px-2.5 !text-[11px]" (click)="togglearTodasEmpresas()">
+            <app-gp-icon name="check" [size]="12"></app-gp-icon>
+            {{ formEmpresas().size === ctx.empresas().length ? 'Quitar todas' : 'Seleccionar todas' }}
+          </button>
+          <span class="modal-conteo"><b>{{ formEmpresas().size }}</b> de {{ ctx.empresas().length }} seleccionadas</span>
+          <span class="text-[11px] text-gray-400">Gerencia ve todas sin necesidad de marcarlas.</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 max-h-44 overflow-auto pr-1">
+          <label *ngFor="let e of ctx.empresas()"
+                 class="empresa-opcion"
+                 [class.empresa-opcion--activa]="formEmpresas().has(e.id)">
+            <input type="checkbox" class="w-4 h-4 rounded accent-accent-500"
+                   [checked]="formEmpresas().has(e.id)" (change)="toggleEmpresaForm(e.id)" />
+            <span class="text-sm font-medium text-primary-600">{{ e.name }}</span>
+          </label>
+          <p *ngIf="ctx.empresas().length === 0" class="text-sm text-gray-400">No hay empresas registradas.</p>
+        </div>
+      </div>
+    </ng-container>
+
+    <div pie>
+      <button *ngIf="pasoCrear() === 'form'" type="button" class="btn-primary !py-2 !px-5 !text-sm"
+              [disabled]="guardandoCrear()" (click)="crearUsuario()">
+        <span class="flex items-center gap-2">
+          <app-gp-icon [name]="guardandoCrear() ? 'clock' : 'check'" [size]="14" [class.gp-girando]="guardandoCrear()"></app-gp-icon>
+          {{ guardandoCrear() ? 'Creando…' : 'Crear cuenta de acceso' }}
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+  <!-- ═══ Modal: Cambiar rol ═══ -->
+  <app-gp-modal *ngIf="usuarioRol()" [titulo]="'Cambiar rol de ' + usuarioRol()!.username" icono="shield"
+                subtitulo="Acceso a NEXA" ancho="md" [cargando]="guardandoRol()" [hero]="true" acento="violet"
+                (cerrar)="usuarioRol.set(null)">
+    <div class="modal-intro">
+      <span class="modal-intro__icono modal-intro__icono--violet"><app-gp-icon name="shield" [size]="18"></app-gp-icon></span>
+      <div>
+        <p class="modal-intro__titulo">Rol en la plataforma</p>
+        <p class="modal-intro__desc">
+          El rol define los módulos a los que entra la persona y si puede aprobar en el Gestor Presupuestal.
+        </p>
+      </div>
+    </div>
+    <div class="space-y-2 mt-3 max-h-[52vh] overflow-auto pr-1">
+      <label *ngFor="let r of rolesNexa()" class="rol-opcion"
+             [class.rol-opcion--activa]="rolEditado() === r.name">
+        <input type="radio" name="rol" [checked]="rolEditado() === r.name" (change)="rolEditado.set(r.name)" />
+        <span class="min-w-0 flex-1">
+          <span class="rol-opcion__nombre">{{ etiquetaRol(r.name) }}</span>
+          <span class="rol-opcion__desc">{{ r.description ?? '' }}</span>
+        </span>
+        <span class="rol-opcion__check" *ngIf="rolEditado() === r.name">
+          <app-gp-icon name="check" [size]="13"></app-gp-icon>
+        </span>
+      </label>
+    </div>
+    <div pie>
+      <button type="button" class="btn-primary !py-2 !px-5 !text-sm"
+              [disabled]="guardandoRol() || !rolEditado()" (click)="guardarRol()">
+        <span class="flex items-center gap-2">
+          <app-gp-icon [name]="guardandoRol() ? 'clock' : 'check'" [size]="14" [class.gp-girando]="guardandoRol()"></app-gp-icon>
+          {{ guardandoRol() ? 'Guardando…' : 'Guardar rol' }}
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+  <!-- ═══ Modal: Empresas ═══ -->
+  <app-gp-modal *ngIf="usuarioEmpresas()" [titulo]="'Empresas de ' + usuarioEmpresas()!.username" icono="building"
+                subtitulo="Gestor Presupuestal" ancho="md" [cargando]="guardandoEmpresas()" [hero]="true"
+                (cerrar)="usuarioEmpresas.set(null)">
+    <div class="modal-intro">
+      <span class="modal-intro__icono modal-intro__icono--teal"><app-gp-icon name="building" [size]="18"></app-gp-icon></span>
+      <div>
+        <p class="modal-intro__titulo">Empresas asignadas</p>
+        <p class="modal-intro__desc">
+          Marca las empresas que esta persona podrá ver y operar. Gerencia (Administrador / Super Administrador)
+          ve todas sin necesidad de asignación.
+        </p>
+      </div>
+    </div>
+
+    <!-- Filtro + acciones rápidas -->
+    <div class="modal-empresas__barra">
+      <label class="toolbar__buscador !flex-[1_1_200px]">
+        <app-gp-icon name="search" [size]="14"></app-gp-icon>
+        <input type="text" placeholder="Buscar empresa o NIT…" autocomplete="off"
+               [ngModel]="busquedaEmpresas()" (ngModelChange)="busquedaEmpresas.set($event)" />
+        <button *ngIf="busquedaEmpresas()" type="button" title="Limpiar búsqueda"
+                (click)="busquedaEmpresas.set('')">
+          <app-gp-icon name="x" [size]="13"></app-gp-icon>
+        </button>
+      </label>
+      <button type="button" class="btn-mini" (click)="toggleTodasEmpresasEdicion()">
+        <app-gp-icon [name]="todasEmpresasVisiblesMarcadas ? 'ban' : 'check'" [size]="13"></app-gp-icon>
+        {{ todasEmpresasVisiblesMarcadas ? 'Quitar visibles' : 'Marcar visibles' }}
+      </button>
+      <span class="modal-empresas__conteo">
+        <b>{{ empresasEdit().size }}</b> de {{ ctx.empresas().length }} seleccionadas
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[42vh] overflow-auto">
+      <label *ngFor="let e of empresasFiltradas()"
+             class="empresa-opcion"
+             [class.empresa-opcion--activa]="empresasEdit().has(e.id)">
+        <input type="checkbox" class="w-4 h-4 rounded accent-accent-500"
+               [checked]="empresasEdit().has(e.id)" (change)="toggleEmpresaEdicion(e.id)" />
+        <span class="min-w-0">
+          <span class="text-sm font-medium text-primary-600 block truncate" [title]="e.name">{{ e.name }}</span>
+          <span *ngIf="e.nit" class="text-[10px] text-gray-400 font-mono">{{ e.nit }}</span>
+        </span>
+      </label>
+      <p *ngIf="empresasFiltradas().length === 0" class="text-sm text-gray-400 col-span-full py-6 text-center">
+        {{ ctx.empresas().length === 0 ? 'No hay empresas registradas.' : 'Ninguna empresa coincide con la búsqueda.' }}
+      </p>
+    </div>
+    <div pie>
+      <button type="button" class="btn-primary !py-2 !px-5 !text-sm" [disabled]="guardandoEmpresas()"
+              (click)="guardarEmpresas()">
+        <span class="flex items-center gap-2">
+          <app-gp-icon [name]="guardandoEmpresas() ? 'clock' : 'check'" [size]="14"></app-gp-icon>
+          {{ guardandoEmpresas() ? 'Guardando…' : 'Guardar empresas' }}
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+  <!-- ═══ Modal: Confirmar reset de contraseña ═══ -->
+  <app-gp-modal *ngIf="usuarioReset()" titulo="Restablecer contraseña" icono="key" subtitulo="Acceso a NEXA"
+                ancho="sm" [cargando]="reseteando()" [hero]="true" acento="gold"
+                (cerrar)="usuarioReset.set(null)">
+    <div class="modal-intro modal-intro--warn">
+      <span class="modal-intro__icono modal-intro__icono--warn"><app-gp-icon name="key" [size]="18"></app-gp-icon></span>
+      <div>
+        <p class="modal-intro__titulo">Nueva clave temporal para {{ usuarioReset()!.username }}</p>
+        <p class="modal-intro__desc">
+          Se generará una contraseña temporal y la persona deberá cambiarla en su próximo ingreso.
+        </p>
+      </div>
+    </div>
+    <div class="modal-aviso modal-aviso--warn">
+      <app-gp-icon name="alert" [size]="14"></app-gp-icon>
+      <span>La clave actual dejará de funcionar de inmediato. Compártela por un medio seguro.</span>
+    </div>
+    <div pie>
+      <button type="button" class="btn-primary !py-2 !px-5 !text-sm" [disabled]="reseteando()"
+              (click)="confirmarReset()">
+        <span class="flex items-center gap-2">
+          <app-gp-icon [name]="reseteando() ? 'clock' : 'key'" [size]="14" [class.gp-girando]="reseteando()"></app-gp-icon>
+          {{ reseteando() ? 'Generando…' : 'Generar clave temporal' }}
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+
+  <!-- ═══ Modal: Clave temporal generada ═══ -->
+  <app-gp-modal *ngIf="claveGenerada()" titulo="Contraseña temporal generada" icono="key"
+                subtitulo="Se muestra una sola vez" ancho="sm" [hero]="true" acento="green"
+                (cerrar)="claveGenerada.set(null)">
+    <div class="modal-intro modal-intro--ok">
+      <span class="modal-intro__icono modal-intro__icono--ok"><app-gp-icon name="check" [size]="18"></app-gp-icon></span>
+      <div>
+        <p class="modal-intro__titulo">Comparte esta clave con {{ claveGenerada()!.username }}</p>
+        <p class="modal-intro__desc">Al ingresar, el sistema le pedirá cambiarla por una propia.</p>
+      </div>
+    </div>
+    <div class="clave-card">
+      <span class="clave-card__valor">{{ claveGenerada()!.password }}</span>
+      <button type="button" class="btn-secondary !py-2 !px-3 !text-xs" (click)="copiarClave()">
+        <span class="flex items-center gap-1.5">
+          <app-gp-icon name="copy" [size]="13"></app-gp-icon>
+          Copiar
+        </span>
+      </button>
+    </div>
+    <div pie>
+      <button type="button" class="btn-primary !py-2 !px-5 !text-sm" (click)="claveGenerada.set(null)">
+        <span class="flex items-center gap-2">
+          <app-gp-icon name="check" [size]="14"></app-gp-icon>
+          Entendido
+        </span>
+      </button>
+    </div>
+  </app-gp-modal>
+</div>

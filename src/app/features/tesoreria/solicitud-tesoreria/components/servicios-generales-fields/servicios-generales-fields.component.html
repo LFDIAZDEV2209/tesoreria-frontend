@@ -1,0 +1,198 @@
+<div class="dynamic-section" [formGroup]="formGroup">
+  <!-- Header -->
+  <div class="dynamic-section__header">
+    <div class="dynamic-section__header-icon" style="background: linear-gradient(135deg, rgba(20,184,166,0.12), rgba(20,184,166,0.04)); color: #14b8a6;">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+      </svg>
+    </div>
+    <div class="dynamic-section__header-text">
+      <p class="dynamic-section__header-title">Servicios Generales</p>
+      <p class="dynamic-section__header-subtitle">Solicitud de servicios de soporte operativo</p>
+    </div>
+  </div>
+
+  <!-- Sede -->
+  <div class="form-row form-row--1" style="margin-top: 4px;">
+    <div class="form-group">
+      <label class="form-label">Sede / Ubicación</label>
+      <input type="text" formControlName="sedeUbicacion" placeholder="Sede o ubicación" class="form-input" />
+    </div>
+  </div>
+
+  <!-- ═══ TIPO DE SERVICIO ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🧹</span> Tipo de Servicio Requerido</p>
+    <div class="option-chips">
+      <div *ngFor="let t of tiposServicio"
+           class="option-chip"
+           [class.option-chip--selected]="formGroup.get('tipoServicio')?.value === t"
+           (click)="selectOption('tipoServicio', t)">
+        <span class="option-chip__dot"></span>
+        {{ t }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ UBICACIÓN / ALCANCE ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📍</span> Ubicación / Alcance</p>
+    <div class="form-row form-row--1" style="margin-bottom: 16px;">
+      <div class="form-group">
+        <label class="form-label">Área Específica</label>
+        <div class="option-chips">
+          <div *ngFor="let a of areasEspecificas"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('areaEspecifica')?.value === a"
+               (click)="selectOption('areaEspecifica', a)">
+            <span class="option-chip__dot"></span>
+            {{ a }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Descripción del Servicio Requerido</label>
+        <textarea formControlName="descripcionServicio" rows="3" placeholder="Describa el servicio que necesita..." class="form-textarea"></textarea>
+      </div>
+    </div>
+    <div class="form-row form-row--1">
+      <div class="form-group">
+        <label class="form-label">Alcance</label>
+        <div class="option-chips">
+          <div *ngFor="let a of alcances"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('alcance')?.value === a"
+               (click)="selectOption('alcance', a)">
+            <span class="option-chip__dot"></span>
+            {{ a }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ JUSTIFICACIÓN ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">📝</span> Justificación</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Motivo</label>
+        <div class="option-chips">
+          <div *ngFor="let m of motivos"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('motivo')?.value === m"
+               (click)="selectOption('motivo', m)">
+            <span class="option-chip__dot"></span>
+            {{ m }}
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Impacto</label>
+        <div class="option-chips">
+          <div *ngFor="let i of impactos"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('impacto')?.value === i"
+               (click)="selectOption('impacto', i)">
+            <span class="option-chip__dot"></span>
+            {{ i }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PRIORIDAD ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🚨</span> Prioridad / Urgencia</p>
+    <div class="criticidad-options">
+      <div class="criticidad-badge criticidad-badge--alta"
+           [class.criticidad-badge--selected]="formGroup.get('prioridad')?.value === 'ALTA'"
+           (click)="selectOption('prioridad', 'ALTA')">
+        <span class="criticidad-badge__indicator criticidad-badge__indicator--alta"></span> Alta
+      </div>
+      <div class="criticidad-badge criticidad-badge--media"
+           [class.criticidad-badge--selected]="formGroup.get('prioridad')?.value === 'MEDIA'"
+           (click)="selectOption('prioridad', 'MEDIA')">
+        <span class="criticidad-badge__indicator criticidad-badge__indicator--media"></span> Media
+      </div>
+      <div class="criticidad-badge criticidad-badge--baja"
+           [class.criticidad-badge--selected]="formGroup.get('prioridad')?.value === 'BAJA'"
+           (click)="selectOption('prioridad', 'BAJA')">
+        <span class="criticidad-badge__indicator criticidad-badge__indicator--baja"></span> Baja
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INFORMACIÓN FINANCIERA ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">💵</span> Información Financiera</p>
+    <div class="form-row form-row--3">
+      <div class="form-group">
+        <label class="form-label">Centro de Costos</label>
+        <input type="text" formControlName="centroCostos" placeholder="Centro de costos" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Presupuesto Estimado</label>
+        <input type="number" formControlName="presupuestoEstimado" placeholder="$ 0" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">¿Está Presupuestado?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('estaPresupuestado')?.value"
+             (click)="toggleBoolean('estaPresupuestado')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('estaPresupuestado')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Presupuestado</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('estaPresupuestado')?.value">
+            {{ formGroup.get('estaPresupuestado')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ EJECUCIÓN DEL SERVICIO ═══ -->
+  <div class="sub-section">
+    <p class="sub-section__title"><span class="sub-section__title-icon">🏢</span> Ejecución del Servicio</p>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">¿Requiere Proveedor Externo?</label>
+        <div class="toggle-field" [class.toggle-field--active]="formGroup.get('requiereProveedorExterno')?.value"
+             (click)="toggleBoolean('requiereProveedorExterno')">
+          <div class="toggle-field__switch" [class.toggle-field__switch--on]="formGroup.get('requiereProveedorExterno')?.value">
+            <div class="toggle-field__switch-thumb"></div>
+          </div>
+          <span class="toggle-field__label">Proveedor externo</span>
+          <span class="toggle-field__badge" [class.toggle-field__badge--active]="formGroup.get('requiereProveedorExterno')?.value">
+            {{ formGroup.get('requiereProveedorExterno')?.value ? 'Sí' : 'No' }}
+          </span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Responsable de Ejecución</label>
+        <div class="option-chips">
+          <div *ngFor="let r of responsables"
+               class="option-chip"
+               [class.option-chip--selected]="formGroup.get('responsableEjecucion')?.value === r"
+               (click)="selectOption('responsableEjecucion', r)">
+            <span class="option-chip__dot"></span>
+            {{ r }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row form-row--2">
+      <div class="form-group">
+        <label class="form-label">Fecha Requerida</label>
+        <input type="date" formControlName="fechaRequerida" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Horario Preferido</label>
+        <input type="text" formControlName="horarioPreferido" placeholder="Ej: 8:00 AM - 5:00 PM" class="form-input" />
+      </div>
+    </div>
+  </div>
+</div>

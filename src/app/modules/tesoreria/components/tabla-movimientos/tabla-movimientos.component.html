@@ -1,0 +1,333 @@
+<div class="table-wrapper rounded-xl overflow-visible">
+
+  <!-- ═══ GRADIENT TABLE HEADER ═══ -->
+  <div class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] px-6 py-3 rounded-t-xl">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center header-icon-pulse">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-white">Movimientos Bancarios</h2>
+          <p class="text-white/70 mt-0.5 text-xs">Conciliación por OC, egreso y estado de pago</p>
+        </div>
+      </div>
+
+      <!-- Inline Filters -->
+      <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+        <input
+          type="text"
+          [formControl]="filtrosForm.controls.busqueda"
+          placeholder="🔍 Buscar referencia, cuenta..."
+          class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white/40 text-sm flex-1 lg:w-56" />
+
+        <select
+          [formControl]="filtrosForm.controls.banco"
+          class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40 text-sm appearance-none cursor-pointer">
+          <option value="" class="bg-[#213053]">Todos los bancos</option>
+          <option *ngFor="let b of bancos" [value]="b" class="bg-[#213053]">{{ b }}</option>
+        </select>
+
+        <select
+          [formControl]="filtrosForm.controls.empresaUt"
+          class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40 text-sm appearance-none cursor-pointer">
+          <option value="" class="bg-[#213053]">Todas las empresas</option>
+          <option *ngFor="let e of empresasUt" [value]="e" class="bg-[#213053]">{{ e }}</option>
+        </select>
+
+        <button
+          type="button"
+          (click)="clearFilters()"
+          class="px-4 py-2 bg-white/10 text-white font-semibold rounded-lg hover:bg-white/20 transition-all text-xs whitespace-nowrap flex items-center justify-center gap-2 border border-white/20">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <!-- Date range filters (secondary row) -->
+    <div class="flex flex-wrap gap-2 mt-2.5 pt-2.5 border-t border-white/10">
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-white/50">Desde</span>
+        <input type="date" [formControl]="filtrosForm.controls.fechaDesde"
+               class="px-2.5 py-1.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-lg text-white text-xs focus:outline-none focus:border-white/40 [color-scheme:dark]" />
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-white/50">Hasta</span>
+        <input type="date" [formControl]="filtrosForm.controls.fechaHasta"
+               class="px-2.5 py-1.5 bg-white/10 backdrop-blur-sm border border-white/15 rounded-lg text-white text-xs focus:outline-none focus:border-white/40 [color-scheme:dark]" />
+      </div>
+      <div class="ml-auto flex items-center gap-1.5 text-white/40 text-[10px] font-medium">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        {{ dataSource.filteredData.length }} registros
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DESKTOP TABLE ═══ -->
+  <div class="hidden md:block bg-white rounded-b-xl shadow-lg border border-gray-100 overflow-visible">
+    <div class="overflow-x-auto">
+      <table mat-table [dataSource]="dataSource" matSort class="w-full" style="overflow: visible;">
+
+        <!-- # ID -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              class="!px-4 !py-3 !text-left !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">#</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !whitespace-nowrap">
+            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#045C94]">
+              <span class="w-2 h-2 rounded-full bg-[#045C94]"></span>
+              {{ row.id }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Tipo -->
+        <ng-container matColumnDef="tipoMovimiento">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              class="!px-4 !py-3 !text-left !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Tipo</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3">
+            <span class="px-2 py-0.5 bg-[#045C94]/10 text-[#045C94] rounded-md text-[11px] font-medium">
+              {{ row.tipoMovimiento }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Fecha -->
+        <ng-container matColumnDef="fechaPago">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              class="!px-4 !py-3 !text-left !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Fecha</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !text-xs !text-gray-600 !whitespace-nowrap">
+            {{ row.fechaPago }}
+          </td>
+        </ng-container>
+
+        <!-- Empresa / UT -->
+        <ng-container matColumnDef="empresaUt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              class="!px-4 !py-3 !text-left !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Empresa / UT</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !whitespace-nowrap">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-[10px] shadow-md flex-shrink-0">
+                {{ row.empresaUt.charAt(0) }}
+              </div>
+              <span class="text-xs font-semibold text-gray-800">{{ row.empresaUt }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Banco -->
+        <ng-container matColumnDef="banco">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              class="!px-4 !py-3 !text-left !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Banco</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !text-xs !text-gray-600">
+            {{ row.banco }}
+          </td>
+        </ng-container>
+
+        <!-- Cuenta -->
+        <ng-container matColumnDef="cuenta">
+          <th mat-header-cell *matHeaderCellDef
+              class="!px-4 !py-3 !text-left !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Cuenta</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3">
+            <span class="text-xs text-gray-500 font-mono tracking-tight">{{ row.cuenta }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Valor -->
+        <ng-container matColumnDef="valor">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header
+              class="!px-4 !py-3 !text-right !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Valor</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !text-right">
+            <span class="text-sm font-bold text-[#213053]">{{ row.valor | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Estado OC -->
+        <ng-container matColumnDef="estadoOc">
+          <th mat-header-cell *matHeaderCellDef
+              class="!px-4 !py-3 !text-center !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">OC</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !text-center">
+            <app-estado-badge [estado]="row.estadoOc" />
+          </td>
+        </ng-container>
+
+        <!-- Estado Egreso -->
+        <ng-container matColumnDef="estadoEgreso">
+          <th mat-header-cell *matHeaderCellDef
+              class="!px-4 !py-3 !text-center !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Egreso</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !text-center">
+            <app-estado-badge [estado]="row.estadoEgreso" />
+          </td>
+        </ng-container>
+
+        <!-- Estado Pago -->
+        <ng-container matColumnDef="estadoPago">
+          <th mat-header-cell *matHeaderCellDef
+              class="!px-4 !py-3 !text-center !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Pago</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !text-center">
+            <app-estado-badge [estado]="row.estadoPago" />
+          </td>
+        </ng-container>
+
+        <!-- Acciones -->
+        <ng-container matColumnDef="accion">
+          <th mat-header-cell *matHeaderCellDef
+              class="!px-4 !py-3 !text-center !text-[10px] !font-bold !text-[#213053] !uppercase !tracking-wide !whitespace-nowrap !bg-[#f4f4f4] !border-b-2 !border-[#213053]/10">Acciones</th>
+          <td mat-cell *matCellDef="let row" class="!px-4 !py-3 !text-center">
+            <div class="relative inline-block">
+              <button
+                type="button"
+                (click)="toggleMenu(row.id)"
+                class="p-1 text-gray-600 hover:text-[#213053] hover:bg-gray-100 rounded transition-all">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 8c1.1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2zm0 2c-1.1 0-2 1-2 2s1 2 2 2 2-1 2-2-1-2-2-2zm0 6c-1.1 0-2 1-2 2s1 2 2 2 2-1 2-2-1-2-2-2z"/>
+                </svg>
+              </button>
+
+              <!-- Dropdown Menu -->
+              <ng-container *ngIf="openMenuId === row.id">
+                <div class="fixed inset-0 z-40" (click)="openMenuId = null"></div>
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 dropdown-enter">
+                  <button
+                    type="button"
+                    (click)="verDetalle.emit(row); openMenuId = null"
+                    class="w-full text-left px-4 py-2.5 hover:bg-[#045C94]/10 text-[#045C94] text-sm font-medium flex items-center gap-2 border-b border-gray-100 rounded-t-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    Ver Detalle
+                  </button>
+                  <button
+                    type="button"
+                    (click)="abrirControlDiario.emit(row); openMenuId = null"
+                    class="w-full text-left px-4 py-2.5 hover:bg-[#FFB71B]/10 text-[#c78c00] text-sm font-medium flex items-center gap-2 rounded-b-lg">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+                    </svg>
+                    Control Diario
+                  </button>
+                </div>
+              </ng-container>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; let i = index; columns: displayedColumns"
+            class="table-row"
+            [style.animation-delay]="(i * 0.04) + 's'"
+            [style.position]="openMenuId === row.id ? 'relative' : 'static'"
+            [style.z-index]="openMenuId === row.id ? 100 : 'auto'">
+        </tr>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="dataSource.filteredData.length === 0" class="text-center py-16">
+      <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+      </svg>
+      <p class="text-gray-400 text-sm font-medium">No se encontraron movimientos</p>
+      <p class="text-gray-300 text-xs mt-1">Ajusta los filtros o verifica la carga de datos</p>
+    </div>
+
+    <mat-paginator [pageSize]="10" [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons />
+  </div>
+
+  <!-- ═══ MOBILE CARDS ═══ -->
+  <div class="md:hidden space-y-3 mt-3">
+    <div *ngFor="let row of dataSource.filteredData; let i = index"
+         class="mobile-card"
+         [style.animation-delay]="(i * 0.06) + 's'">
+      <!-- Card Header -->
+      <div class="flex items-center justify-between mb-3">
+        <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#045C94]">
+          <span class="w-2 h-2 rounded-full bg-[#045C94]"></span>
+          #{{ row.id }}
+        </span>
+        <span class="px-2 py-0.5 bg-[#045C94]/10 text-[#045C94] rounded-md text-[11px] font-medium">
+          {{ row.tipoMovimiento }}
+        </span>
+      </div>
+
+      <!-- Card Body -->
+      <div class="space-y-2">
+        <div class="flex justify-between text-xs">
+          <span class="text-gray-500">Empresa / UT</span>
+          <div class="flex items-center gap-1.5">
+            <div class="w-5 h-5 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-[8px]">
+              {{ row.empresaUt.charAt(0) }}
+            </div>
+            <span class="font-semibold text-gray-800">{{ row.empresaUt }}</span>
+          </div>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span class="text-gray-500">Banco</span>
+          <span class="font-medium text-gray-700">{{ row.banco }}</span>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span class="text-gray-500">Cuenta</span>
+          <span class="text-gray-600 font-mono">{{ row.cuenta }}</span>
+        </div>
+        <div class="flex justify-between text-xs">
+          <span class="text-gray-500">Fecha</span>
+          <span class="text-gray-600">{{ row.fechaPago }}</span>
+        </div>
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-gray-500">Valor</span>
+          <span class="text-sm font-bold text-[#213053]">{{ row.valor | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
+        </div>
+
+        <!-- Estados row -->
+        <div class="flex gap-1.5 pt-1.5">
+          <div class="flex flex-col items-center gap-0.5 flex-1">
+            <span class="text-[9px] font-bold uppercase text-gray-400">OC</span>
+            <app-estado-badge [estado]="row.estadoOc" />
+          </div>
+          <div class="flex flex-col items-center gap-0.5 flex-1">
+            <span class="text-[9px] font-bold uppercase text-gray-400">Egreso</span>
+            <app-estado-badge [estado]="row.estadoEgreso" />
+          </div>
+          <div class="flex flex-col items-center gap-0.5 flex-1">
+            <span class="text-[9px] font-bold uppercase text-gray-400">Pago</span>
+            <app-estado-badge [estado]="row.estadoPago" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Actions -->
+      <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+        <button type="button" (click)="verDetalle.emit(row)"
+                class="flex-1 text-[10px] bg-[#045C94]/10 text-[#045C94] py-2 rounded-lg font-semibold hover:bg-[#045C94]/20 transition-all flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          Ver Detalle
+        </button>
+        <button type="button" (click)="abrirControlDiario.emit(row)"
+                class="flex-1 text-[10px] bg-[#FFB71B]/10 text-[#c78c00] py-2 rounded-lg font-semibold hover:bg-[#FFB71B]/20 transition-all flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+          </svg>
+          Control Diario
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Empty State -->
+    <div *ngIf="dataSource.filteredData.length === 0" class="text-center py-12">
+      <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+      </svg>
+      <p class="text-gray-400 text-sm font-medium">Sin movimientos</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,547 @@
+﻿<!-- === TOAST === -->
+@if (showToast()) {
+  <div class="tp-toast"
+    [class.tp-toast--success]="toastType() === 'success'"
+    [class.tp-toast--error]="toastType() === 'error'"
+    [class.tp-toast--warning]="toastType() === 'warning'"
+    [class.tp-toast--info]="toastType() === 'info'">
+    <div class="tp-toast__icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        @if (toastType() === 'success') {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        } @else if (toastType() === 'error') {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        } @else {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        }
+      </svg>
+    </div>
+    {{ toastMessage() }}
+  </div>
+}
+
+<!-- === LOADING === -->
+@if (loading) {
+  <div class="tp-page">
+    <div class="tp-loading">
+      <div class="tp-loading__spinner"></div>
+      <p class="tp-loading__text">Cargando datos del tramite&hellip;</p>
+    </div>
+  </div>
+}
+
+<!-- === MAIN CONTENT === -->
+@if (!loading && movimiento) {
+  <div class="tp-page">
+
+    <!-- === HEADER === -->
+    <div class="tp-header">
+      <div class="tp-header__top">
+        <button class="tp-back" (click)="volver()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Volver
+        </button>
+        <div class="tp-header__badges">
+          <div class="tp-badge" [ngClass]="estadoBadgeClass">
+            <span class="tp-badge__dot"></span>
+            {{ estadoLabelHeader }}
+          </div>
+          <div class="tp-badge badge-info">
+            <span class="tp-badge__dot"></span>
+            {{ proveedoresAsignados }}/{{ totalProveedores }} asignados
+          </div>
+        </div>
+      </div>
+
+      <div class="tp-header__main">
+        <div class="tp-header__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="tp-header__text">
+          <span class="tp-header__eyebrow">Tesoreria &mdash; Tramitar Pago</span>
+          <h1>Solicitud #{{ movimiento.id }}</h1>
+          <p>{{ movimiento.empresaUt }} &mdash; {{ movimiento.concepto || movimiento.referencia }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- === KPI CARDS === -->
+    <div class="tp-kpi-section">
+      <!-- Proveedores -->
+      <div class="tp-kpi-card tp-kpi-card--proveedores">
+        <div class="tp-kpi-card__bg-accent"></div>
+        <div class="tp-kpi-card__header">
+          <div class="tp-kpi-card__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <h3 class="tp-kpi-card__title">Proveedores</h3>
+        </div>
+        <div class="tp-kpi-card__content">
+          <div class="tp-kpi-card__value">{{ totalProveedores }}</div>
+          <p class="tp-kpi-card__detail">Total en esta solicitud</p>
+        </div>
+        <div class="tp-kpi-card__border"></div>
+      </div>
+
+      <!-- Valor Total OC -->
+      <div class="tp-kpi-card tp-kpi-card--valor">
+        <div class="tp-kpi-card__bg-accent"></div>
+        <div class="tp-kpi-card__header">
+          <div class="tp-kpi-card__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <h3 class="tp-kpi-card__title">Total OC</h3>
+        </div>
+        <div class="tp-kpi-card__content">
+          <div class="tp-kpi-card__value tp-kpi-card__value--mono">{{ formatCurrency(totalValorOc) }}</div>
+          <p class="tp-kpi-card__detail">{{ totalOrdenes }} ordenes de compra</p>
+        </div>
+        <div class="tp-kpi-card__border"></div>
+      </div>
+
+      <!-- Total Egresos -->
+      <div class="tp-kpi-card tp-kpi-card--egresos">
+        <div class="tp-kpi-card__bg-accent"></div>
+        <div class="tp-kpi-card__header">
+          <div class="tp-kpi-card__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <h3 class="tp-kpi-card__title">Total Egresos</h3>
+        </div>
+        <div class="tp-kpi-card__content">
+          <div class="tp-kpi-card__value tp-kpi-card__value--mono">{{ formatCurrency(totalValorEgreso) }}</div>
+          <p class="tp-kpi-card__detail">Valor total de egresos</p>
+        </div>
+        <div class="tp-kpi-card__border"></div>
+      </div>
+
+      <!-- Total Pagado -->
+      <div class="tp-kpi-card tp-kpi-card--pagado">
+        <div class="tp-kpi-card__bg-accent"></div>
+        <div class="tp-kpi-card__header">
+          <div class="tp-kpi-card__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="tp-kpi-card__title">Total Pagado</h3>
+        </div>
+        <div class="tp-kpi-card__content">
+          <div class="tp-kpi-card__value tp-kpi-card__value--mono tp-kpi-card__value--green">{{ formatCurrency(totalPagado) }}</div>
+          <p class="tp-kpi-card__detail">{{ proveedoresAsignados }} comprobantes asignados</p>
+        </div>
+        <div class="tp-kpi-card__border"></div>
+      </div>
+    </div>
+
+    <!-- === INSTRUCTIONS TOGGLE === -->
+    <div class="tp-notes-container">
+      <button class="tp-notes-toggle" (click)="toggleNotes()" [class.tp-notes-toggle--collapsed]="!showNotes()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+        <span>{{ showNotes() ? 'Ocultar' : 'Mostrar' }} instrucciones</span>
+      </button>
+
+      @if (showNotes()) {
+        <div class="tp-notes-section">
+          <div class="tp-note">
+            <div class="tp-note__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+              </svg>
+            </div>
+            <div class="tp-note__content">
+              <h4>Adjuntar Comprobante</h4>
+              <p>Haz clic en el boton "Adjuntar CP" o arrastra un archivo sobre la fila del proveedor para asignar el comprobante de pago.</p>
+            </div>
+          </div>
+          <div class="tp-note">
+            <div class="tp-note__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="tp-note__content">
+              <h4>Verificacion Automatica</h4>
+              <p>Al adjuntar el comprobante, se analiza con OCR y se calcula el porcentaje de coincidencia con el valor del egreso.</p>
+            </div>
+          </div>
+          <div class="tp-note">
+            <div class="tp-note__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </div>
+            <div class="tp-note__content">
+              <h4>Expandir Detalle</h4>
+              <p>Haz clic en la fila de un proveedor para ver informacion bancaria, datos del OC y detalles del comprobante.</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- === MAIN TABLE SECTION === -->
+    <div class="tp-table-section">
+      <div class="tp-table-header">
+        <div class="tp-table-header__left">
+          <div class="tp-table-header__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <div class="tp-table-header__text">
+            <h2>Proveedores y Ordenes de Compra ({{ totalProveedores }})</h2>
+            <p>Carga los comprobantes de pago para cada proveedor</p>
+          </div>
+        </div>
+        <span class="tp-table-header__count">
+          {{ proveedoresAsignados }}/{{ totalProveedores }} asignados
+        </span>
+      </div>
+
+      <!-- Column headers -->
+      <div class="tp-col-headers">
+        <div class="tp-col tp-col--num">#</div>
+        <div class="tp-col tp-col--proveedor">PROVEEDOR</div>
+        <div class="tp-col tp-col--oc">N&deg; OC</div>
+        <div class="tp-col tp-col--valor-oc">VALOR OC</div>
+        <div class="tp-col tp-col--egreso">N&deg; EGRESO</div>
+        <div class="tp-col tp-col--total-egreso">TOTAL EGRESO</div>
+        <div class="tp-col tp-col--total-pagado">TOTAL PAGADO</div>
+        <div class="tp-col tp-col--estado">ESTADO</div>
+        <div class="tp-col tp-col--cp">CP ASIGNADO</div>
+      </div>
+
+      <!-- Provider rows -->
+      <div class="tp-providers-list">
+        @for (detalle of detalles; track $index; let idx = $index) {
+          <div class="tp-provider-row-wrapper"
+            [class.tp-provider-row-wrapper--expanded]="isProveedorExpanded(idx)"
+            [class.tp-provider-row-wrapper--dragging]="draggingIndex === idx"
+            (dragover)="onDragOverProvider($event, idx)"
+            (dragleave)="onDragLeaveProvider($event)"
+            (drop)="onDropProvider($event, idx)"
+            [style.--row-idx]="idx">
+
+            <!-- Main row -->
+            <div class="tp-provider-row" (click)="toggleProveedor(idx)">
+              <div class="tp-cell tp-cell--num">{{ idx + 1 }}</div>
+              <div class="tp-cell tp-cell--proveedor">
+                <div class="tp-proveedor-info">
+                  <div class="tp-proveedor-avatar" [class.tp-proveedor-avatar--asignado]="isEstadoAsignado(idx)">
+                    {{ getProveedorInitial(detalle.proveedorNombre) }}
+                  </div>
+                  <div>
+                    <div class="tp-proveedor-nombre">{{ detalle.proveedorNombre }}</div>
+                    <div class="tp-proveedor-nit">NIT: {{ detalle.proveedorNit ?? 'N/A' }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="tp-cell tp-cell--oc">
+                <span class="tp-oc-badge">{{ detalle.numeroOc ?? 'N/A' }}</span>
+              </div>
+              <div class="tp-cell tp-cell--valor-oc tp-cell--currency">
+                {{ formatCurrency(detalle.valorOc) }}
+              </div>
+              <div class="tp-cell tp-cell--egreso">
+                {{ detalle.numeroEgreso ?? 'N/A' }}
+              </div>
+              <div class="tp-cell tp-cell--total-egreso tp-cell--currency">
+                {{ formatCurrency(detalle.valorEgreso) }}
+              </div>
+              <div class="tp-cell tp-cell--total-pagado tp-cell--currency"
+                [class.tp-cell--pagado-ok]="getComprobanteStatus(idx).valorPagado">
+                @if (getComprobanteStatus(idx).valorPagado) {
+                  {{ formatCurrency(getComprobanteStatus(idx).valorPagado) }}
+                } @else {
+                  <span class="tp-cell--na">$0</span>
+                }
+              </div>
+              <div class="tp-cell tp-cell--estado">
+                <span class="tp-estado-badge"
+                  [class.tp-estado-badge--pendiente]="!isEstadoAsignado(idx)"
+                  [class.tp-estado-badge--asignado]="isEstadoAsignado(idx)"
+                  [class.tp-estado-badge--procesando]="getComprobanteStatus(idx).estado === 'PROCESANDO'"
+                  [class.tp-estado-badge--error]="getComprobanteStatus(idx).estado === 'ERROR'">
+                  @if (isEstadoAsignado(idx)) {
+                    <svg class="tp-estado-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  }
+                  {{ getEstadoProveedor(idx) }}
+                </span>
+              </div>
+              <div class="tp-cell tp-cell--cp" (click)="$event.stopPropagation()">
+                @if (getComprobanteStatus(idx).estado === 'ASIGNADO') {
+                  <div class="tp-cp-assigned">
+                    <span class="tp-cp-name" [title]="getComprobanteStatus(idx).nombreArchivo ?? ''">
+                      {{ getComprobanteStatus(idx).nombreArchivo ?? 'CP' }}
+                    </span>
+                    <span class="tp-cp-match"
+                      [class.tp-cp-match--high]="(getComprobanteStatus(idx).matchPorcentaje ?? 0) >= 90"
+                      [class.tp-cp-match--medium]="(getComprobanteStatus(idx).matchPorcentaje ?? 0) >= 70 && (getComprobanteStatus(idx).matchPorcentaje ?? 0) < 90"
+                      [class.tp-cp-match--low]="(getComprobanteStatus(idx).matchPorcentaje ?? 0) < 70">
+                      {{ getComprobanteStatus(idx).matchPorcentaje }}%
+                    </span>
+                  </div>
+                } @else if (getComprobanteStatus(idx).estado === 'PROCESANDO') {
+                  <div class="tp-cp-processing">
+                    <div class="tp-cp-spinner"></div>
+                    <span>Analizando...</span>
+                  </div>
+                } @else {
+                  <span class="tp-cp-sin">Sin CP</span>
+                }
+              </div>
+            </div>
+
+            <!-- Expanded detail panel -->
+            @if (isProveedorExpanded(idx)) {
+              <div class="tp-detail-panel">
+                <div class="tp-detail-grid">
+                  <!-- Bank Info -->
+                  <div class="tp-detail-card tp-detail-card--bank">
+                    <h4>
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                      </svg>
+                      Informacion Bancaria
+                    </h4>
+                    <div class="tp-detail-fields">
+                      <div class="tp-detail-field">
+                        <span class="tp-detail-field__label">Banco</span>
+                        <span class="tp-detail-field__value">{{ detalle.proveedorBanco ?? 'N/A' }}</span>
+                      </div>
+                      <div class="tp-detail-field">
+                        <span class="tp-detail-field__label">N&deg; Cuenta</span>
+                        <span class="tp-detail-field__value tp-detail-field__value--mono">{{ detalle.proveedorNumeroCuenta ?? 'N/A' }}</span>
+                      </div>
+                      <div class="tp-detail-field">
+                        <span class="tp-detail-field__label">Forma de Pago</span>
+                        <span class="tp-detail-field__value">{{ detalle.proveedorFormaPago ?? 'N/A' }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- OC Info -->
+                  <div class="tp-detail-card tp-detail-card--oc">
+                    <h4>
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      Orden de Compra
+                    </h4>
+                    <div class="tp-detail-fields">
+                      <div class="tp-detail-field">
+                        <span class="tp-detail-field__label">N&deg; OC</span>
+                        <span class="tp-detail-field__value tp-detail-field__value--accent">{{ detalle.numeroOc ?? 'N/A' }}</span>
+                      </div>
+                      <div class="tp-detail-field">
+                        <span class="tp-detail-field__label">Valor OC</span>
+                        <span class="tp-detail-field__value tp-detail-field__value--currency">{{ formatCurrency(detalle.valorOc) }}</span>
+                      </div>
+                      <div class="tp-detail-field">
+                        <span class="tp-detail-field__label">Fecha Emision</span>
+                        <span class="tp-detail-field__value">{{ detalle.fechaEmisionOc ?? 'N/A' }}</span>
+                      </div>
+                      @if (detalle.archivoOcUrl) {
+                        <div class="tp-detail-field">
+                          <span class="tp-detail-field__label">Archivo OC</span>
+                          <a [href]="detalle.archivoOcUrl" target="_blank" class="tp-detail-link">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            Ver documento
+                          </a>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Upload CP -->
+                  <div class="tp-detail-card tp-detail-card--upload">
+                    <h4>
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                      </svg>
+                      Comprobante de Pago
+                    </h4>
+
+                    @if (getComprobanteStatus(idx).estado === 'ASIGNADO') {
+                      <div class="tp-upload-assigned">
+                        <div class="tp-upload-assigned__file">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                          </svg>
+                          <span>{{ getComprobanteStatus(idx).nombreArchivo }}</span>
+                        </div>
+                        <div class="tp-upload-assigned__match">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                          </svg>
+                          Match: {{ getComprobanteStatus(idx).matchPorcentaje }}%
+                        </div>
+                        @if (getComprobanteStatus(idx).valorPagado) {
+                          <div class="tp-upload-assigned__valor">
+                            Valor detectado: {{ formatCurrency(getComprobanteStatus(idx).valorPagado) }}
+                          </div>
+                        }
+                        <button class="tp-btn-remove" (click)="removeComprobanteProveedor(idx)">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                          </svg>
+                          Eliminar y resubir
+                        </button>
+                      </div>
+                    } @else if (getComprobanteStatus(idx).estado === 'PROCESANDO') {
+                      <div class="tp-upload-processing">
+                        <div class="tp-upload-processing__spinner"></div>
+                        <span>Analizando comprobante con OCR...</span>
+                      </div>
+                    } @else {
+                      <div class="tp-upload-zone"
+                        [class.tp-upload-zone--dragging]="draggingIndex === idx">
+                        <input #fileInput type="file" class="hidden"
+                          accept=".pdf,.png,.jpg,.jpeg,.tiff,.tif"
+                          (change)="onFileSelectedForProvider($event, idx)" />
+                        <button class="tp-btn-upload" (click)="fileInput.click()">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                          </svg>
+                          <span>Adjuntar CP</span>
+                        </button>
+                        <p class="tp-upload-help">o arrastra un archivo aqui</p>
+                        <div class="tp-upload-formats">
+                          <span>PDF</span><span>PNG</span><span>JPG</span><span>TIFF</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- OCR Data if available -->
+                @if (getComprobanteStatus(idx).ocrData; as ocrData) {
+                  <div class="tp-ocr-summary">
+                    <h4>
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                      </svg>
+                      Datos Extraidos del Comprobante (OCR)
+                    </h4>
+                    <div class="tp-ocr-fields">
+                      @if (ocrData.empresa) {
+                        <div class="tp-ocr-field">
+                          <span class="tp-ocr-field__label">Empresa</span>
+                          <span class="tp-ocr-field__value">{{ ocrData.empresa }}</span>
+                        </div>
+                      }
+                      @if (ocrData.beneficiario) {
+                        <div class="tp-ocr-field">
+                          <span class="tp-ocr-field__label">Beneficiario</span>
+                          <span class="tp-ocr-field__value">{{ ocrData.beneficiario }}</span>
+                        </div>
+                      }
+                      @if (ocrData.fecha) {
+                        <div class="tp-ocr-field">
+                          <span class="tp-ocr-field__label">Fecha</span>
+                          <span class="tp-ocr-field__value">{{ ocrData.fecha }}</span>
+                        </div>
+                      }
+                      @if (ocrData.banco) {
+                        <div class="tp-ocr-field">
+                          <span class="tp-ocr-field__label">Banco</span>
+                          <span class="tp-ocr-field__value">{{ ocrData.banco }}</span>
+                        </div>
+                      }
+                      @if (ocrData.cuentaDebitar) {
+                        <div class="tp-ocr-field">
+                          <span class="tp-ocr-field__label">Cuenta</span>
+                          <span class="tp-ocr-field__value tp-detail-field__value--mono">{{ ocrData.cuentaDebitar }}</span>
+                        </div>
+                      }
+                      @if (ocrData.valorPago !== null) {
+                        <div class="tp-ocr-field tp-ocr-field--highlight">
+                          <span class="tp-ocr-field__label">Valor Pago</span>
+                          <span class="tp-ocr-field__value tp-detail-field__value--currency">{{ formatCurrency(ocrData.valorPago) }}</span>
+                        </div>
+                      }
+                      @if (ocrData.tipoPago) {
+                        <div class="tp-ocr-field">
+                          <span class="tp-ocr-field__label">Tipo Pago</span>
+                          <span class="tp-ocr-field__value">{{ ocrData.tipoPago }}</span>
+                        </div>
+                      }
+                      @if (ocrData.secuencia) {
+                        <div class="tp-ocr-field">
+                          <span class="tp-ocr-field__label">Secuencia</span>
+                          <span class="tp-ocr-field__value tp-detail-field__value--mono">{{ ocrData.secuencia }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Footer totals -->
+      <div class="tp-table-footer">
+        <div class="tp-table-footer__label">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          Total General
+        </div>
+        <div class="tp-table-footer__values">
+          <div class="tp-table-footer__item">
+            <span class="tp-table-footer__item-label">Valor OC</span>
+            <span class="tp-table-footer__item-value">{{ formatCurrency(totalValorOc) }}</span>
+          </div>
+          <div class="tp-table-footer__item">
+            <span class="tp-table-footer__item-label">Total Egresos</span>
+            <span class="tp-table-footer__item-value">{{ formatCurrency(totalValorEgreso) }}</span>
+          </div>
+          <div class="tp-table-footer__item tp-table-footer__item--highlight">
+            <span class="tp-table-footer__item-label">Total Pagado</span>
+            <span class="tp-table-footer__item-value">{{ formatCurrency(totalPagado) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+}

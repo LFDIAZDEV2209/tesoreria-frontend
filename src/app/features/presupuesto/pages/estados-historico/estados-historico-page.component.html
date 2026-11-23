@@ -1,0 +1,170 @@
+<div class="module-page estados-historico" style="--module-accent:#059669">
+  <div class="space-y-5">
+
+    <app-gp-page-header class="gp-item" icono="activity" color="#059669" titulo="Histórico de estados"
+      eyebrow="Gestor Presupuestal"
+      descripcion="Línea de tiempo del recorrido de cada pago: sugerido, aprobado, pagado y los rechazos o cancelaciones. Cada evento muestra quién lo hizo, cuándo y con qué observación.">
+      <button acciones type="button" class="btn-ghost text-xs" (click)="recargar()" [disabled]="cargando()">
+        <app-gp-icon name="refresh" [size]="14" /> Actualizar
+      </button>
+    </app-gp-page-header>
+
+    @if (error(); as mensaje) {
+      <div class="gp-item">
+        <app-gp-error-state [mensaje]="mensaje" (reintentar)="recargar()"></app-gp-error-state>
+      </div>
+    }
+
+    @if (!ctx.empresaId()) {
+      <div class="gp-item">
+        <app-gp-empty-state icono="building" tono="info" titulo="Selecciona una empresa"
+          descripcion="Elige el workspace (empresa) en la barra de navegación para ver la línea de tiempo de sus pagos."
+          pista="El histórico cubre pagos proyectados, sugeridos y provisiones">
+          <button acciones type="button" class="btn-primary" (click)="ctx.cargar()">Cargar empresas</button>
+        </app-gp-empty-state>
+      </div>
+    } @else if (cargando() && filas().length === 0) {
+      <div class="gp-item">
+        <app-gp-skeleton tipo="table"></app-gp-skeleton>
+      </div>
+    } @else {
+      <section class="gp-item gp-section-filters estados-filtros" aria-label="Filtros del histórico de estados">
+        <h2 class="estados-titulo">
+          <app-gp-icon name="calendar-days" [size]="15" />
+          Línea de tiempo
+        </h2>
+        <label>Módulo
+          <select class="field" aria-label="Filtrar por módulo" [ngModel]="filtroModulo()" (ngModelChange)="setModulo($event)">
+            <option value="">Todos los módulos</option>
+            @for (m of modulos; track m.valor) {
+              <option [value]="m.valor">{{ m.etiqueta }}</option>
+            }
+          </select>
+        </label>
+        <label>Estado actual
+          <select class="field" aria-label="Filtrar por estado" [ngModel]="filtroEstado()" (ngModelChange)="setEstado($event)">
+            <option value="">Todos los estados</option>
+            @for (e of estados; track e.valor) {
+              <option [value]="e.valor">{{ e.etiqueta }}</option>
+            }
+          </select>
+        </label>
+        <label>Período
+          <select class="field" aria-label="Filtrar por período" [ngModel]="filtroPeriodo()" (ngModelChange)="setPeriodo($event)">
+            <option value="">Todos los meses</option>
+            @for (p of opcionPeriodos(); track p) {
+              <option [value]="p">{{ tituloPeriodo(p) }}</option>
+            }
+          </select>
+        </label>
+        <label class="estados-busqueda">Buscar
+          <input type="search" class="field" aria-label="Buscar tercero, factura o concepto"
+            placeholder="NIT, nombre, factura o concepto…" [ngModel]="busqueda()" (ngModelChange)="setBusqueda($event)">
+        </label>
+        <label>Por página
+          <select class="field" aria-label="Registros por página" [ngModel]="size()" (ngModelChange)="cambiarSize($event)">
+            @for (s of pagosPorPagina; track s) {
+              <option [ngValue]="s">{{ s }}</option>
+            }
+          </select>
+        </label>
+        @if (hayFiltrosActivos()) {
+          <button type="button" class="btn-ghost estados-limpiar" (click)="limpiarFiltros()">
+            <app-gp-icon name="eraser" [size]="14" /> Limpiar filtros
+          </button>
+        }
+      </section>
+
+      @if (filas().length === 0) {
+        <div class="gp-item">
+          <app-gp-empty-state icono="activity" tono="info" titulo="Sin movimientos de estado"
+            descripcion="Aún no hay cambios de estado registrados con estos filtros. Cuando se sugiera, apruebe o pague un pago, la línea de tiempo lo mostrará aquí."
+            [pista]="ctx.nombreEmpresa() ? 'Empresa: ' + ctx.nombreEmpresa() : ''">
+            @if (hayFiltrosActivos()) {
+              <button acciones type="button" class="btn-primary" (click)="limpiarFiltros()">Quitar filtros</button>
+            }
+          </app-gp-empty-state>
+        </div>
+      } @else {
+        @for (grupo of grupos(); track grupo.periodo) {
+          <section class="gp-item estados-grupo card" [attr.aria-label]="'Estados de ' + grupo.titulo">
+            <header class="estados-grupo__cabecera">
+              <span class="estados-grupo__mes"><app-gp-icon name="calendar" [size]="14" /> {{ grupo.titulo }}</span>
+              <span class="estados-grupo__conteo">{{ grupo.transiciones.length }} cambio{{ grupo.transiciones.length === 1 ? '' : 's' }} de estado</span>
+            </header>
+            <ul class="estados-linea">
+              @for (t of grupo.transiciones; track t.id) {
+                <li class="estados-evento" [class.estados-evento--fin]="$last">
+                  <span class="estados-evento__punto" [ngClass]="'estados-evento__punto--' + tonoEstado(t.estado_nuevo)" aria-hidden="true">
+                    <app-gp-icon [name]="iconoEstado(t.estado_nuevo)" [size]="13" />
+                  </span>
+                  <div class="estados-evento__cuerpo">
+                    <div class="estados-evento__cabecera">
+                      <h3 class="estados-evento__titulo">{{ t.etiqueta || 'Pago' }}</h3>
+                      <div class="estados-evento__chips">
+                        @if (t.modulo) {
+                          <span class="estados-chip-modulo">{{ modulo(t.modulo) }}</span>
+                        }
+                        <span class="estados-chip-estados">
+                          <app-gp-estado-badge [estado]="badge(t.estado_actual)"></app-gp-estado-badge>
+                        </span>
+                      </div>
+                    </div>
+                    <p class="estados-evento__paso" aria-label="Cambio de estado">
+                      <span class="estados-evento__de" [class.estados-evento__de--creado]="!t.estado_anterior">
+                        {{ t.estado_anterior ? etiquetaEstado(t.estado_anterior) : 'Surgió así' }}
+                      </span>
+                      <app-gp-icon class="estados-evento__flecha" name="chevron" [size]="13" />
+                      <span class="estados-evento__a" [ngClass]="'estados-evento__a--' + tonoEstado(t.estado_nuevo)">
+                        {{ etiquetaEstado(t.estado_nuevo) }}
+                      </span>
+                      <span class="estados-evento__sep" aria-hidden="true">•</span>
+                      <span class="estados-evento__usuario">
+                        <app-gp-icon name="circle-user" [size]="13" /> {{ t.usuario || 'Sistema' }}
+                      </span>
+                      <span class="estados-evento__sep" aria-hidden="true">•</span>
+                      <span class="estados-evento__fecha">
+                        <app-gp-icon name="calendar-clock" [size]="13" /> {{ fecha(t.created_at) }}
+                      </span>
+                    </p>
+                    @if (t.observacion) {
+                      <p class="estados-evento__observacion">
+                        <app-gp-icon name="message-square" [size]="13" />
+                        <span>{{ t.observacion }}</span>
+                      </p>
+                    }
+                    <p class="estados-evento__meta">
+                      @if (t.tercero_nombre || t.tercero) {
+                        <span><app-gp-icon name="users" [size]="12" /> {{ t.tercero_nombre || t.tercero }}</span>
+                      }
+                      @if (t.tercero) {
+                        <span>NIT {{ t.tercero }}</span>
+                      }
+                      @if (monto(t.monto)) {
+                        <span><app-gp-icon name="coins" [size]="12" /> {{ monto(t.monto) }}</span>
+                      }
+                    </p>
+                  </div>
+                </li>
+              } @empty {
+                <li class="estados-vacio">Sin cambios de estado en este mes.</li>
+              }
+            </ul>
+          </section>
+        }
+
+        <div class="gp-item estados-paginacion">
+          <button type="button" class="btn-ghost estados-paginacion__boton" (click)="cambiarPagina(page() - 1)"
+            [disabled]="cargando() || page() === 0">
+            <app-gp-icon name="arrow-left" [size]="14" /> Anterior
+          </button>
+          <span class="estados-paginacion__texto">Página {{ page() + 1 }} de {{ paginasTotales() }} — {{ total() }} evento{{ total() === 1 ? '' : 's' }}</span>
+          <button type="button" class="btn-ghost estados-paginacion__boton" (click)="cambiarPagina(page() + 1)"
+            [disabled]="cargando() || page() + 1 >= paginasTotales()">
+            Siguiente <app-gp-icon name="arrow-right" [size]="14" />
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>

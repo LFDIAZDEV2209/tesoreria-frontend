@@ -1,0 +1,373 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     PASO 3 — Cuadro Comparativo Profesional con Animaciones
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="comp-root" [class.comp-loaded]="loaded()">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <div class="comp-header">
+    <div class="comp-header-icon">
+      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+      </svg>
+    </div>
+    <div class="comp-header-text">
+      <h2>Cuadro Comparativo</h2>
+      <p>Analiza, compara y selecciona al mejor proveedor — <strong>Req. {{ tramite.requisicion.numeroRequisicion }}</strong></p>
+    </div>
+    <div class="comp-header-actions">
+      <!-- View toggle -->
+      <button class="view-toggle-btn" (click)="toggleView()" title="Cambiar vista">
+        @if (viewMode() === 'cards') {
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 18h18M3 6h18"/></svg>
+          <span>Tabla</span>
+        } @else {
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          <span>Tarjetas</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ KPI STRIP ══════════ -->
+  <div class="kpi-strip">
+    <div class="kpi-card kpi-blue stagger-1">
+      <div class="kpi-icon-wrap kpi-icon-blue">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div>
+        <span class="kpi-label">Cotizaciones</span>
+        <p class="kpi-value kpi-value-blue">{{ tramite.cotizaciones.length }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-green stagger-2">
+      <div class="kpi-icon-wrap kpi-icon-green">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+      </div>
+      <div>
+        <span class="kpi-label">Mejor Precio</span>
+        <p class="kpi-value kpi-value-green">$ {{ getMejorPrecio() | number:'1.0-0' }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-purple stagger-3">
+      <div class="kpi-icon-wrap kpi-icon-purple">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </div>
+      <div>
+        <span class="kpi-label">Promedio</span>
+        <p class="kpi-value kpi-value-purple">$ {{ getPromedioPrecio() | number:'1.0-0' }}</p>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-gold stagger-4">
+      <div class="kpi-icon-wrap kpi-icon-gold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <span class="kpi-label">Ahorro Potencial</span>
+        <p class="kpi-value kpi-value-gold">$ {{ getAhorro() | number:'1.0-0' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ CARD VIEW ══════════ -->
+  @if (viewMode() === 'cards') {
+    <div class="provider-grid" [class.single-provider]="tramite.cotizaciones.length === 1">
+      @for (ranked of getRankedCotizaciones(); track ranked.cot.id; let i = $index) {
+        <div class="prov-card stagger-{{ i + 1 }}"
+             [class.prov-card--best]="ranked.isBest"
+             [class.prov-card--selected]="proveedorSeleccionadoIndex() === ranked.index"
+             [class.prov-card--dimmed]="proveedorSeleccionadoIndex() !== null && proveedorSeleccionadoIndex() !== ranked.index"
+             (click)="seleccionarProveedor(ranked.index)">
+
+          <!-- Best badge -->
+          @if (ranked.isBest) {
+            <div class="best-ribbon">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              Mejor Precio
+            </div>
+          }
+
+          <!-- Selected check -->
+          @if (proveedorSeleccionadoIndex() === ranked.index) {
+            <div class="selected-badge-floating">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Seleccionado
+            </div>
+          }
+
+          <!-- Provider avatar + rank -->
+          <div class="prov-card-top">
+            <div class="prov-avatar" [style.background]="getProviderColor(ranked.index)">
+              {{ ranked.cot.proveedor.charAt(0) }}
+            </div>
+            <div class="prov-rank-badge">{{ getRankMedal(ranked.rank) }}</div>
+          </div>
+
+          <!-- Name -->
+          <h4 class="prov-name">{{ ranked.cot.proveedor }}</h4>
+          @if (ranked.cot.nitProveedor) {
+            <p class="prov-nit">NIT: {{ ranked.cot.nitProveedor }}</p>
+          }
+
+          <!-- Price section -->
+          <div class="prov-price-section">
+            <div class="prov-total">
+              <span class="prov-total-label">Total</span>
+              <span class="prov-total-value" [style.color]="ranked.isBest ? '#10b981' : '#213053'">
+                $ {{ ranked.cot.valorTotalCotizado | number:'1.0-0' }}
+              </span>
+            </div>
+
+            <!-- Animated price bar -->
+            <div class="price-bar-track">
+              <div class="price-bar-fill"
+                   [style.width.%]="loaded() ? ranked.priceBarWidth : 0"
+                   [style.background]="getProviderColor(ranked.index)">
+              </div>
+            </div>
+
+            <!-- Diff badge -->
+            @if (ranked.isBest) {
+              <span class="diff-badge diff-best">Mejor oferta</span>
+            } @else {
+              <span class="diff-badge diff-higher">+{{ ranked.diffPercent | number:'1.1-1' }}% más caro</span>
+            }
+          </div>
+
+          <!-- Breakdown -->
+          <div class="prov-breakdown">
+            <div class="breakdown-row">
+              <span>Subtotal (sin IVA)</span>
+              <span>$ {{ ranked.cot.valorCotizadoSinIva | number:'1.0-0' }}</span>
+            </div>
+            <div class="breakdown-row">
+              <span>IVA ({{ ranked.cot.ivaPorcentaje }}%)</span>
+              <span>$ {{ (ranked.cot.valorTotalCotizado - ranked.cot.valorCotizadoSinIva) | number:'1.0-0' }}</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Moneda</span>
+              <span class="font-semibold">{{ ranked.cot.moneda }}</span>
+            </div>
+            @if (ranked.cot.tiempoEntrega) {
+              <div class="breakdown-row">
+                <span>Tiempo entrega</span>
+                <span class="font-semibold">{{ ranked.cot.tiempoEntrega }}</span>
+              </div>
+            }
+            @if (ranked.cot.condicionesPago) {
+              <div class="breakdown-row">
+                <span>Cond. pago</span>
+                <span class="font-semibold">{{ ranked.cot.condicionesPago }}</span>
+              </div>
+            }
+            @if (ranked.cot.garantia) {
+              <div class="breakdown-row">
+                <span>Garantía</span>
+                <span class="font-semibold">{{ ranked.cot.garantia }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Items preview -->
+          @if (ranked.cot.items && ranked.cot.items.length > 0) {
+            <div class="prov-items-preview">
+              <span class="items-label">{{ ranked.cot.items.length }} ítem(s) cotizado(s)</span>
+              @for (item of ranked.cot.items.slice(0, 3); track item.descripcion) {
+                <div class="item-row">
+                  <span class="item-desc">{{ item.descripcion }}</span>
+                  <span class="item-price">$ {{ item.subtotal | number:'1.0-0' }}</span>
+                </div>
+              }
+              @if (ranked.cot.items.length > 3) {
+                <span class="items-more">+{{ ranked.cot.items.length - 3 }} más...</span>
+              }
+            </div>
+          }
+
+          <!-- Select CTA -->
+          <button class="prov-select-btn"
+                  [class.prov-select-btn--active]="proveedorSeleccionadoIndex() === ranked.index"
+                  (click)="$event.stopPropagation(); seleccionarProveedor(ranked.index)">
+            @if (proveedorSeleccionadoIndex() === ranked.index) {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Proveedor Seleccionado
+            } @else {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Seleccionar Proveedor
+            }
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ══════════ TABLE VIEW ══════════ -->
+  @if (viewMode() === 'table') {
+    <div class="comp-table-wrap stagger-1">
+      <div class="comp-table-header">
+        <h3>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 18h18M3 6h18"/></svg>
+          Vista Detallada en Tabla
+        </h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th class="th-rank">#</th>
+              <th>Proveedor</th>
+              <th>Sin IVA</th>
+              <th>IVA</th>
+              <th class="th-total">Total</th>
+              <th>Moneda</th>
+              <th>Entrega</th>
+              <th class="th-diff">Diferencia</th>
+              <th class="th-bar">Comparativa Visual</th>
+              <th class="th-action">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ranked of getRankedCotizaciones(); track ranked.cot.id; let i = $index) {
+              <tr class="comp-row"
+                  [class.comp-row--selected]="proveedorSeleccionadoIndex() === ranked.index"
+                  [class.comp-row--best]="ranked.isBest">
+                <!-- Rank -->
+                <td class="td-rank">
+                  <span class="rank-medal">{{ getRankMedal(ranked.rank) }}</span>
+                </td>
+                <!-- Proveedor -->
+                <td>
+                  <div class="table-prov">
+                    <div class="table-prov-avatar" [style.background]="getProviderColor(ranked.index)">
+                      {{ ranked.cot.proveedor.charAt(0) }}
+                    </div>
+                    <div>
+                      <span class="table-prov-name">{{ ranked.cot.proveedor }}</span>
+                      @if (ranked.cot.nitProveedor) {
+                        <span class="table-prov-nit">{{ ranked.cot.nitProveedor }}</span>
+                      }
+                    </div>
+                  </div>
+                </td>
+                <!-- Sin IVA -->
+                <td>$ {{ ranked.cot.valorCotizadoSinIva | number:'1.0-0' }}</td>
+                <!-- IVA -->
+                <td>{{ ranked.cot.ivaPorcentaje }}%</td>
+                <!-- Total -->
+                <td class="td-total" [style.color]="ranked.isBest ? '#10b981' : '#213053'">
+                  $ {{ ranked.cot.valorTotalCotizado | number:'1.0-0' }}
+                </td>
+                <!-- Moneda -->
+                <td>{{ ranked.cot.moneda }}</td>
+                <!-- Entrega -->
+                <td>{{ ranked.cot.tiempoEntrega || '—' }}</td>
+                <!-- Diferencia -->
+                <td class="td-diff">
+                  @if (ranked.isBest) {
+                    <span class="diff-chip diff-chip-best">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      Mejor
+                    </span>
+                  } @else {
+                    <span class="diff-chip diff-chip-higher">+{{ ranked.diffPercent | number:'1.1-1' }}%</span>
+                  }
+                </td>
+                <!-- Bar -->
+                <td class="td-bar">
+                  <div class="table-bar-track">
+                    <div class="table-bar-fill"
+                         [style.width.%]="loaded() ? ranked.priceBarWidth : 0"
+                         [style.background]="getProviderColor(ranked.index)">
+                    </div>
+                  </div>
+                </td>
+                <!-- Action -->
+                <td class="td-action">
+                  <button class="table-select-btn"
+                          [class.table-select-btn--active]="proveedorSeleccionadoIndex() === ranked.index"
+                          (click)="seleccionarProveedor(ranked.index)">
+                    @if (proveedorSeleccionadoIndex() === ranked.index) {
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    } @else {
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    }
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ══════════ SELECTION FORM ══════════ -->
+  <div class="selection-form stagger-5">
+    <div class="selection-form-header">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <h3>Datos de Selección</h3>
+    </div>
+
+    <div class="selection-form-grid">
+      <div class="form-group">
+        <label class="form-label">Criterio de selección *</label>
+        <select [(ngModel)]="criterioSeleccion" class="form-select">
+          @for (c of criterios; track c.value) {
+            <option [value]="c.value">{{ c.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Aprobador *</label>
+        <input type="text" [(ngModel)]="aprobador" class="form-input" placeholder="Nombre del aprobador">
+      </div>
+      <div class="form-group col-span-full">
+        <label class="form-label">Justificación breve *</label>
+        <textarea [(ngModel)]="justificacion" class="form-textarea" placeholder="Explique brevemente la razón de la selección del proveedor..." rows="3"></textarea>
+      </div>
+    </div>
+
+    <!-- Aprobación toggle -->
+    <div class="approval-strip" [class.approval-strip--on]="aprobado()">
+      <button class="toggle-switch" (click)="toggleAprobacion()" [class.toggle-switch--on]="aprobado()">
+        <div class="toggle-knob"></div>
+      </button>
+      <div class="approval-text">
+        <p class="approval-title">{{ aprobado() ? 'Aprobado' : 'Pendiente de Aprobación' }}</p>
+        <p class="approval-subtitle">{{ aprobado() ? 'El aprobador ha dado su visto bueno' : 'Active la aprobación para continuar' }}</p>
+      </div>
+      @if (aprobado()) {
+        <div class="approval-icon-check">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ══════════ CONFIRM ══════════ -->
+  <div class="comp-footer">
+    @if (proveedorSeleccionadoIndex() !== null) {
+      <div class="selected-summary">
+        <div class="selected-summary-avatar" [style.background]="getProviderColor(proveedorSeleccionadoIndex()!)">
+          {{ tramite.cotizaciones[proveedorSeleccionadoIndex()!].proveedor.charAt(0) }}
+        </div>
+        <div>
+          <span class="selected-summary-label">Proveedor seleccionado</span>
+          <span class="selected-summary-name">{{ tramite.cotizaciones[proveedorSeleccionadoIndex()!].proveedor }}</span>
+        </div>
+        <span class="selected-summary-price">
+          $ {{ tramite.cotizaciones[proveedorSeleccionadoIndex()!].valorTotalCotizado | number:'1.0-0' }}
+        </span>
+      </div>
+    }
+
+    <button (click)="confirmar()" class="confirm-btn"
+            [disabled]="!isFormValid"
+            [class.confirm-btn--disabled]="!isFormValid">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      Confirmar Selección
+    </button>
+  </div>
+</div>

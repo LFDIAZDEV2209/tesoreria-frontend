@@ -1,0 +1,95 @@
+.control-shell {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.control-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.control-header p {
+  margin: 0;
+  color: #045c94;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.control-header h1 {
+  margin: 0.2rem 0 0;
+  color: #10223f;
+  font-size: 1.2rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.save-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+.table-wrapper {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 1900px;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+th,
+td {
+  border: 1px solid #e5e7eb;
+  padding: 0.4rem;
+  text-align: center;
+}
+
+th {
+  background: #eef3f8;
+  color: #1f2d4a;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+td input {
+  width: 100%;
+  border: 1px solid #d9dee7;
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.8rem;
+}
+
+.calc {
+  font-weight: 700;
+  background: #f8fafc;
+}
+
+.diferencia-ok {
+  background: #d7f6e5;
+  color: #0c6a35;
+  font-weight: 700;
+}
+
+.diferencia-ko {
+  background: #ffe0e0;
+  color: #8f1f1f;
+  font-weight: 700;
+}
+
+.loading {
+  margin: 0;
+  padding: 1rem;
+}

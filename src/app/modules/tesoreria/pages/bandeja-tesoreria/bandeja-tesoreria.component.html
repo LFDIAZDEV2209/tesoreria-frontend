@@ -1,0 +1,2191 @@
+<div
+  class="min-h-screen bg-gradient-to-br from-[#fdfdfd] via-[#f0f0f0] to-[#e4e8f3] p-3"
+>
+  <!-- ═══ HEADER ═══ -->
+  <div
+    class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] text-white shadow-2xl rounded-2xl mb-4 header-animate"
+  >
+    <div class="px-6 py-4">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg header-icon-pulse"
+        >
+          <svg
+            class="w-7 h-7 text-[#FFB71B]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+        </div>
+        <div>
+          <p
+            class="text-xs uppercase tracking-[0.3em] text-[#FFB71B] font-semibold mb-0.5"
+          >
+            Bandeja de Entrada
+          </p>
+          <h1 class="text-xl font-bold tracking-tight">
+            Tesorería · Bandeja de pagos
+          </h1>
+          <p class="text-white/80 text-xs">
+            Revisa tus pendientes y continúa cada trámite desde un solo lugar
+          </p>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+          <a
+            routerLink="/tesoreria/historico-egresos"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-xl transition-all duration-200 border border-white/20 hover:border-white/30 shadow-lg"
+          >
+            <svg class="w-4 h-4 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Histórico de Egresos
+          </a>
+          <button
+            type="button"
+            (click)="actualizarBandeja()"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-medium rounded-xl transition-all duration-200 border border-white/20 hover:border-white/30 shadow-lg"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Actualizar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ KPI / STATS CARDS ═══ -->
+  @if (activeView() !== 'egresos') {
+  <section class="kpi-section-compact">
+    <div class="kpi-card-compact kpi-teal">
+      <div class="kpi-icon-wrapper-compact kpi-icon-teal">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Movimientos</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ movimientos.length }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Total</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-warning">
+      <div class="kpi-icon-wrapper-compact kpi-icon-warning">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Pendientes</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ pendientesCount }}</span>
+          <span class="kpi-trend-compact kpi-trend-warning">Pendiente</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-success">
+      <div class="kpi-icon-wrapper-compact kpi-icon-success">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Conciliados</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ conciliadosCount }}</span>
+          <span class="kpi-trend-compact kpi-trend-up">Cerrada</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-purple">
+      <div class="kpi-icon-wrapper-compact kpi-icon-purple">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Valor Total</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact text-base">{{
+            totalValorMovimientos | currency: "COP" : "symbol" : "1.0-0"
+          }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Acumulado</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  }
+
+  <!-- ═══ KPI EGRESOS DEL CONTADOR ═══ -->
+  @if (activeView() === 'egresos') {
+  <section class="kpi-section-compact">
+    <div class="kpi-card-compact kpi-teal">
+      <div class="kpi-icon-wrapper-compact kpi-icon-teal">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Por enviar a GF</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ kpiPorEnviar() }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Gerencia Financiera</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-purple">
+      <div class="kpi-icon-wrapper-compact kpi-icon-purple">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Monto por pagar</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact text-base">{{
+            kpiMontoPendiente() | currency: "COP" : "symbol" : "1.0-0"
+          }}</span>
+          <span class="kpi-trend-compact kpi-trend-neutral">Neto pendiente</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-success">
+      <div class="kpi-icon-wrapper-compact kpi-icon-success">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Pendientes de pago</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ kpiPendientesPago() }}</span>
+          <span class="kpi-trend-compact kpi-trend-up">Para comprobante</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-card-compact kpi-warning">
+      <div class="kpi-icon-wrapper-compact kpi-icon-warning">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
+        </svg>
+      </div>
+      <div class="kpi-content-compact">
+        <span class="kpi-label-compact">Duplicados</span>
+        <div class="kpi-value-wrapper-compact">
+          <span class="kpi-value-compact">{{ egresosDuplicadosCount }}</span>
+          <span class="kpi-trend-compact kpi-trend-warning">Revisar</span>
+        </div>
+      </div>
+    </div>
+  </section>
+  }
+
+  <!-- ═══ TABLE SECTION — Movimientos / Viáticos ═══ -->
+  <div class="table-wrapper animate-fade-in-up" style="animation-delay: 0.45s">
+    <!-- Table Header -->
+    <div
+      class="bg-gradient-to-r from-[#213053] via-[#1b2844] to-[#045C94] px-6 py-3 rounded-t-xl"
+    >
+      <div
+        class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3"
+      >
+        <div>
+          <h2 class="text-lg font-bold text-white">
+            {{ activeView() === 'compras' ? 'Movimientos Bancarios' : activeView() === 'viaticos' ? 'Solicitudes de Viáticos' : 'Cargue de C. Egreso' }}
+          </h2>
+          <p class="text-white/80 mt-0.5 text-xs">
+            {{ activeView() === 'compras' ? 'Conciliación por OC, egreso y estado de pago' : activeView() === 'viaticos' ? 'Viáticos procesados por contabilidad pendientes de pago' : 'Envía el egreso a aprobación de Gerencia Financiera y paga con comprobante' }}
+          </p>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+
+          <!-- ── View Switcher ── -->
+          <div class="relative" (click)="$event.stopPropagation()">
+            <button
+              type="button"
+              (click)="toggleViewSelector()"
+              class="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white text-xs font-semibold transition-all backdrop-blur-sm"
+            >
+              <span>{{ getActiveViewIcon() }}</span>
+              <span>{{ getActiveViewLabel() }}</span>
+              <svg class="w-3.5 h-3.5 transition-transform duration-200" [class.rotate-180]="showViewSelector()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div *ngIf="showViewSelector()" class="absolute right-0 top-full mt-1 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+              <button
+                *ngFor="let opt of viewOptionsVisibles"
+                type="button"
+                (click)="cambiarVista(opt.value)"
+                [ngClass]="activeView() === opt.value
+                  ? 'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors bg-blue-50 text-[#045C94]'
+                  : 'w-full flex items-center gap-3 px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors text-gray-700'"
+              >
+                <span class="text-base">{{ opt.icon }}</span>
+                <span>{{ opt.label }}</span>
+                <svg *ngIf="activeView() === opt.value" class="w-4 h-4 ml-auto text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Compras filters -->
+          <ng-container *ngIf="activeView() === 'compras'">
+            <input
+              type="text"
+              placeholder="🔍 Buscar referencia, cuenta..."
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="filterMovimientos()"
+              class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white/40 text-sm flex-1 lg:w-64"
+            />
+
+            <select
+              [(ngModel)]="filterBanco"
+              (change)="filterMovimientos()"
+              class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40 text-sm appearance-none cursor-pointer"
+            >
+              <option value="" class="bg-[#213053]">Todos los bancos</option>
+              <option *ngFor="let b of bancos" [value]="b" class="bg-[#213053]">
+                {{ b }}
+              </option>
+            </select>
+
+            <select
+              [(ngModel)]="filterEmpresa"
+              (change)="filterMovimientos()"
+              class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40 text-sm appearance-none cursor-pointer"
+            >
+              <option value="" class="bg-[#213053]">Todas las empresas</option>
+              <option
+                *ngFor="let e of empresasUt"
+                [value]="e"
+                class="bg-[#213053]"
+              >
+                {{ e }}
+              </option>
+            </select>
+
+            <!-- Calendario de Pagos -->
+            <button
+              (click)="navegarCalendario()"
+              class="px-3 py-2 bg-[#FFB71B]/15 border border-[#FFB71B]/30 text-[#FFB71B] font-semibold rounded-lg hover:bg-[#FFB71B]/25 hover:text-[#FFB71B] transition-all shadow-md text-xs whitespace-nowrap flex items-center justify-center gap-2"
+              title="Calendario de Pagos">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </button>
+
+            <button
+              (click)="loadData()"
+              class="px-4 py-2 bg-[#154e43] text-white font-semibold rounded-lg hover:bg-[#0f3d34] transition-all shadow-md text-xs whitespace-nowrap flex items-center justify-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Actualizar
+          </button>
+          </ng-container>
+
+          <!-- Viáticos filters -->
+          <ng-container *ngIf="activeView() === 'viaticos'">
+            <select
+              [ngModel]="viaticosEstadoFilter"
+              (ngModelChange)="onChangeViaticosEstadoFilter($event)"
+              class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40 text-sm"
+            >
+              <option value="pendientes" class="text-gray-900">Pendientes</option>
+              <option value="pagadas" class="text-gray-900">Pagadas</option>
+              <option value="todas" class="text-gray-900">Todas</option>
+            </select>
+            <input
+              type="text"
+              placeholder="🔍 Buscar empresa, área, solicitante..."
+              [value]="searchViaticos"
+              (input)="onSearchViaticos($event)"
+              class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white/40 text-sm flex-1 lg:w-64"
+            />
+            <button
+              (click)="loadViaticos()"
+              class="px-4 py-2 bg-[#154e43] text-white font-semibold rounded-lg hover:bg-[#0f3d34] transition-all shadow-md text-xs whitespace-nowrap flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" [class.animate-spin]="loadingViaticos()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Actualizar
+            </button>
+          </ng-container>
+
+          <!-- Egresos de Tesorería filters -->
+          <ng-container *ngIf="activeView() === 'egresos'">
+            <input
+              type="text"
+              placeholder="Buscar por egreso, factura, NIT o proveedor..."
+              [value]="searchEgresos()"
+              (input)="onSearchEgresos($event)"
+              class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white/40 text-sm flex-1 lg:w-64"
+            />
+            <select
+              [ngModel]="filtroEgreso()"
+              (ngModelChange)="filtroEgreso.set($event)"
+              class="px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg text-white focus:outline-none focus:border-white/40 text-sm"
+            >
+              <option class="text-slate-800" value="todos">Todos los estados</option>
+              <option class="text-slate-800" value="enviar">Por enviar a GF</option>
+              <option class="text-slate-800" value="pagar">Pendientes de pago</option>
+            </select>
+            <button
+              (click)="loadEgresosContador()"
+              class="px-4 py-2 bg-[#154e43] text-white font-semibold rounded-lg hover:bg-[#0f3d34] transition-all shadow-md text-xs whitespace-nowrap flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" [class.animate-spin]="loadingEgresos()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Actualizar
+            </button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIÁTICOS TABLE ═══ -->
+    <div *ngIf="activeView() === 'viaticos'" class="bg-white rounded-b-xl shadow-lg border border-gray-100">
+      <!-- Loading viáticos -->
+      <div *ngIf="loadingViaticos()" class="py-16 text-center">
+        <div class="inline-flex items-center gap-3 text-gray-400">
+          <svg class="w-6 h-6 animate-spin text-[#045C94]" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <span class="text-sm font-medium text-gray-500">Cargando solicitudes de viáticos...</span>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!loadingViaticos() && filteredViaticos.length === 0" class="py-16 text-center">
+        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-gray-700 mb-1">No hay solicitudes de viáticos</h3>
+        <p class="text-sm text-gray-500">No existen viáticos procesados por contabilidad pendientes de pago.</p>
+      </div>
+
+      <!-- Desktop table -->
+      <div *ngIf="!loadingViaticos() && filteredViaticos.length > 0" class="hidden md:block overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-[#f4f4f4] border-b-2 border-[#213053]/10 sticky top-0">
+            <tr>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap w-[50px]">#</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Tipo</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Empresa</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Área</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Solicitante</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Fecha Solicitud</th>
+              <th class="px-4 py-3 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Fecha Máx. Evento</th>
+              <th class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Semáforo</th>
+              <th class="px-4 py-3 text-right text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Total Solicitud</th>
+              <th class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Estado</th>
+              <th class="px-4 py-3 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr
+              *ngFor="let v of filteredViaticos; let i = index"
+              class="table-row hover:bg-gray-50 transition-colors"
+              [style.animation-delay]="i * 0.04 + 's'"
+            >
+              <!-- # -->
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="inline-flex items-center gap-1.5 text-xs font-bold text-[#045C94]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#045C94]"></span>
+                  {{ v.numeroViatico }}
+                </span>
+              </td>
+              <!-- Tipo -->
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-md text-[11px] font-medium"
+                  [class.bg-purple-100]="v.tipoSolicitud === 'ADELANTO'"
+                  [class.text-purple-700]="v.tipoSolicitud === 'ADELANTO'"
+                  [class.bg-blue-100]="v.tipoSolicitud !== 'ADELANTO'"
+                  [class.text-blue-700]="v.tipoSolicitud !== 'ADELANTO'"
+                >{{ v.tipoSolicitud === 'ADELANTO' ? 'Adelanto' : 'Solicitud' }}</span>
+              </td>
+              <!-- Empresa -->
+              <td class="px-4 py-3 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-[9px] shadow-sm flex-shrink-0">
+                    {{ (v.empresa || '?').charAt(0).toUpperCase() }}
+                  </div>
+                  <span class="text-[11px] font-semibold text-gray-800">{{ v.empresa || '—' }}</span>
+                </div>
+              </td>
+              <!-- Área -->
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="px-2 py-0.5 bg-[#045C94]/10 text-[#045C94] rounded-md text-[11px] font-medium">{{ v.area || '—' }}</span>
+              </td>
+              <!-- Solicitante -->
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span class="text-xs text-gray-700 font-medium">{{ v.solicitante || '—' }}</span>
+              </td>
+              <!-- Fecha Solicitud -->
+              <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-600">{{ formatFechaViaticos(v.fecha) }}</td>
+              <!-- Fecha Máx. Evento -->
+              <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-600">{{ formatFechaViaticos(v.fechaMaximaEvento) }}</td>
+              <!-- Semáforo -->
+              <td class="px-4 py-3 text-center">
+                <div class="flex justify-center">
+                  <div
+                    class="semaforo-indicator"
+                    [ngClass]="getSemaforoClassViaticos(getSemaforoViaticos(v))"
+                    [title]="getSemaforoTooltipViaticos(getSemaforoViaticos(v))"
+                  >
+                    <div class="semaforo-dot"></div>
+                  </div>
+                </div>
+              </td>
+              <!-- Total Solicitud -->
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <span class="text-sm font-bold text-[#213053]">{{ formatCurrencyViaticos(v.totalSolicitud) }}</span>
+              </td>
+              <!-- Estado -->
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold" [ngClass]="getViaticosEstadoClass(v.estado)">
+                  {{ getViaticosEstadoLabel(v.estado) }}
+                </span>
+              </td>
+              <!-- Acción -->
+              <td class="px-4 py-3 text-center">
+                @if (v.estado === 'PAGADO') {
+                  <button
+                    (click)="navegarTramitarViaticos(v)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    Ver
+                  </button>
+                } @else {
+                  <button
+                    (click)="navegarTramitarViaticos(v)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#213053] text-white text-[10px] font-bold rounded-lg hover:bg-[#213053]/90 transition-all shadow-sm"
+                  >
+                    <svg class="w-3 h-3 text-[#FFB71B]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    Tramitar
+                  </button>
+                }
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile cards for viáticos -->
+      <div *ngIf="!loadingViaticos() && filteredViaticos.length > 0" class="md:hidden divide-y divide-gray-100">
+        <div *ngFor="let v of filteredViaticos" class="p-4 hover:bg-gray-50 transition-colors">
+          <div class="flex items-start justify-between mb-2">
+            <span class="text-xs font-bold text-[#045C94]">{{ v.numeroViatico }}</span>
+            <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold" [ngClass]="getViaticosEstadoClass(v.estado)">{{ getViaticosEstadoLabel(v.estado) }}</span>
+          </div>
+          <p class="text-sm font-semibold text-gray-800 mb-1">{{ v.solicitante }}</p>
+          <p class="text-xs text-gray-500 mb-2">{{ v.empresa }} · {{ v.area }}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-[#213053]">{{ formatCurrencyViaticos(v.totalSolicitud) }}</span>
+            @if (v.estado === 'PAGADO') {
+              <button
+                (click)="navegarTramitarViaticos(v)"
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+              >Ver</button>
+            } @else {
+              <button
+                (click)="navegarTramitarViaticos(v)"
+                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-[#213053] text-white text-[10px] font-bold rounded-lg hover:bg-[#213053]/90 transition-all shadow-sm"
+              >Tramitar</button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (activeView() === 'egresos') {
+      <div class="bg-white rounded-b-xl shadow-lg border border-gray-100 eg-table-panel">
+        @if (egresosTabla().length) {
+          <div class="emp-tabs" role="tablist" aria-label="Empresas">
+            <button type="button" class="emp-tab" role="tab"
+              [class.emp-tab--active]="empresaFiltro() === 'todas'"
+              [attr.aria-selected]="empresaFiltro() === 'todas'"
+              (click)="empresaFiltro.set('todas')">
+              Todas<span class="emp-tab__count">{{ egresosTabla().length }}</span>
+            </button>
+            @for (emp of empresasEgresos(); track emp.clave) {
+              <button type="button" class="emp-tab" role="tab"
+                [class.emp-tab--active]="empresaFiltro() === emp.id"
+                [attr.aria-selected]="empresaFiltro() === emp.id"
+                (click)="empresaFiltro.set(emp.id)">
+                {{ emp.nombre }}<span class="emp-tab__count">{{ emp.total }}</span>
+              </button>
+            }
+          </div>
+        }
+        @if (loadingEgresos() && !egresosTabla().length) {
+          <div class="py-16 text-center">
+            <div class="inline-flex items-center gap-3 text-gray-400">
+              <svg class="w-6 h-6 animate-spin text-[#045C94]" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span class="text-sm font-medium text-gray-500">Cargando egresos...</span>
+            </div>
+          </div>
+        } @else if (!egresosFiltrados().length) {
+          <div class="py-16 text-center">
+            <div class="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <h3 class="text-base font-semibold text-gray-700">
+              {{ searchEgresos() || filtroEgreso() !== 'todos' ? 'Sin resultados para el filtro' : 'Tu bandeja está al día' }}
+            </h3>
+            <p class="text-sm text-gray-400 mt-1">
+              {{ searchEgresos() || filtroEgreso() !== 'todos' ? 'Prueba con otro número, proveedor o NIT.' : 'Los egresos enviados desde proyección y contabilidad aparecerán aquí.' }}
+            </p>
+          </div>
+        } @else {
+          <div class="table-container">
+            <table class="data-table eg-table">
+              <thead>
+                <tr>
+                  <th class="th-cell th-left">#</th>
+                  <th class="th-cell th-left">Egreso</th>
+                  <th class="th-cell th-left">Proveedor</th>
+                  <th class="th-cell th-left">Empresa</th>
+                  <th class="th-cell th-left">Fecha</th>
+                  <th class="th-cell th-right">Bruto</th>
+                  <th class="th-cell th-right">Retenciones</th>
+                  <th class="th-cell th-right">Neto a pagar</th>
+                  <th class="th-cell th-center">Estado</th>
+                  <th class="th-cell th-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (e of egresosFiltrados(); track e.id; let i = $index) {
+                  <tr class="data-row" [style.animation-delay]="i * 0.03 + 's'">
+                    <td class="td-cell"><span class="row-number">{{ i + 1 }}</span></td>
+                <td class="td-cell">
+                  <span class="egreso-num" [title]="e.observaciones || ''">{{ e.numeroEgreso || e.numeroFactura }}</span>
+                  @if ((e.pagosProyectadosIds?.length ?? 0) > 1) {
+                    <p class="egreso-sub">{{ e.pagosProyectadosIds!.length }} facturas agrupadas</p>
+                  } @else {
+                    <p class="egreso-sub">Factura {{ e.numeroFactura }}</p>
+                  }
+                  <span class="origen-chip" [class.origen-chip--gp]="e.pagoProyectadoId != null">{{ egresoOrigen(e) }}</span>
+                  @if (e.motivoRevision) {
+                    <p class="obs-chip" [title]="e.motivoRevision">
+                      {{ e.motivoRevision.startsWith('NEGACIÓN') ? 'Negado por GF' : 'Devuelto por GF' }}: {{ e.motivoRevision }}
+                    </p>
+                  }
+                </td>
+                    <td class="td-cell">
+                      <div class="proveedor-cell">
+                        <div class="proveedor-avatar proveedor-avatar--sm">{{ (e.proveedorNombre || e.conceptoPresupuestal || 'E').charAt(0).toUpperCase() }}</div>
+                        <div>
+                          <span class="proveedor-name">{{ e.proveedorNombre || e.conceptoPresupuestal || 'Egreso de nómina' }}</span>
+                          <p class="proveedor-email">NIT {{ e.nitProveedor || '—' }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="td-cell"><span class="empresa-text">{{ e.empresaNombre || '—' }}</span></td>
+                    <td class="td-cell"><span class="fecha-text">{{ formatFechaViaticos(e.fecha) }}</span></td>
+                    <td class="td-cell td-right"><span class="monto-text">{{ formatCurrencyViaticos(e.valor) }}</span></td>
+                    <td class="td-cell td-right"><span class="monto-text monto-text--muted">{{ formatCurrencyViaticos(egresoRetenciones(e)) }}</span></td>
+                    <td class="td-cell td-right"><span class="monto-text monto-text--neto">{{ formatCurrencyViaticos(egresoNeto(e)) }}</span></td>
+                    <td class="td-cell td-center">
+                      <span class="estado-badge" [ngClass]="egresoEstadoClass(e)">
+                        <span class="estado-dot"></span>{{ egresoEstadoLabel(e) }}
+                      </span>
+                      @if (getDupEstado(e) === 'dup') {
+                        <p class="dup-chip dup-chip--warn">⚠ Posible duplicado</p>
+                      } @else if (getDupEstado(e) === 'ok') {
+                        <p class="dup-chip">✓ Sin duplicados</p>
+                      } @else if (getDupEstado(e) === 'checking') {
+                        <p class="dup-chip">Verificando…</p>
+                      }
+                      @if (e.soporteEgresoKey) {
+                        <p class="dup-chip">✓ Documento adjunto</p>
+                      } @else if (e.pagoProyectadoId != null && e.estado === 'REGISTRADO') {
+                        <p class="dup-chip dup-chip--warn">Sin documento</p>
+                      }
+                    </td>
+                    <td class="td-cell td-center">
+                      <div class="acciones-egreso">
+                        @if (e.soporteEgresoKey) {
+                          <button type="button" class="btn-row btn-row--doc" (click)="verSoporte(e)"
+                                  [title]="e.soporteEgresoNombre || 'Documento de egreso'">
+                            Ver documento
+                          </button>
+                        }
+                        @if (accionEgreso(e) === 'ENVIAR_GF') {
+                          <button type="button" class="btn-row btn-row--enviar" (click)="navegarTramitarEgreso(e)"
+                                  [title]="e.soporteEgresoKey ? 'Revisar el egreso y enviarlo a aprobación de Gerencia Financiera' : 'Cargar el comprobante de egreso y enviarlo a aprobación'">
+                            {{ e.soporteEgresoKey ? 'Enviar a GF' : 'Cargar C. Egreso' }}
+                          </button>
+                        } @else {
+                          <button type="button" class="btn-row btn-row--tramitar" (click)="irAPagar(e)">
+                            Pagar en Tesorería
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Desktop Table with Horizontal Scroll (Compras) -->
+    <div
+      *ngIf="activeView() === 'compras'"
+      class="hidden md:block bg-white rounded-b-xl shadow-lg border border-gray-100 overflow-x-auto overflow-y-hidden table-scroll-container"
+    >
+      <table class="w-full min-w-[1280px]">
+        <thead class="bg-[#f4f4f4] border-b-2 border-[#213053]/10 sticky top-0">
+          <tr>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap w-[50px]"
+            >
+              #
+            </th>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Tipo
+            </th>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Área
+            </th>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Empresa
+            </th>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Fecha
+            </th>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Banco
+            </th>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Cuenta
+            </th>
+            <th
+              class="px-2 py-2.5 text-right text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Valor
+            </th>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Concepto
+            </th>
+            <th
+              class="px-2 py-2.5 text-left text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Proveedor
+            </th>
+            <th
+              class="px-2 py-2.5 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Egreso
+            </th>
+            <th
+              class="px-2 py-2.5 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Pago
+            </th>
+            <th
+              class="px-2 py-2.5 text-center text-[10px] font-bold text-[#213053] uppercase tracking-wide whitespace-nowrap"
+            >
+              Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <ng-container *ngFor="let row of filteredMovimientos; let i = index">
+          <tr
+            class="table-row"
+            [style.animation-delay]="i * 0.04 + 's'"
+            [class.cursor-pointer]="hasMultipleProviders(row)"
+              [class.row-expanded-bg]="expandedRowId() === row.id"
+            (click)="hasMultipleProviders(row) ? toggleExpandRow(row) : null"
+          >
+            <!-- # ID -->
+            <td class="px-2 py-2.5 whitespace-nowrap">
+              <span
+                class="inline-flex items-center gap-1 text-xs font-bold text-[#045C94]"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-[#045C94]"></span>
+                {{ row.id }}
+              </span>
+            </td>
+            <!-- Tipo -->
+            <td class="px-2 py-2.5 whitespace-nowrap">
+              @if (isTramiteRow(row)) {
+                <span
+                  class="px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-md text-[11px] font-medium border border-amber-200"
+                >
+                  {{ row.tipoMovimiento }}
+                </span>
+              } @else {
+                <span
+                  class="px-1.5 py-0.5 bg-[#045C94]/10 text-[#045C94] rounded-md text-[11px] font-medium"
+                >
+                  {{ row.tipoMovimiento }}
+                </span>
+              }
+            </td>
+            <!-- Área -->
+            <td class="px-2 py-2.5 whitespace-nowrap">
+              <div class="flex items-center gap-1.5">
+                @if (hasMultipleProviders(row)) {
+                  <svg
+                    class="w-3.5 h-3.5 text-[#045C94] transition-transform duration-200 flex-shrink-0"
+                    [class.rotate-90]="expandedRowId() === row.id"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                }
+                <span class="text-[11px] font-medium text-gray-600">{{ row.areaDepartamento || '—' }}</span>
+              </div>
+            </td>
+            <!-- Empresa -->
+            <td class="px-2 py-2.5 whitespace-nowrap">
+              <div class="flex items-center gap-1.5">
+                @if (row.empresaUt) {
+                  <div
+                    class="w-6 h-6 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-[9px] shadow-md flex-shrink-0"
+                  >
+                    {{ row.empresaUt.charAt(0) }}
+                  </div>
+                }
+                <span class="text-[11px] font-semibold text-gray-800">{{ row.empresaUt || '—' }}</span>
+              </div>
+            </td>
+            <!-- Fecha -->
+            <td class="px-2 py-2.5 text-xs text-gray-600 whitespace-nowrap">
+              {{ row.fechaPago }}
+            </td>
+            <!-- Banco -->
+            <td class="px-2 py-2.5 text-[11px] text-gray-600 whitespace-nowrap">
+              {{ row.banco }}
+            </td>
+            <!-- Cuenta -->
+            <td class="px-2 py-2.5 whitespace-nowrap">
+              <span
+                class="text-[11px] text-gray-500 font-mono tracking-tight"
+                >{{ row.cuenta }}</span
+              >
+            </td>
+            <!-- Valor -->
+            <td class="px-2 py-2.5 text-right whitespace-nowrap">
+              <span class="text-[12px] font-bold text-[#213053]">{{
+                row.valor | currency: "COP" : "symbol" : "1.0-0"
+              }}</span>
+            </td>
+            <!-- Concepto -->
+            <td class="px-2 py-2.5 whitespace-nowrap">
+              <span
+                class="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-md text-[11px] font-medium"
+              >
+                {{ row.concepto }}
+              </span>
+            </td>
+            <!-- Proveedor -->
+            <td class="px-2 py-2.5 whitespace-nowrap">
+              <div class="flex items-center gap-1">
+                <span
+                  class="text-[11px] font-medium text-gray-700 max-w-[140px] truncate block"
+                  [title]="row.proveedor"
+                  >{{ row.proveedor }}</span
+                >
+                @if (row.totalProveedores && row.totalProveedores > 1) {
+                  <span class="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-bold flex-shrink-0"
+                    title="Esta solicitud tiene {{ row.totalProveedores }} proveedores">
+                    +{{ row.totalProveedores - 1 }}
+                  </span>
+                }
+              </div>
+            </td>
+
+            <!-- Estado Egreso -->
+            <td class="px-2 py-2.5 text-center">
+              @if (row.archivosEgreso && row.archivosEgreso.length > 0) {
+                <button
+                  type="button"
+                  (click)="verArchivosConTabs(row.archivosEgreso, 'Documentos Egreso')"
+                  class="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity group"
+                  title="Ver archivos Egreso ({{ row.archivosEgreso.length }})"
+                >
+                  <app-estado-badge [estado]="row.estadoEgreso" />
+                  <svg class="w-3.5 h-3.5 text-[#045C94] opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  @if (row.archivosEgreso.length > 1) {
+                    <span class="text-[9px] bg-[#045C94]/10 text-[#045C94] px-1 rounded font-bold">{{ row.archivosEgreso.length }}</span>
+                  }
+                </button>
+              } @else if (row.archivoEgresoUrl) {
+                <button
+                  type="button"
+                  (click)="verArchivoEstado(row.archivoEgresoUrl, 'Egreso')"
+                  class="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity group"
+                  title="Ver archivo Egreso"
+                >
+                  <app-estado-badge [estado]="row.estadoEgreso" />
+                  <svg class="w-3.5 h-3.5 text-[#045C94] opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+              } @else {
+                <span class="inline-flex items-center gap-1" title="Sin archivo adjunto">
+                  <app-estado-badge [estado]="row.estadoEgreso" />
+                  <svg class="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                  </svg>
+                </span>
+              }
+            </td>
+            <!-- Estado Pago -->
+            <td class="px-2 py-2.5 text-center">
+              @if (row.archivosPago && row.archivosPago.length > 0) {
+                <button
+                  type="button"
+                  (click)="verArchivosConTabs(row.archivosPago, 'Comprobantes de Pago')"
+                  class="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity group"
+                  title="Ver archivos Pago ({{ row.archivosPago.length }})"
+                >
+                  <app-estado-badge [estado]="row.estadoPago" />
+                  <svg class="w-3.5 h-3.5 text-[#045C94] opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  @if (row.archivosPago.length > 1) {
+                    <span class="text-[9px] bg-[#045C94]/10 text-[#045C94] px-1 rounded font-bold">{{ row.archivosPago.length }}</span>
+                  }
+                </button>
+              } @else if (row.archivoPagoUrl) {
+                <button
+                  type="button"
+                  (click)="verArchivoEstado(row.archivoPagoUrl, 'Pago')"
+                  class="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity group"
+                  title="Ver archivo Pago"
+                >
+                  <app-estado-badge [estado]="row.estadoPago" />
+                  <svg class="w-3.5 h-3.5 text-[#045C94] opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+              } @else {
+                <span class="inline-flex items-center gap-1" title="Sin archivo adjunto">
+                  <app-estado-badge [estado]="row.estadoPago" />
+                  <svg class="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                  </svg>
+                </span>
+              }
+            </td>
+            <!-- Acciones -->
+            <td class="px-2 py-2.5 text-center">
+              <div class="relative inline-block">
+                <button
+                  (click)="openMenuId() === row.id ? openMenuId.set(null) : openMenuId.set(row.id)"
+                  class="p-1 text-gray-600 hover:text-[#213053] hover:bg-gray-100 rounded transition-all"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M12 8c1.1 0 2-1 2-2s-1-2-2-2-2 1-2 2 1 2 2 2zm0 2c-1.1 0-2 1-2 2s1 2 2 2 2-1 2-2-1-2-2-2zm0 6c-1.1 0-2 1-2 2s1 2 2 2 2-1 2-2-1-2-2-2z"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Dropdown Menu -->
+                @if (openMenuId() === row.id) {
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 animate-fade-in">
+                  @if (row.tipoMovimiento === 'Solicitud Compra') {
+                    <button
+                      (click)="onTramitar(row); openMenuId.set(null)"
+                      class="w-full text-left px-4 py-2.5 hover:bg-emerald-50 text-emerald-700 text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                      </svg>
+                      Tramitar Pago
+                    </button>
+                  } @else if (row.tipoMovimiento === 'Viaticos') {
+                    <button
+                      (click)="onVerDetalle(row); openMenuId.set(null)"
+                      class="w-full text-left px-4 py-2.5 hover:bg-[#045C94]/10 text-[#045C94] text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Ver Detalle
+                    </button>
+                  } @else {
+                    <button
+                      (click)="onVerDetalle(row); openMenuId.set(null)"
+                      class="w-full text-left px-4 py-2 hover:bg-[#045C94]/10 text-[#045C94] text-sm font-medium flex items-center gap-2 border-b border-gray-100"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Ver Detalle
+                    </button>
+                    <button
+                      (click)="onAbrirControlDiario(row); openMenuId.set(null)"
+                      class="w-full text-left px-4 py-2 hover:bg-[#FFB71B]/10 text-[#c78c00] text-sm font-medium flex items-center gap-2 border-b border-gray-100"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"/>
+                      </svg>
+                      Control Diario
+                    </button>
+                    <button
+                      (click)="onTramitar(row); openMenuId.set(null)"
+                      class="w-full text-left px-4 py-2 hover:bg-emerald-50 text-emerald-700 text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                      </svg>
+                      Tramitar Pago
+                    </button>
+                    <button
+                      (click)="openMenuId.set(null)"
+                      class="w-full text-left px-4 py-2 hover:bg-gray-50 text-gray-700 text-sm font-medium flex items-center gap-2"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                      Cerrar
+                    </button>
+                  }
+                </div>
+                }
+              </div>
+            </td>
+          </tr>
+
+          <!-- ═══ EXPANDED ROW: Detalle de Proveedores con Paginación ═══ -->
+            <tr *ngIf="expandedRowId() === row.id && row.detalles && row.detalles.length > 0" class="expanded-detail-row">
+              <td [attr.colspan]="14" class="p-0">
+                <div class="expanded-panel">
+                  <!-- Header -->
+                  <div class="expanded-panel__header">
+                    <div class="flex items-center gap-2">
+                      <div class="expanded-panel__icon">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                      </div>
+                      <h4 class="expanded-panel__title">Proveedores y Órdenes de Compra</h4>
+                      <span class="expanded-panel__badge">
+                        {{ row.detalles.length }} proveedor{{ row.detalles.length > 1 ? 'es' : '' }}
+                      </span>
+                    </div>
+                    @if (getTotalDetailsPages(row) > 1) {
+                      <span class="expanded-panel__page-info">
+                        Página {{ getCurrentDetailsPageIndex(row) + 1 }} de {{ getTotalDetailsPages(row) }}
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Provider Cards -->
+                  <div class="expanded-panel__cards">
+                    @for (det of getCurrentDetailsPage(row); track det.proveedorRelacionId || $index) {
+                      <div class="provider-card">
+                        <!-- Card Header: Provider name + NIT -->
+                        <div class="provider-card__header">
+                          <div class="provider-card__avatar">
+                            {{ (det.proveedorNombre || 'P').charAt(0) }}
+                          </div>
+                          <div class="provider-card__identity">
+                            <span class="provider-card__name">{{ det.proveedorNombre }}</span>
+                            @if (det.proveedorNit) {
+                              <span class="provider-card__nit">NIT: {{ det.proveedorNit }}</span>
+                            }
+                          </div>
+                        </div>
+
+                        <!-- Card Body: 2-column adaptive grid -->
+                        <div class="provider-card__body">
+                          <!-- Banking Info -->
+                          <div class="provider-card__section">
+                            <div class="provider-card__field">
+                              <span class="provider-card__label">Banco</span>
+                              <span class="provider-card__value">{{ det.proveedorBanco || '—' }}</span>
+                            </div>
+                            <div class="provider-card__field">
+                              <span class="provider-card__label">Cuenta</span>
+                              <span class="provider-card__value provider-card__value--mono">{{ det.proveedorNumeroCuenta || '—' }}</span>
+                            </div>
+                            <div class="provider-card__field">
+                              <span class="provider-card__label">Forma Pago</span>
+                              <span class="provider-card__value">{{ det.proveedorFormaPago || '—' }}</span>
+                            </div>
+                          </div>
+
+                          <!-- Order & Egreso Info -->
+                          <div class="provider-card__section provider-card__section--highlight">
+                            <div class="provider-card__field">
+                              <span class="provider-card__label">Orden de Compra</span>
+                              @if (det.archivoOcUrl) {
+                                <button
+                                  type="button"
+                                  (click)="verArchivoEstado(det.archivoOcUrl!, det.archivoOcNombre || 'OC'); $event.stopPropagation()"
+                                  class="provider-card__oc-link">
+                                  <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                  </svg>
+                                  {{ det.numeroOc || 'Ver OC' }}
+                                </button>
+                              } @else {
+                                <span class="provider-card__value provider-card__value--muted">{{ det.numeroOc || 'Sin OC' }}</span>
+                              }
+                            </div>
+                            <div class="provider-card__field">
+                              <span class="provider-card__label">Valor OC</span>
+                              <span class="provider-card__value provider-card__value--money">
+                                {{ det.valorOc ? (det.valorOc | currency:'COP':'symbol':'1.0-0') : '—' }}
+                              </span>
+                            </div>
+                            <div class="provider-card__field">
+                              <span class="provider-card__label">Egreso</span>
+                              <div class="flex items-center gap-1.5 flex-wrap">
+                                <app-estado-badge [estado]="det.estadoEgreso === 'Completo' ? 'Completo' : 'Pendiente'" />
+                                @if (det.numeroEgreso) {
+                                  <span class="text-[10px] text-gray-600">{{ det.numeroEgreso }}</span>
+                                }
+                              </div>
+                              @if (det.valorEgreso) {
+                                <span class="provider-card__value provider-card__value--mono" style="margin-top:2px">{{ det.valorEgreso | currency:'COP':'symbol':'1.0-0' }}</span>
+                              }
+                            </div>
+                            <div class="provider-card__field">
+                              <span class="provider-card__label">Docs. Egreso</span>
+                              @if (det.archivosEgresoDetalle && det.archivosEgresoDetalle.length > 0) {
+                                <button
+                                  type="button"
+                                  (click)="verArchivosConTabs(det.archivosEgresoDetalle, 'Documentos Egreso - ' + det.proveedorNombre); $event.stopPropagation()"
+                                  class="provider-card__doc-link"
+                                  title="Ver {{ det.archivosEgresoDetalle.length }} documentos">
+                                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                  </svg>
+                                  <span>{{ det.archivosEgresoDetalle.length }} doc{{ det.archivosEgresoDetalle.length > 1 ? 's' : '' }}</span>
+                                </button>
+                              } @else {
+                                <span class="provider-card__value provider-card__value--muted">Sin docs</span>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Pagination Controls -->
+                  @if (getTotalDetailsPages(row) > 1) {
+                    <div class="expanded-panel__pagination">
+                      <button
+                        type="button"
+                        (click)="prevDetailsPage(row); $event.stopPropagation()"
+                        [disabled]="getCurrentDetailsPageIndex(row) === 0"
+                        class="expanded-panel__pagination-btn">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        <span class="hidden sm:inline">Anterior</span>
+                      </button>
+
+                      <div class="flex items-center gap-1.5">
+                        @for (page of [].constructor(getTotalDetailsPages(row)); track $index) {
+                          <button
+                            type="button"
+                            (click)="gotoDetailsPage(row, $index); $event.stopPropagation()"
+                            class="expanded-panel__page-btn"
+                            [ngClass]="{
+                              'expanded-panel__page-btn--active': getCurrentDetailsPageIndex(row) === $index
+                            }">
+                            {{ $index + 1 }}
+                          </button>
+                        }
+                      </div>
+
+                      <button
+                        type="button"
+                        (click)="nextDetailsPage(row); $event.stopPropagation()"
+                        [disabled]="getCurrentDetailsPageIndex(row) === getTotalDetailsPages(row) - 1"
+                        class="expanded-panel__pagination-btn">
+                        <span class="hidden sm:inline">Siguiente</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </td>
+            </tr>
+            </ng-container>
+        </tbody>
+      </table>
+
+      <!-- Empty state -->
+      <div *ngIf="filteredMovimientos.length === 0" class="text-center py-16">
+        <svg
+          class="w-16 h-16 mx-auto text-gray-300 mb-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.5"
+            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+          />
+        </svg>
+        <p class="text-gray-400 text-sm font-medium">
+          No se encontraron movimientos
+        </p>
+        <p class="text-gray-300 text-xs mt-1">
+          Ajusta los filtros o busca con otro término
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══ MOBILE CARDS ═══ -->
+    <div *ngIf="activeView() === 'compras'" class="md:hidden space-y-3 mt-3">
+      <div
+        *ngFor="let row of filteredMovimientos; let i = index"
+        class="mobile-card"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <span
+            class="inline-flex items-center gap-1.5 text-xs font-bold text-[#045C94]"
+          >
+            <span class="w-2 h-2 rounded-full bg-[#045C94]"></span>
+            #{{ row.id }}
+          </span>
+          <span
+            class="px-2 py-0.5 bg-[#045C94]/10 text-[#045C94] rounded-md text-[11px] font-medium"
+          >
+            {{ row.tipoMovimiento }}
+          </span>
+        </div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Área</span>
+            <span class="font-medium text-gray-700">{{ row.areaDepartamento || '—' }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Empresa</span>
+            <div class="flex items-center gap-1.5">
+              @if (row.empresaUt) {
+                <div
+                  class="w-5 h-5 bg-gradient-to-br from-[#213053] to-[#045C94] rounded-full flex items-center justify-center text-white font-bold text-[8px]"
+                >
+                  {{ row.empresaUt.charAt(0) }}
+                </div>
+              }
+              <span class="font-semibold text-gray-800">{{ row.empresaUt || '—' }}</span>
+            </div>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Banco</span>
+            <span class="font-medium text-gray-700">{{ row.banco }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Cuenta</span>
+            <span class="text-gray-600 font-mono">{{ row.cuenta }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Fecha</span>
+            <span class="text-gray-600">{{ row.fechaPago }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Valor</span>
+            <span class="text-sm font-bold text-[#213053]">{{
+              row.valor | currency: "COP" : "symbol" : "1.0-0"
+            }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Concepto</span>
+            <span
+              class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-md text-[11px] font-medium"
+              >{{ row.concepto }}</span
+            >
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Proveedor</span>
+            <span class="font-medium text-gray-700">{{ row.proveedor }}</span>
+          </div>
+          <!-- Estados row -->
+          <div class="flex gap-1.5 pt-1.5">
+            <div class="flex flex-col items-center gap-0.5 flex-1">
+              <span class="text-[9px] font-bold uppercase text-gray-400">Egreso</span>
+              @if (row.archivosEgreso && row.archivosEgreso.length > 0) {
+                <button type="button" (click)="verArchivosConTabs(row.archivosEgreso, 'Documentos Egreso')"
+                  class="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
+                  <app-estado-badge [estado]="row.estadoEgreso" />
+                  <svg class="w-3 h-3 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  @if (row.archivosEgreso.length > 1) {
+                    <span class="text-[8px] bg-[#045C94]/10 text-[#045C94] px-1 rounded font-bold">{{ row.archivosEgreso.length }}</span>
+                  }
+                </button>
+              } @else {
+                <span class="inline-flex items-center gap-1">
+                  <app-estado-badge [estado]="row.estadoEgreso" />
+                  <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                  </svg>
+                </span>
+              }
+            </div>
+            <div class="flex flex-col items-center gap-0.5 flex-1">
+              <span class="text-[9px] font-bold uppercase text-gray-400">Pago</span>
+              @if (row.archivosPago && row.archivosPago.length > 0) {
+                <button type="button" (click)="verArchivosConTabs(row.archivosPago, 'Comprobantes de Pago')"
+                  class="inline-flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
+                  <app-estado-badge [estado]="row.estadoPago" />
+                  <svg class="w-3 h-3 text-[#045C94]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  @if (row.archivosPago.length > 1) {
+                    <span class="text-[8px] bg-[#045C94]/10 text-[#045C94] px-1 rounded font-bold">{{ row.archivosPago.length }}</span>
+                  }
+                </button>
+              } @else {
+                <span class="inline-flex items-center gap-1">
+                  <app-estado-badge [estado]="row.estadoPago" />
+                  <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                  </svg>
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+          <button (click)="onVerDetalle(row)" class="flex-1 text-[10px] bg-[#045C94]/10 text-[#045C94] py-1.5 rounded-lg font-semibold hover:bg-[#045C94]/20 transition-all">Ver Detalle</button>
+          <button (click)="onAbrirControlDiario(row)" class="flex-1 text-[10px] bg-[#FFB71B]/10 text-[#c78c00] py-1.5 rounded-lg font-semibold hover:bg-[#FFB71B]/20 transition-all">Control Diario</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Detalle Conciliación ═══ -->
+  <div
+    *ngIf="detalleModalOpen"
+    class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 modal-animate"
+    (click)="cerrarDetalleModal()"
+  >
+    <div
+      class="w-full max-w-[980px] max-h-[92vh] overflow-auto bg-white rounded-2xl shadow-2xl border border-gray-200 modal-content-animate"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div
+        class="bg-gradient-to-r from-[#1f3a60] to-[#255b8f] px-6 py-4 rounded-t-2xl"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-white">
+              Detalle de Conciliación
+            </h2>
+            <p *ngIf="detalleData" class="text-white/70 text-xs mt-0.5">
+              Movimiento #{{ detalleData.movimiento.id }} —
+              {{ detalleData.movimiento.referencia }}
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="cerrarDetalleModal()"
+            class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all border border-white/20"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+            Cerrar
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div
+        *ngIf="detalleLoading"
+        class="flex items-center justify-center py-16"
+      >
+        <div class="text-center">
+          <div
+            class="w-10 h-10 border-4 border-[#045C94]/20 border-t-[#045C94] rounded-full animate-spin mx-auto mb-3"
+          ></div>
+          <p class="text-sm text-gray-500 font-medium">Cargando detalle...</p>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div *ngIf="!detalleLoading && detalleData as d" class="p-6 space-y-5">
+        <!-- Detail cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div
+            class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-[#045C94]/20 transition-colors"
+          >
+            <span
+              class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block"
+              >Banco</span
+            >
+            <p class="text-sm font-semibold text-[#0f172a] mt-1">
+              {{ d.movimiento.banco }}
+            </p>
+          </div>
+          <div
+            class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-[#045C94]/20 transition-colors"
+          >
+            <span
+              class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block"
+              >Fecha</span
+            >
+            <p class="text-sm font-semibold text-[#0f172a] mt-1">
+              {{ d.movimiento.fechaPago | date: "yyyy-MM-dd" }}
+            </p>
+          </div>
+          <div
+            class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-[#045C94]/20 transition-colors"
+          >
+            <span
+              class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block"
+              >Empresa UT</span
+            >
+            <p class="text-sm font-semibold text-[#0f172a] mt-1">
+              {{ d.movimiento.empresaUt }}
+            </p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-[#045C94]/20 transition-colors">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Valor</span>
+            <p class="text-sm font-bold text-emerald-600 mt-1">{{ d.movimiento.valor | currency:'COP':'symbol':'1.0-0' }}</p>
+          </div>
+        </div>
+
+        <!-- Coincidencias -->
+        <div
+          *ngIf="d.coincidencias.length; else noCoincidencias"
+          class="bg-white rounded-xl border border-gray-200 overflow-hidden"
+        >
+          <div class="px-4 py-3 bg-gray-50 border-b border-gray-100">
+            <h3
+              class="text-sm font-bold text-[#213053] flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4 text-[#045C94]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+              Coincidencias Sugeridas
+            </h3>
+          </div>
+          <div class="divide-y divide-gray-100">
+            <div
+              *ngFor="let c of d.coincidencias"
+              class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+            >
+              <div>
+                <span class="text-sm font-semibold text-[#0f172a] block"
+                  >{{ c.tipo }} — {{ c.codigo }}</span
+                >
+                <span class="text-xs text-gray-500">{{
+                  c.fecha | date: "yyyy-MM-dd"
+                }}</span>
+              </div>
+              <div class="text-right">
+                <span class="text-sm font-bold text-[#045C94] block">{{
+                  c.valor | currency: "COP" : "symbol" : "1.0-0"
+                }}</span>
+                <span
+                  class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                  [class]="
+                    c.score * 100 >= 80
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : c.score * 100 >= 50
+                        ? 'bg-amber-50 text-amber-700'
+                        : 'bg-gray-100 text-gray-500'
+                  "
+                >
+                  {{ c.score * 100 | number: "1.0-0" }}% confianza
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noCoincidencias>
+          <div
+            class="bg-gray-50 rounded-xl border border-gray-200 p-6 text-center"
+          >
+            <div
+              class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3"
+            >
+              <svg
+                class="w-6 h-6 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                />
+              </svg>
+            </div>
+            <p class="text-sm text-gray-500 font-medium">
+              No hay coincidencias sugeridas para este movimiento.
+            </p>
+          </div>
+        </ng-template>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Vincular OC -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5">
+            <label
+              for="ocCodigo"
+              class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-2"
+            >
+              Vincular con OC
+            </label>
+            <input
+              id="ocCodigo"
+              type="text"
+              [(ngModel)]="detalleOcCodigo"
+              placeholder="Ej: OC-2025-102"
+              class="w-full h-10 border border-gray-300 rounded-lg px-3 text-sm text-[#213053] focus:border-[#045C94] focus:ring-2 focus:ring-[#045C94]/20 outline-none transition-all mb-3"
+            />
+            <button
+              type="button"
+              (click)="vincularOcDesdeModal()"
+              class="w-full h-10 bg-gradient-to-r from-[#045C94] to-[#213053] text-white text-sm font-semibold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                />
+              </svg>
+              Vincular OC
+            </button>
+          </div>
+
+          <!-- Acciones rápidas -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+            <span
+              class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block"
+              >Acciones rápidas</span
+            >
+            <button
+              type="button"
+              (click)="generarEgresoDesdeModal()"
+              class="w-full h-10 bg-[#1e293b] hover:bg-[#334155] text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              Generar Egreso
+            </button>
+            <button
+              type="button"
+              (click)="marcarConciliadoDesdeModal()"
+              class="w-full h-10 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Marcar Conciliado
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty -->
+      <div *ngIf="!detalleLoading && !detalleData" class="p-12 text-center">
+        <div
+          class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4"
+        >
+          <svg
+            class="w-8 h-8 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.832c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-800 mb-1">
+          Sin datos disponibles
+        </h3>
+        <p class="text-sm text-gray-500">
+          No fue posible obtener el detalle de este movimiento.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Control Diario ═══ -->
+  <div
+    *ngIf="controlDiarioModalOpen"
+    class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 modal-animate"
+    (click)="cerrarControlDiarioModal()"
+  >
+    <div
+      class="w-full max-w-[1440px] max-h-[94vh] overflow-auto bg-white rounded-2xl shadow-2xl border border-gray-200 modal-content-animate"
+      (click)="$event.stopPropagation()"
+    >
+      <app-control-diario
+        [modalMode]="true"
+        [movimientoContexto]="controlDiarioMovimiento"
+        (cerrar)="cerrarControlDiarioModal()"
+      />
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: PDF Preview ═══ -->
+  <div
+    *ngIf="pdfPreviewOpen"
+    class="fixed inset-0 z-[80] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 modal-animate"
+    (click)="cerrarPdfPreview()"
+  >
+    <div
+      class="w-full max-w-[1280px] max-h-[95vh] overflow-auto bg-white rounded-2xl shadow-2xl border border-gray-200 modal-content-animate"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Header -->
+      <div
+        class="bg-gradient-to-r from-[#1f3a60] to-[#255b8f] px-6 py-4 rounded-t-2xl"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-white">Vista Previa de Egreso</h2>
+            <p *ngIf="pdfDraft" class="text-white/70 text-xs mt-0.5">
+              {{ pdfDraft.codigoComprobante }} — {{ pdfDraft.fechaElaboracion }}
+            </p>
+          </div>
+          <button
+            type="button"
+            (click)="cerrarPdfPreview()"
+            class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all border border-white/20"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+            Cerrar
+          </button>
+        </div>
+      </div>
+
+      <!-- PDF Layout -->
+      <div
+        class="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-5 p-5"
+        *ngIf="pdfDraft && pdfEgreso"
+      >
+        <!-- Editor -->
+        <div
+          class="bg-gray-50 rounded-xl border border-gray-200 p-5 space-y-3 max-h-[79vh] overflow-auto"
+        >
+          <h3
+            class="text-sm font-bold text-[#213053] flex items-center gap-2 pb-3 border-b border-gray-200"
+          >
+            <svg
+              class="w-4 h-4 text-[#045C94]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+            Campos Editables
+          </h3>
+
+          <div class="pdf-field-group">
+            <label>Entidad línea 1</label>
+            <input type="text" [(ngModel)]="pdfDraft.entidadLinea1" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Entidad línea 2</label>
+            <input type="text" [(ngModel)]="pdfDraft.entidadLinea2" />
+          </div>
+          <div class="pdf-field-group">
+            <label>NIT</label>
+            <input type="text" [(ngModel)]="pdfDraft.nit" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Dirección</label>
+            <input type="text" [(ngModel)]="pdfDraft.direccion" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Teléfono</label>
+            <input type="text" [(ngModel)]="pdfDraft.telefono" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Ciudad</label>
+            <input type="text" [(ngModel)]="pdfDraft.ciudad" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Título comprobante</label>
+            <input type="text" [(ngModel)]="pdfDraft.tituloComprobante" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Código comprobante</label>
+            <input type="text" [(ngModel)]="pdfDraft.codigoComprobante" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Fecha elaboración</label>
+            <input type="text" [(ngModel)]="pdfDraft.fechaElaboracion" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Cuenta débito</label>
+            <input type="text" [(ngModel)]="pdfDraft.cuentaDebito" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Cuenta crédito</label>
+            <input type="text" [(ngModel)]="pdfDraft.cuentaCredito" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Tercero débito</label>
+            <input type="text" [(ngModel)]="pdfDraft.terceroDebito" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Tercero crédito</label>
+            <input type="text" [(ngModel)]="pdfDraft.terceroCredito" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Detalle débito</label>
+            <input type="text" [(ngModel)]="pdfDraft.detalleDebito" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Detalle crédito</label>
+            <input type="text" [(ngModel)]="pdfDraft.detalleCredito" />
+          </div>
+          <div class="pdf-field-group">
+            <label>Descripción</label>
+            <textarea rows="3" [(ngModel)]="pdfDraft.descripcion"></textarea>
+          </div>
+          <div class="pdf-field-group">
+            <label>Observaciones</label>
+            <textarea rows="3" [(ngModel)]="pdfDraft.observaciones"></textarea>
+          </div>
+
+          <button
+            type="button"
+            (click)="descargarPdfPreview()"
+            class="w-full h-10 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-semibold rounded-xl transition-all flex items-center justify-center gap-2 mt-2"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Descargar PDF
+          </button>
+        </div>
+
+        <!-- Live Preview -->
+        <div
+          class="bg-[#edf2f7] rounded-xl border border-gray-200 p-5 overflow-auto"
+        >
+          <div
+            class="bg-white border border-gray-300 rounded-lg p-6 min-h-[760px] shadow-sm"
+          >
+            <!-- Paper head -->
+            <div class="grid grid-cols-[180px_1fr_280px] gap-4 items-start">
+              <div
+                class="min-h-[78px] border border-dashed border-[#7aa4d2] rounded-lg flex items-center justify-center text-[#0f4b82] text-xl font-extrabold"
+              >
+                AgroCapital
+              </div>
+              <div class="space-y-0.5 text-sm text-[#0f172a]">
+                <strong class="block">{{ pdfDraft.entidadLinea1 }}</strong>
+                <strong class="block">{{ pdfDraft.entidadLinea2 }}</strong>
+                <span class="block">{{ pdfDraft.nit }}</span>
+                <span class="block">{{ pdfDraft.direccion }}</span>
+                <span class="block">{{ pdfDraft.telefono }}</span>
+                <span class="block">{{ pdfDraft.ciudad }}</span>
+              </div>
+              <div
+                class="border border-gray-300 rounded-lg p-3 bg-gray-50 space-y-0.5 text-sm text-[#0f172a]"
+              >
+                <strong class="block">{{ pdfDraft.tituloComprobante }}</strong>
+                <strong class="block">{{ pdfDraft.codigoComprobante }}</strong>
+                <span class="block text-gray-500">Fecha de elaboración</span>
+                <span class="block">{{ pdfDraft.fechaElaboracion }}</span>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <table class="w-full mt-5 border-collapse text-xs">
+              <thead>
+                <tr class="bg-[#e8edf4]">
+                  <th class="border border-gray-300 px-2 py-1.5 text-left">
+                    #
+                  </th>
+                  <th class="border border-gray-300 px-2 py-1.5 text-left">
+                    Cuenta contable
+                  </th>
+                  <th class="border border-gray-300 px-2 py-1.5 text-left">
+                    Tercero
+                  </th>
+                  <th class="border border-gray-300 px-2 py-1.5 text-left">
+                    Detalle
+                  </th>
+                  <th class="border border-gray-300 px-2 py-1.5 text-left">
+                    Descripción
+                  </th>
+                  <th class="border border-gray-300 px-2 py-1.5 text-right">
+                    Débito
+                  </th>
+                  <th class="border border-gray-300 px-2 py-1.5 text-right">
+                    Crédito
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border border-gray-300 px-2 py-1.5">1</td>
+                  <td class="border border-gray-300 px-2 py-1.5">
+                    {{ pdfDraft.cuentaDebito }}
+                  </td>
+                  <td class="border border-gray-300 px-2 py-1.5">
+                    {{ pdfDraft.terceroDebito }}
+                  </td>
+                  <td class="border border-gray-300 px-2 py-1.5">
+                    {{ pdfDraft.detalleDebito }}
+                  </td>
+                  <td class="border border-gray-300 px-2 py-1.5">
+                    {{ pdfDraft.descripcion }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-2 py-1.5 text-right whitespace-nowrap"
+                  >
+                    {{ pdfEgreso.valor | number: "1.2-2" }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-2 py-1.5 text-right whitespace-nowrap"
+                  >
+                    0.00
+                  </td>
+                </tr>
+                <tr>
+                  <td class="border border-gray-300 px-2 py-1.5">2</td>
+                  <td class="border border-gray-300 px-2 py-1.5">
+                    {{ pdfDraft.cuentaCredito }}
+                  </td>
+                  <td class="border border-gray-300 px-2 py-1.5">
+                    {{ pdfDraft.terceroCredito }}
+                  </td>
+                  <td class="border border-gray-300 px-2 py-1.5">
+                    {{ pdfDraft.detalleCredito }}
+                  </td>
+                  <td class="border border-gray-300 px-2 py-1.5">
+                    {{ pdfDraft.descripcion }}
+                  </td>
+                  <td
+                    class="border border-gray-300 px-2 py-1.5 text-right whitespace-nowrap"
+                  >
+                    0.00
+                  </td>
+                  <td
+                    class="border border-gray-300 px-2 py-1.5 text-right whitespace-nowrap"
+                  >
+                    {{ pdfEgreso.valor | number: "1.2-2" }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Total -->
+            <div
+              class="grid grid-cols-[1fr_120px_120px] justify-items-end gap-2 mt-4 text-sm font-bold text-[#0f172a]"
+            >
+              <strong>Total</strong>
+              <strong>{{ pdfEgreso.valor | number: "1.2-2" }}</strong>
+              <strong>{{ pdfEgreso.valor | number: "1.2-2" }}</strong>
+            </div>
+
+            <!-- Notes -->
+            <div class="mt-6 text-sm">
+              <h4 class="font-bold text-[#213053] mb-1">Observaciones</h4>
+              <p class="text-gray-600 whitespace-pre-wrap">
+                {{ pdfDraft.observaciones }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LOADING OVERLAY ═══ -->
+  <div *ngIf="loading" class="flex items-center justify-center py-16">
+    <div class="text-center">
+      <div
+        class="w-10 h-10 border-4 border-[#045C94]/20 border-t-[#045C94] rounded-full animate-spin mx-auto mb-3"
+      ></div>
+      <p class="text-sm text-gray-500 font-medium">Cargando movimientos...</p>
+    </div>
+  </div>
+
+  <!-- ═══ MODAL: Visualización de Archivo con Pestañas ═══ -->
+  @if (archivoModalOpen && archivoModalUrl) {
+    <div
+      class="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 modal-animate"
+      (click)="cerrarArchivoModal()"
+    >
+      <div
+        class="w-full max-w-[1100px] h-[90vh] flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 modal-content-animate"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Header -->
+        <div
+          class="bg-gradient-to-r from-[#1f3a60] to-[#255b8f] px-6 py-4 rounded-t-2xl flex items-center justify-between flex-shrink-0"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="w-9 h-9 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center"
+            >
+              <svg
+                class="w-5 h-5 text-[#FFB71B]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-white">
+                {{ archivoModalTitulo }}
+              </h2>
+              <p class="text-white/70 text-xs mt-0.5">
+                @if (archivoModalArchivos.length > 1) {
+                  {{ archivoModalArchivos.length }} documentos adjuntos — Pestaña {{ archivoModalTabActiva + 1 }} de {{ archivoModalArchivos.length }}
+                } @else {
+                  Visualización de documento
+                }
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a
+              [href]="archivoModalArchivos[archivoModalTabActiva].url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all border border-white/20"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+              Abrir en nueva pestaña
+            </a>
+            <button
+              type="button"
+              (click)="cerrarArchivoModal()"
+              class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg transition-all border border-white/20"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Cerrar
+            </button>
+          </div>
+        </div>
+
+        <!-- Pestañas de archivos (solo si hay más de 1) -->
+        @if (archivoModalArchivos.length > 1) {
+          <div class="bg-[#f8fafc] border-b border-gray-200 flex-shrink-0">
+            <!-- Document count summary -->
+            <div class="px-5 pt-3 pb-2 flex items-center justify-between">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                DOCUMENTOS ADJUNTOS ({{ archivoModalArchivos.length }})
+              </span>
+              <span class="text-[10px] text-gray-400 font-medium">
+                Pestaña {{ archivoModalTabActiva + 1 }} de {{ archivoModalArchivos.length }}
+              </span>
+            </div>
+            <!-- Tabs scrollable -->
+            <div class="doc-tabs-scroll-container relative px-3 pb-3">
+              <div class="flex gap-2 overflow-x-auto doc-tabs-scrollbar pb-1">
+                @for (archivo of archivoModalArchivos; track $index) {
+                  <button
+                    type="button"
+                    (click)="cambiarTabArchivo($index)"
+                    class="doc-tab-item group relative flex-shrink-0 rounded-lg transition-all duration-200 border"
+                    [ngClass]="{
+                      'bg-white border-[#045C94] shadow-md ring-1 ring-[#045C94]/20': archivoModalTabActiva === $index,
+                      'bg-white/60 border-gray-200 hover:bg-white hover:border-gray-300 hover:shadow-sm': archivoModalTabActiva !== $index
+                    }"
+                    style="min-width: 170px; max-width: 220px;"
+                  >
+                    <div class="flex items-center gap-2.5 px-3 py-2.5">
+                      <!-- Number badge -->
+                      <span class="flex-shrink-0 w-6 h-6 rounded-md text-[10px] font-bold flex items-center justify-center"
+                        [ngClass]="{
+                          'bg-[#045C94] text-white shadow-sm': archivoModalTabActiva === $index,
+                          'bg-gray-100 text-gray-500 group-hover:bg-gray-200': archivoModalTabActiva !== $index
+                        }">
+                        {{ $index + 1 }}
+                      </span>
+                      <!-- Label -->
+                      <div class="flex flex-col items-start overflow-hidden min-w-0">
+                        <span class="text-[9px] font-bold uppercase tracking-wider leading-none"
+                          [ngClass]="{
+                            'text-[#045C94]': archivoModalTabActiva === $index,
+                            'text-gray-400': archivoModalTabActiva !== $index
+                          }">
+                          {{ archivo.tipo || 'OC' }}
+                        </span>
+                        <span class="text-[11px] font-semibold leading-tight mt-0.5 truncate w-full text-left"
+                          [ngClass]="{
+                            'text-[#213053]': archivoModalTabActiva === $index,
+                            'text-gray-600 group-hover:text-gray-800': archivoModalTabActiva !== $index
+                          }"
+                          [title]="archivo.nombre">
+                          {{ archivo.nombre }}
+                        </span>
+                      </div>
+                    </div>
+                    <!-- Active bar bottom -->
+                    @if (archivoModalTabActiva === $index) {
+                      <div class="absolute bottom-0 left-2 right-2 h-[2px] bg-[#045C94] rounded-full"></div>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Iframe viewer -->
+        <div class="flex-1 bg-gray-100 rounded-b-2xl overflow-hidden">
+          <iframe
+            [src]="archivoModalUrl"
+            class="w-full h-full border-0"
+            title="Visualización de archivo"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

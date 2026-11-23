@@ -1,0 +1,11 @@
+node_modules/
+.npm-cache/
+artifacts/
+reference-inspection.js
+reference-inspection.css
+*.log
+.qa-python/
+.pip-cache/
+
+# Evidencias vivas de QA (no versionar)
+artifacts/

@@ -1,0 +1,100 @@
+<div class="modal-backdrop" (click)="onBackdropClick($event)">
+  <div class="modal-panel">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-header__left">
+        <span class="modal-header__icon">📦</span>
+        <div>
+          <h3 class="modal-header__title">Agregar Ítem de Gasto</h3>
+          <p class="modal-header__sub">Complete los datos del concepto a registrar</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" (click)="onCancel()">×</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <!-- Tipo de Viático -->
+      <div class="modal-field">
+        <label class="modal-label">Tipo de Viático *</label>
+        <select class="modal-select"
+          [ngModel]="tipoViatico()" (ngModelChange)="tipoViatico.set($event)">
+          <option value="">Seleccionar...</option>
+          <option *ngFor="let tipo of tiposViatico" [value]="tipo">{{ tipo }}</option>
+        </select>
+      </div>
+
+      <!-- Fecha + Concepto -->
+      <div class="modal-row">
+        <div class="modal-field">
+          <label class="modal-label">Fecha del Gasto *</label>
+          <input type="date" class="modal-input"
+            [ngModel]="fechaGasto()" (ngModelChange)="fechaGasto.set($event)">
+        </div>
+        <div class="modal-field modal-field--grow">
+          <label class="modal-label">Concepto Detallado *</label>
+          <input type="text" class="modal-input" placeholder="Describa el gasto..."
+            [ngModel]="conceptoDetallado()" (ngModelChange)="conceptoDetallado.set($event)">
+        </div>
+      </div>
+
+      <!-- Estructura de Valores -->
+      <div class="modal-values-section">
+        <h4 class="modal-values-title">
+          <span>💲</span> ESTRUCTURA DE VALORES
+        </h4>
+        <div class="modal-values-grid">
+          <div class="modal-field">
+            <label class="modal-label">Valor Base *</label>
+            <div class="input-currency">
+              <span class="input-currency__prefix">$</span>
+              <input type="number" class="modal-input modal-input--currency" min="0"
+                [ngModel]="valorBase()" (ngModelChange)="valorBase.set($event)">
+            </div>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">¿Aplica IVA?</label>
+            <select class="modal-select"
+              [ngModel]="aplicaIva()" (ngModelChange)="aplicaIva.set($event === 'true')">
+              <option [value]="false">No</option>
+              <option [value]="true">Sí</option>
+            </select>
+          </div>
+          <div class="modal-field">
+            <label class="modal-label">% IVA</label>
+            <div class="input-currency">
+              <input type="number" class="modal-input" [disabled]="!aplicaIva()" min="0" max="100"
+                [ngModel]="porcentajeIva()" (ngModelChange)="porcentajeIva.set($event)">
+              <span class="input-currency__suffix">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-values-grid" style="margin-top: 12px;">
+          <div class="modal-field">
+            <label class="modal-label">Valor IVA (automático)</label>
+            <div class="input-currency input-currency--readonly">
+              <span class="input-currency__prefix">$</span>
+              <input type="text" class="modal-input" disabled [value]="formatCurrency(valorIva)">
+            </div>
+          </div>
+          <div class="modal-field modal-field--total">
+            <label class="modal-label">Valor Total</label>
+            <div class="input-currency input-currency--total">
+              <span class="input-currency__prefix">$</span>
+              <input type="text" class="modal-input modal-input--total" disabled [value]="formatCurrency(valorTotal)">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button type="button" class="modal-btn modal-btn--cancel" (click)="onCancel()">Cancelar</button>
+      <button type="button" class="modal-btn modal-btn--add" [disabled]="!canAdd" (click)="onAdd()">
+        Agregar Ítem
+      </button>
+    </div>
+  </div>
+</div>

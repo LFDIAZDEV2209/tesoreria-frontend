@@ -1,0 +1,15 @@
+.ue-page { padding: 1.5rem; }
+.ue-header h1 { font-size: 1.4rem; font-weight: 700; color: #213053; margin: 0 0 .25rem; }
+.ue-header p { color: #64748b; margin: 0 0 1rem; font-size: .9rem; }
+.ue-alert { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: .6rem .8rem; border-radius: .5rem; margin-bottom: 1rem; font-size: .85rem; }
+.ue-loading { color: #64748b; }
+.ue-list { display: grid; gap: 1rem; }
+.ue-card { background: #fff; border: 1px solid #e2e8f0; border-radius: .75rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+.ue-card__head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.ue-email { display: block; font-size: .78rem; color: #94a3b8; }
+.ue-toggle { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: #334155; }
+.ue-empresas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: .35rem; margin-bottom: .75rem; }
+.ue-empresa { display: flex; align-items: center; gap: .4rem; font-size: .8rem; color: #475569; }
+.ue-actions { display: flex; justify-content: flex-end; }
+.ue-btn { background: #045C94; color: #fff; border: none; border-radius: .5rem; padding: .45rem .9rem; font-size: .82rem; font-weight: 600; cursor: pointer; }
+.ue-btn:disabled { opacity: .5; cursor: not-allowed; }

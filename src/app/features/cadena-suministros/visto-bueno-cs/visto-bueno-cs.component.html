@@ -1,0 +1,417 @@
+<!-- ═══ TOAST ═══ -->
+@if (showToast()) {
+  <div class="vb-toast"
+    [class.vb-toast--success]="toastType() === 'success'"
+    [class.vb-toast--error]="toastType() === 'error'"
+    [class.vb-toast--warning]="toastType() === 'warning'"
+    [class.vb-toast--info]="toastType() === 'info'">
+    <div class="vb-toast__icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        @if (toastType() === 'success') {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        } @else if (toastType() === 'error') {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        } @else {
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        }
+      </svg>
+    </div>
+    {{ toastMessage() }}
+  </div>
+}
+
+<!-- ═══ LOADING ═══ -->
+@if (loading()) {
+  <div class="vb-page">
+    <div class="vb-loading">
+      <div class="vb-loading__spinner"></div>
+      <p class="vb-loading__text">Cargando información de la requisición&hellip;</p>
+    </div>
+  </div>
+}
+
+<!-- ═══ MAIN CONTENT ═══ -->
+@if (!loading() && tramite() && solicitud()) {
+  <div class="vb-page">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="vb-header">
+      <!-- Top bar: back + badges -->
+      <div class="vb-header__top">
+        <button class="vb-back" (click)="volver()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Volver
+        </button>
+
+        <div class="vb-header__badges">
+          <div class="vb-badge"
+            [class.vb-badge--pending]="tramite()!.estadoTramite === 'ESPERANDO_VISTO_BUENO' || tramite()!.estadoTramite === 'EN_PROCESO'"
+            [class.vb-badge--approved]="tramite()!.estadoTramite === 'APROBADO_JEFE' || tramite()!.estadoTramite === 'COMPLETADO'"
+            [class.vb-badge--rejected]="tramite()!.estadoTramite === 'RECHAZADO_JEFE'">
+            <span class="vb-badge__dot"></span>
+            {{ getEstadoSolicitudLabel(tramite()!.estadoTramite) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Main header info -->
+      <div class="vb-header__main">
+        <div class="vb-header__icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div class="vb-header__text">
+          <span class="vb-header__eyebrow">Cadena de Suministros — Visto Bueno</span>
+          <h1>Requisición {{ tramite()!.requisicion.numeroRequisicion }}</h1>
+          <p>{{ tramite()!.requisicion.solicitante }} &mdash; {{ tramite()!.requisicion.areaCentroCosto }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ INNOVATIVE KPI CARDS SECTION ═══ -->
+    <div class="vb-kpi-section">
+      <!-- Órdenes de Compra Card -->
+      <div class="vb-kpi-card vb-kpi-card--ordenes">
+        <div class="vb-kpi-card__bg-accent"></div>
+        <div class="vb-kpi-card__header">
+          <div class="vb-kpi-card__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <h3 class="vb-kpi-card__title">Órdenes de Compra</h3>
+        </div>
+        <div class="vb-kpi-card__content">
+          <div class="vb-kpi-card__value">{{ totalOrdenes }}</div>
+          <p class="vb-kpi-card__detail">Total registradas en esta requisición</p>
+        </div>
+        <div class="vb-kpi-card__border"></div>
+      </div>
+
+      <!-- Valor Total Card -->
+      <div class="vb-kpi-card vb-kpi-card--valor">
+        <div class="vb-kpi-card__bg-accent"></div>
+        <div class="vb-kpi-card__header">
+          <div class="vb-kpi-card__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <h3 class="vb-kpi-card__title">Valor Total OC</h3>
+        </div>
+        <div class="vb-kpi-card__content">
+          <div class="vb-kpi-card__value vb-kpi-card__value--mono">{{ formatCurrency(totalGeneral) }}</div>
+          <p class="vb-kpi-card__detail">Inversión total agregada</p>
+        </div>
+        <div class="vb-kpi-card__border"></div>
+      </div>
+
+      <!-- Proveedores Card -->
+      <div class="vb-kpi-card vb-kpi-card--proveedores">
+        <div class="vb-kpi-card__bg-accent"></div>
+        <div class="vb-kpi-card__header">
+          <div class="vb-kpi-card__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+          <h3 class="vb-kpi-card__title">Proveedores Únicos</h3>
+        </div>
+        <div class="vb-kpi-card__content">
+          <div class="vb-kpi-card__value">{{ getProveedoresUnicos().length }}</div>
+          <p class="vb-kpi-card__detail">Entidades participantes</p>
+        </div>
+        <div class="vb-kpi-card__border"></div>
+      </div>
+    </div>
+
+    <!-- ═══ FUNCTIONALITY NOTES ═══ -->
+    <div class="vb-notes-container">
+      <button class="vb-notes-toggle" (click)="toggleNotes()" [class.vb-notes-toggle--collapsed]="!showNotes()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+        <span>{{ showNotes() ? 'Ocultar' : 'Mostrar' }} instrucciones</span>
+      </button>
+
+      @if (showNotes()) {
+        <div class="vb-notes-section">
+          <div class="vb-note">
+            <div class="vb-note__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="vb-note__content">
+              <h4>Agrupar por Proveedor</h4>
+              <p>Los proveedores con múltiples órdenes están agrupados en una sola entrada. Expande para ver todas las órdenes de compra asociadas.</p>
+            </div>
+          </div>
+          <div class="vb-note">
+            <div class="vb-note__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </div>
+            <div class="vb-note__content">
+              <h4>Revisar Detalle</h4>
+              <p>Haz clic en "Revisar entrada" para ver el detalle completo de cada orden de compra y sus documentos asociados.</p>
+            </div>
+          </div>
+          <div class="vb-note">
+            <div class="vb-note__icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="vb-note__content">
+              <h4>Valores Agregados</h4>
+              <p>El valor total de cada proveedor suma todas sus órdenes de compra. Compare con el total general al pie.</p>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ═══ GROUPED PROVIDERS SECTION ═══ -->
+    <div class="vb-table-section">
+      <div class="vb-table-header">
+        <div class="vb-table-header__left">
+          <div class="vb-table-header__icon">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+          </div>
+          <div class="vb-table-header__text">
+            <h2>Proveedores y Órdenes de Compra</h2>
+            <p>Agrupado por proveedor – Expande para ver todas las órdenes</p>
+          </div>
+        </div>
+        <span class="vb-table-header__count">
+          {{ getProveedoresUnicos().length }} proveedor{{ getProveedoresUnicos().length !== 1 ? 'es' : '' }}
+        </span>
+      </div>
+
+      <div class="vb-grouped-list">
+        @for (proveedor of getProveedoresUnicos(); track proveedor; let idx = $index) {
+          <div class="vb-provider-group" [class.vb-provider-group--expanded]="isProveedorExpanded(proveedor)" [style.--group-idx]="idx">
+            <!-- Provider Header (Clickable) -->
+            <div class="vb-provider-header" (click)="toggleProveedor(proveedor)">
+              <div class="vb-provider-header__left">
+                <div class="vb-provider-header__avatar">
+                  {{ getProveedorInitial(proveedor) }}
+                </div>
+                <div class="vb-provider-header__info">
+                  <h3 class="vb-provider-header__name">{{ proveedor }}</h3>
+                  <p class="vb-provider-header__meta">
+                    {{ getCountOcProveedor(proveedor) }} orden{{ getCountOcProveedor(proveedor) !== 1 ? 'es' : '' }} de compra
+                  </p>
+                </div>
+              </div>
+              <div class="vb-provider-header__stats">
+                <span class="vb-provider-header__stat vb-provider-header__stat--oc">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  {{ getCountOcProveedor(proveedor) }} OC
+                </span>
+                <span class="vb-provider-header__stat vb-provider-header__stat--value">
+                  {{ formatCurrency(getValorProveedorTotal(proveedor)) }}
+                </span>
+              </div>
+              <div class="vb-provider-header__right">
+                <div [class.vb-provider-header__toggle--expanded]="isProveedorExpanded(proveedor)" class="vb-provider-header__toggle">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Expanded Details -->
+            @if (isProveedorExpanded(proveedor)) {
+              <div class="vb-provider-details">
+                <div class="vb-orders-table">
+                  @for (orden of getOrdenesParaProveedor(proveedor); track orden.id; let idx = $index) {
+                    <div class="vb-order-row" [style.--order-idx]="idx">
+                      <div class="vb-order-row__main">
+                        <div class="vb-order-row__oc">
+                          <div class="vb-oc-badge">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            {{ orden.numeroOC }}
+                          </div>
+                          <span class="vb-order-row__archivo">{{ orden.nombreArchivo }}</span>
+                        </div>
+                        <div class="vb-order-row__payment">
+                          <span class="vb-tipo-pago"
+                            [class.vb-tipo-pago--contado]="orden.tipoPago === 'CONTADO'"
+                            [class.vb-tipo-pago--credito]="orden.tipoPago === 'CREDITO'">
+                            {{ orden.tipoPago === 'CONTADO' ? 'Contado' : orden.tipoPago === 'CREDITO' ? 'Crédito' : (orden.tipoPago || '') }}
+                          </span>
+                        </div>
+                        <div class="vb-order-row__value">
+                          {{ formatCurrency(orden.valorTotal) }}
+                        </div>
+                      </div>
+                      <div class="vb-order-row__action">
+                        <button class="vb-btn-revisar" (click)="navegarTramitarOrden(orden)">
+                          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                          </svg>
+                          <span>Revisar</span>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Total Summary -->
+      <div class="vb-providers-footer">
+        <div class="vb-providers-footer__label">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <strong>Total Agregado</strong>
+        </div>
+        <div class="vb-providers-footer__value">
+          {{ formatCurrency(totalGeneral) }}
+        </div>
+      </div>
+
+      <!-- ═══ ENVIAR A CONTABILIDAD ═══ -->
+      @if (todasConciliadas() && !tramite()!.enviadoContabilidad) {
+        <div class="mt-6 flex justify-center">
+          <button
+            (click)="confirmarEnvioContabilidad()"
+            [disabled]="enviandoContabilidad()"
+            class="flex items-center gap-3 px-8 py-3.5 rounded-2xl text-white font-bold text-sm shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+            style="background: linear-gradient(135deg, #10b981, #059669)"
+          >
+            @if (enviandoContabilidad()) {
+              <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>Enviando...</span>
+            } @else {
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>Enviar a Contabilidad</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            }
+          </button>
+        </div>
+      }
+      @if (tramite()!.enviadoContabilidad) {
+        <div class="mt-6 flex justify-center">
+          <div class="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Ya fue enviado a Contabilidad
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+}
+
+<!-- ═══ EMPTY STATE ═══ -->
+@if (!loading() && (!tramite() || !solicitud())) {
+  <div class="vb-page">
+    <div class="vb-empty">
+      <div class="vb-empty__icon">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <h3>No se encontró la requisición</h3>
+      <p>No se pudo cargar la información del trámite. Intenta nuevamente o vuelve a la bandeja.</p>
+      <button class="vb-btn-revisar" (click)="volver()">
+        <span>Volver a la bandeja</span>
+      </button>
+    </div>
+  </div>
+}
+
+<!-- ═══ CONFIRMACIÓN ENVIAR A CONTABILIDAD ═══ -->
+@if (showConfirmContabilidad()) {
+  <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-[#213053]">Enviar a Contabilidad</h3>
+            <p class="text-xs text-gray-500">Confirme para continuar</p>
+          </div>
+        </div>
+        <p class="text-sm text-gray-600 leading-relaxed">
+          Todas las órdenes de compra han sido conciliadas. ¿Desea enviar este trámite al área de
+          <strong class="text-[#213053]">Contabilidad</strong> para su registro?
+        </p>
+        <div class="mt-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+          <div class="flex justify-between text-xs">
+            <span class="text-gray-500">Total OC</span>
+            <span class="font-bold text-[#213053]">{{ totalOrdenes }}</span>
+          </div>
+          <div class="flex justify-between text-xs mt-1">
+            <span class="text-gray-500">Valor Total</span>
+            <span class="font-bold text-emerald-600">{{ formatCurrency(totalGeneral) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-3 p-4 border-t border-gray-100 bg-gray-50/50">
+        <button
+          (click)="cancelarEnvioContabilidad()"
+          class="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-200 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="enviarAContabilidad()"
+          class="flex-1 px-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:scale-[1.02]"
+          style="background: linear-gradient(135deg, #10b981, #059669)"
+        >
+          Confirmar Envío
+        </button>
+      </div>
+    </div>
+  </div>
+}

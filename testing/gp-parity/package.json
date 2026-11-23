@@ -1,0 +1,13 @@
+{
+  "name": "tesoreria-gp-parity",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test integration.test.mjs",
+    "test:gpqa": "node --test gpqa-smoke.test.mjs",
+    "test:gpqa:phase2": "node --test --test-concurrency=1 gpqa-phase2-api.test.mjs gpqa-phase2-ui.test.mjs gpqa-phase2-p7.test.mjs gpqa-phase2-regression.test.mjs gpqa-phase2-states.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.58.2"
+  }
+}

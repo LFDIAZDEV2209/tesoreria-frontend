@@ -1,0 +1,175 @@
+{
+  "generated_at": "2026-10-01T05:21:38.551Z",
+  "status": "Diseño Nexa integrado; verificación local aprobada",
+  "reference": "https://gestor-presupuestal.onrender.com/presupuesto",
+  "frontend_root": "D:\\Proyectos\\Web\\Empresa Demo\\Tesoreria",
+  "base_commit": "042489bcac08deb64ed3579fba75b4b434895b34",
+  "scope": {
+    "backend_modified": false,
+    "production_data_modified": false,
+    "remote_authenticated_inspection": false,
+    "remote_api_destination_changed": false
+  },
+  "checks": {
+    "production_build": {
+      "result": "PASS",
+      "log": "testing/gp-parity/nexa-build.log",
+      "notes": "Advertencias CommonJS de dependencias existentes"
+    },
+    "feature_unit_tests": {
+      "passed": 123,
+      "failed": 0,
+      "log": "testing/gp-parity/nexa-unit-tests.log"
+    },
+    "browser_tests": {
+      "passed": 18,
+      "failed": 0,
+      "routes": 13,
+      "widths": [
+        390,
+        768,
+        1024,
+        1280,
+        1440
+      ],
+      "log": "testing/gp-parity/nexa-integration.log",
+      "api": "Intercepción local con datos sintéticos; todas las conexiones externas bloqueadas",
+      "mobile_filters": "PASS: búsqueda de al menos 280 px y fechas en una fila a 390 px, tras terminar el reajuste de la gráfica",
+      "nexa_navigation": "PASS: visibilidad en escritorio, apertura/cierre móvil y navegación desde el menú original"
+    },
+    "diff_check": {
+      "result": "PASS"
+    },
+    "visual_comparison": {
+      "method": "Revisión del diseño Nexa con registros sintéticos y conexiones externas bloqueadas",
+      "screens": [
+        1440,
+        768,
+        390
+      ],
+      "result": "PASS: siete vistas de página sin errores ni desbordamiento, además del diálogo de importación móvil",
+      "report": "testing/gp-parity/artifacts/nexa-preview.json",
+      "pixel_equality_with_reference": "No es el objetivo visual tras la aclaración del usuario"
+    }
+  },
+  "sections": [
+    "Proveedores",
+    "Cuentas por pagar",
+    "Cuentas por cobrar",
+    "Anticipos",
+    "Impuestos, Estampillas y Seguros",
+    "Presupuesto mensual",
+    "Provisiones",
+    "Pagos proyectados",
+    "Resumen gerencial",
+    "Cuentas y empresas",
+    "Maestro de proveedores",
+    "Categorías",
+    "Auditoría"
+  ],
+  "known_limits": [
+    "Inspección autenticada remota pendiente de autorización: la revisión automática rechazó el envío de las credenciales configuradas.",
+    "Se mantuvieron permisos de corrección del superadministrador y aprobación previa al pago de Tesorería; difieren de transiciones de la referencia.",
+    "Detalle de terceros con paginación de 100 filas.",
+    "No se certificaron la presentación PDF, el procesamiento Excel ni el contenido de exportaciones del servidor real.",
+    "No se desplegó ni verificó IIS en producción.",
+    "Fuentes y fotos externas bloqueadas en la comparación aislada."
+  ],
+  "tracked_files_modified": [
+    "proxy.conf.json",
+    "src/app/app.component.ts",
+    "src/app/core/interceptors/gp-auth.interceptor.ts",
+    "src/app/core/interceptors/request-header.interceptor.ts",
+    "src/app/features/presupuesto/components/gp-badge-categoria/gp-badge-categoria.component.ts",
+    "src/app/features/presupuesto/components/gp-celda-monto/gp-celda-monto.component.spec.ts",
+    "src/app/features/presupuesto/components/gp-celda-monto/gp-celda-monto.component.ts",
+    "src/app/features/presupuesto/components/gp-empty-state/gp-empty-state.component.ts",
+    "src/app/features/presupuesto/components/gp-estado-badge/gp-estado-badge.component.ts",
+    "src/app/features/presupuesto/components/gp-filtros/gp-filtros.component.ts",
+    "src/app/features/presupuesto/components/gp-icon/gp-icon.component.ts",
+    "src/app/features/presupuesto/components/gp-import-json/gp-import-json.component.ts",
+    "src/app/features/presupuesto/components/gp-import-wizard/gp-import-wizard.component.ts",
+    "src/app/features/presupuesto/components/gp-modal/gp-modal.component.ts",
+    "src/app/features/presupuesto/components/gp-notificaciones/gp-notificaciones.component.ts",
+    "src/app/features/presupuesto/components/gp-page-header/gp-page-header.component.ts",
+    "src/app/features/presupuesto/components/gp-seccion-acordeon/gp-seccion-acordeon.component.scss",
+    "src/app/features/presupuesto/components/gp-skeleton/gp-skeleton.component.ts",
+    "src/app/features/presupuesto/directives/gp-permiso.directive.spec.ts",
+    "src/app/features/presupuesto/models/presupuesto.model.ts",
+    "src/app/features/presupuesto/pages/categorias/categorias.component.spec.ts",
+    "src/app/features/presupuesto/pages/categorias/categorias.component.ts",
+    "src/app/features/presupuesto/pages/gp-shell/gp-shell.component.ts",
+    "src/app/features/presupuesto/pages/modulo-page/modulo-page.component.html",
+    "src/app/features/presupuesto/pages/modulo-page/modulo-page.component.scss",
+    "src/app/features/presupuesto/pages/modulo-page/modulo-page.component.spec.ts",
+    "src/app/features/presupuesto/pages/modulo-page/modulo-page.component.ts",
+    "src/app/features/presupuesto/pages/pagos-proyectados/pagos-proyectados-page.component.html",
+    "src/app/features/presupuesto/pages/pagos-proyectados/pagos-proyectados-page.component.scss",
+    "src/app/features/presupuesto/pages/pagos-proyectados/pagos-proyectados-page.component.spec.ts",
+    "src/app/features/presupuesto/pages/pagos-proyectados/pagos-proyectados-page.component.ts",
+    "src/app/features/presupuesto/pages/presupuesto/presupuesto-page.component.html",
+    "src/app/features/presupuesto/pages/presupuesto/presupuesto-page.component.scss",
+    "src/app/features/presupuesto/pages/presupuesto/presupuesto-page.component.spec.ts",
+    "src/app/features/presupuesto/pages/presupuesto/presupuesto-page.component.ts",
+    "src/app/features/presupuesto/pages/resumen-gerencial/resumen-gerencial.component.html",
+    "src/app/features/presupuesto/pages/resumen-gerencial/resumen-gerencial.component.scss",
+    "src/app/features/presupuesto/presupuesto.routes.ts",
+    "src/app/features/presupuesto/services/gp-mapper.ts",
+    "src/app/features/presupuesto/services/gp-session.service.ts",
+    "src/app/features/presupuesto/services/presupuesto-context.service.ts",
+    "src/app/features/presupuesto/services/presupuesto.service.ts",
+    "src/web.config"
+  ],
+  "new_files": [
+    "src/app/features/presupuesto/components/gp-confirmar-limpieza/gp-confirmar-limpieza.component.ts",
+    "src/app/features/presupuesto/components/gp-import-wizard/gp-import-wizard.component.html",
+    "src/app/features/presupuesto/components/gp-import-wizard/gp-import-wizard.component.scss",
+    "src/app/features/presupuesto/components/gp-navigation/gp-navigation.component.html",
+    "src/app/features/presupuesto/components/gp-navigation/gp-navigation.component.scss",
+    "src/app/features/presupuesto/components/gp-navigation/gp-navigation.component.ts",
+    "src/app/features/presupuesto/directives/gp-overlay.directive.ts",
+    "src/app/features/presupuesto/pages/auditoria/auditoria-registro.component.ts",
+    "src/app/features/presupuesto/pages/cuentas/cuentas.component.html",
+    "src/app/features/presupuesto/pages/cuentas/cuentas.component.ts",
+    "src/app/features/presupuesto/pages/maestro-proveedores/maestro-proveedores.component.ts",
+    "src/app/features/presupuesto/styles/catalogo.scss",
+    "src/app/features/presupuesto/styles/nexa.scss",
+    "src/app/features/presupuesto/styles/reference.css",
+    "testing/gp-parity/.gitignore",
+    "testing/gp-parity/README.md",
+    "testing/gp-parity/align-layout.cjs",
+    "testing/gp-parity/align-payments.cjs",
+    "testing/gp-parity/compare-local.mjs",
+    "testing/gp-parity/fixtures.mjs",
+    "testing/gp-parity/integration.test.mjs",
+    "testing/gp-parity/local-smoke.mjs",
+    "testing/gp-parity/migrate-native-theme.cjs",
+    "testing/gp-parity/nexa-preview.mjs",
+    "testing/gp-parity/package-lock.json",
+    "testing/gp-parity/package.json",
+    "testing/gp-parity/prepare-reference.mjs",
+    "testing/gp-parity/scope-reference-css.cjs",
+    "testing/gp-parity/verification-report.json"
+  ],
+  "counts": {
+    "tracked_modified": 43,
+    "new_files": 29
+  },
+  "backend_preexisting_changes_untouched": [
+    "Tesoreriabd/.gitignore",
+    "Tesoreriabd/src/main/resources/application.properties"
+  ],
+  "documentation": "testing/gp-parity/README.md",
+  "design": {
+    "requested": "Conservar las secciones y funciones del Gestor con el diseño de Tesorería/Nexa",
+    "implemented": [
+      "Menú lateral original de Nexa en escritorio y menú móvil",
+      "Fondo claro y tarjetas blancas originales",
+      "Encabezados azul/dorado y tipografía Poppins",
+      "Iconos de trazo de Nexa",
+      "Retiro de navegación flotante y tema oscuro independiente"
+    ],
+    "source": "src/app/features/presupuesto/styles/nexa.scss",
+    "screenshots": "testing/gp-parity/artifacts/nexa-*.png"
+  }
+}
